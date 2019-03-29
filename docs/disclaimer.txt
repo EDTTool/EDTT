@@ -1,0 +1,11 @@
+
+None of the tests included here has been properly validated.
+
+These tests may have names or descriptions, or may implement functionality
+similar to tests from known tests sets, but do not intend to replace them.
+
+These tests have not been checked to be fit for any purpose, and no claim about
+such fitness is done.
+
+Please check the LICENSE file for information on warrranty and liability
+disclaimers.
