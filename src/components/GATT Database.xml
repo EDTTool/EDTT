@@ -1,0 +1,463 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ServiceSets>
+	<!-- These Service definitions are auto-generated from the Excel Workbook 'GATT_Test_Databases.xlsm' Sheet: 'Small Database' -->
+	<ServiceSet_0>
+		<Services>
+			<Service type="Primary Service" uuid="1801" name="Attribute Profile" handle="1">
+				<Characteristics>
+					<Characteristic uuid="2A05" name="Service Changed" handle="2" properties="32" permissions="0">
+						01 00 FF FF
+						<Descriptors>
+							<Descriptor uuid="2902" name="Client Characteristic Configuration" handle="4" permissions="3">00 00</Descriptor>
+						</Descriptors>
+					</Characteristic>
+					<Characteristic uuid="2B29" name="Client Features" handle="5" properties="10" permissions="3">00</Characteristic>
+					<Characteristic uuid="2B2A" name="Attribute Database Hash" handle="7" properties="2" permissions="1">B2 DB DC 5B 71 E5 25 37 2B E2 C9 47 BA A5 9F 69</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="1800" name="Generic Access Profile" handle="9">
+				<Characteristics>
+					<Characteristic uuid="2A00" name="Device Name" handle="10" properties="10" permissions="9">Test Database</Characteristic>
+					<Characteristic uuid="2A01" name="Appearance" handle="12" properties="2" permissions="1">41 03</Characteristic>
+					<Characteristic uuid="2A04" name="Peripheral Preferred Connection Parameters" handle="14" properties="2" permissions="1">18 00 28 00 00 00 2A 00</Characteristic>
+				</Characteristics>
+			</Service>
+		</Services>
+	</ServiceSet_0>
+	<!-- These Service definitions are auto-generated from the Excel Workbook 'GATT_Test_Databases.xlsm' Sheet: 'Large Database 1' -->
+	<ServiceSet_1>
+		<Services>
+			<Service type="Primary Service" uuid="1801" name="Attribute Profile" handle="1">
+				<Characteristics>
+					<Characteristic uuid="2A05" name="Service Changed" handle="2" properties="32" permissions="0">
+						01 00 FF FF
+						<Descriptors>
+							<Descriptor uuid="2902" name="Client Characteristic Configuration" handle="4" permissions="3">00 00</Descriptor>
+						</Descriptors>
+					</Characteristic>
+					<Characteristic uuid="2B29" name="Client Features" handle="5" properties="10" permissions="3">00</Characteristic>
+					<Characteristic uuid="2B2A" name="Attribute Database Hash" handle="7" properties="2" permissions="1">85 F8 C8 2C E4 BA 28 9A 6C D5 42 D5 43 7F 91 75</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="1800" name="Generic Access Profile" handle="9">
+				<Characteristics>
+					<Characteristic uuid="2A00" name="Device Name" handle="10" properties="10" permissions="9">Test Database</Characteristic>
+					<Characteristic uuid="2A01" name="Appearance" handle="12" properties="2" permissions="1">41 03</Characteristic>
+					<Characteristic uuid="2A04" name="Peripheral Preferred Connection Parameters" handle="14" properties="2" permissions="1">18 00 28 00 00 00 2A 00</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Secondary Service" uuid="A00D" name="Service D" handle="16">
+				<Includes>
+					<Include uuid="A00B" name="Service B.5" handle="17" first="128" last="133"/>
+				</Includes>
+				<Characteristics>
+					<Characteristic uuid="B00C" name="Value V12" handle="18" properties="2" permissions="16">0C</Characteristic>
+					<Characteristic uuid="0000B00B000000000123456789ABCDEF" name="Value V11 (128-bit UUID)" handle="20" properties="2" permissions="128">0B</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00A" name="Service A" handle="32">
+				<Includes>
+					<Include uuid="A00D" name="Service D" handle="33" first="16" last="21"/>
+				</Includes>
+				<Characteristics>
+					<Characteristic uuid="B001" name="Value V1" handle="34" properties="2" permissions="4">01</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="36" properties="10" permissions="3">11111222223333344444555556666677777888889999900000111112222233333444445555566666777778888899999000001111122222333334444455555666667777788888999990000011111222223333344444555556666677777888889999900000111112222233333444445555566666777778888899999000001111122222333334444455555666667777788888999990000011111222223333344444555556666677777888889999900000111112222233333444445555566666777778888899999000001111122222333334444455555666667777788888999990000011111222223333344444555556666677777888889999900000123456789012</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="38" properties="8" permissions="2">11111222223333344444555556666677777888889999900000</Characteristic>
+					<Characteristic uuid="B003" name="Value V3" handle="40" properties="8" permissions="2">03</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00B" name="Service B.4" handle="48">
+				<Characteristics>
+					<Characteristic uuid="B007" name="Value V7" handle="49" properties="8" permissions="2">07</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00B" name="Service B.3" handle="80">
+				<Characteristics>
+					<Characteristic uuid="B006" name="Value V6" handle="81" properties="30" permissions="3">
+						06
+						<Descriptors>
+							<Descriptor uuid="2902" name="Client Characteristic Configuration" handle="83" permissions="3">00 00</Descriptor>
+						</Descriptors>
+					</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00B" name="Service B.1" handle="96">
+				<Characteristics>
+					<Characteristic uuid="B004" name="Value V4" handle="97" properties="10" permissions="33">04</Characteristic>
+					<Characteristic uuid="B004" name="Value V4" handle="99" properties="10" permissions="3">
+						04
+						<Descriptors>
+							<Descriptor uuid="2903" name="Server Characteristic Configuration" handle="101" permissions="3">00 00</Descriptor>
+						</Descriptors>
+					</Characteristic>
+					<Characteristic uuid="B004" name="Value V4" handle="102" properties="0" permissions="0">
+						04
+						<Descriptors>
+							<Descriptor uuid="B012" name="Long descriptor V2D1" handle="104" permissions="0">11 22 33 44 55 66 77 88 99 00 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 11 22 33 44 55 66 77 88 99 00 11 22 33</Descriptor>
+						</Descriptors>
+					</Characteristic>
+					<Characteristic uuid="B004" name="Value V4" handle="105" properties="2" permissions="1">
+						11 22 33 44 55 66 77 88 99 00 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 11 22 33 44 55 66 77 88 99 00 11 22 33
+						<Descriptors>
+							<Descriptor uuid="B012" name="Long descriptor V2D1" handle="107" permissions="1">11 22 33 44 55 66 77 88 99 00 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 11 22 33 44 55 66 77 88 99 00 11 22 33</Descriptor>
+						</Descriptors>
+					</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00B" name="Service B.2" handle="112">
+				<Characteristics>
+					<Characteristic uuid="B005" name="Value V5" handle="113" properties="138" permissions="257">
+						05
+						<Descriptors>
+							<Descriptor uuid="2900" name="Characteristic Extended Properties" handle="115" permissions="1">03 00</Descriptor>
+							<Descriptor uuid="2901" name="Characteristic User Description" handle="116" permissions="1">ABCDEFGHIJKLMNOPQRSTUVWXYZ</Descriptor>
+							<Descriptor uuid="2904" name="Characteristic Format" handle="117" permissions="1">04 00 01 30 01 11 31</Descriptor>
+							<Descriptor uuid="0000D5D4000000000123456789ABCDEF" name="Descriptor V5D4 (128-bit UUID)" handle="118" permissions="1">44</Descriptor>
+						</Descriptors>
+					</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00B" name="Service B.5" handle="128">
+				<Characteristics>
+					<Characteristic uuid="B008" name="Value V8" handle="129" properties="10" permissions="9">
+						08
+						<Descriptors>
+							<Descriptor uuid="B015" name="Descriptor V8D1" handle="131" permissions="48">01</Descriptor>
+							<Descriptor uuid="B016" name="Descriptor V8D2" handle="132" permissions="384">02</Descriptor>
+							<Descriptor uuid="B017" name="Descriptor V8D3" handle="133" permissions="12">03</Descriptor>
+						</Descriptors>
+					</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="0000A00C000000000123456789ABCDEF" name="Service C.1" handle="144">
+				<Includes>
+					<Include uuid="A00D" name="Service D" handle="145" first="16" last="21"/>
+				</Includes>
+				<Characteristics>
+					<Characteristic uuid="0000B009000000000123456789ABCDEF" name="Value V9 (128-bit UUID)" handle="146" properties="138" permissions="3">
+						09
+						<Descriptors>
+							<Descriptor uuid="2900" name="Characteristic Extended Properties" handle="148" permissions="1">01 00</Descriptor>
+							<Descriptor uuid="0000D9D2000000000123456789ABCDEF" name="Descriptor V9D2 (128-bit UUID)" handle="149" permissions="3">22</Descriptor>
+							<Descriptor uuid="0000D9D3000000000123456789ABCDEF" name="Descriptor V9D3 (128-bit UUID)" handle="150" permissions="2">33</Descriptor>
+						</Descriptors>
+					</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00F" name="Service F" handle="160">
+				<Characteristics>
+					<Characteristic uuid="B00E" name="Value V14" handle="161" properties="2" permissions="1">
+						Length is 
+						<Descriptors>
+							<Descriptor uuid="2904" name="Characteristic Format" handle="163" permissions="1">19 00 00 30 01 00 00</Descriptor>
+						</Descriptors>
+					</Characteristic>
+					<Characteristic uuid="B00F" name="Value V15" handle="164" properties="10" permissions="3">
+						65
+						<Descriptors>
+							<Descriptor uuid="2904" name="Characteristic Format" handle="166" permissions="1">04 00 01 27 01 01 00</Descriptor>
+						</Descriptors>
+					</Characteristic>
+					<Characteristic uuid="B006" name="Value V6" handle="167" properties="10" permissions="3">
+						34 12
+						<Descriptors>
+							<Descriptor uuid="2904" name="Characteristic Format" handle="169" permissions="1">06 00 10 27 01 02 00</Descriptor>
+						</Descriptors>
+					</Characteristic>
+					<Characteristic uuid="B007" name="Value V7" handle="170" properties="10" permissions="3">
+						04 03 02 01
+						<Descriptors>
+							<Descriptor uuid="2904" name="Characteristic Format" handle="172" permissions="1">08 00 17 27 01 03 00</Descriptor>
+						</Descriptors>
+					</Characteristic>
+					<Characteristic uuid="B010" name="Value V16" handle="173" properties="2" permissions="1">
+						65 34 12 04 03 02 01
+						<Descriptors>
+							<Descriptor uuid="2905" name="Aggregate Format" handle="175" permissions="1">A6 00 A9 00 AC 00</Descriptor>
+						</Descriptors>
+					</Characteristic>
+					<Characteristic uuid="B011" name="Value V17" handle="176" properties="66" permissions="3">12</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="0000A00C000000000123456789ABCDEF" name="Service C.2" handle="192">
+				<Characteristics>
+					<Characteristic uuid="B00A" name="Value V10" handle="193" properties="2" permissions="1">0A</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="195" properties="10" permissions="3">
+						111112222233333444445
+						<Descriptors>
+							<Descriptor uuid="B012" name="Long descriptor V2D1" handle="197" permissions="3">11 22 33 44 55 66 77 88 99 00 12 34 56 78 90 12 34 56 78 90 11</Descriptor>
+						</Descriptors>
+					</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="198" properties="10" permissions="3">
+						2222233333444445555566
+						<Descriptors>
+							<Descriptor uuid="B013" name="Long descriptor V2D2" handle="200" permissions="3">11 22 33 44 55 66 77 88 99 00 12 34 56 78 90 12 34 56 78 90 11 22</Descriptor>
+						</Descriptors>
+					</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="201" properties="10" permissions="3">
+						33333444445555566666777
+						<Descriptors>
+							<Descriptor uuid="B014" name="Long descriptor V2D3" handle="203" permissions="3">11 22 33 44 55 66 77 88 99 00 12 34 56 78 90 12 34 56 78 90 11 22 33</Descriptor>
+						</Descriptors>
+					</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="204" properties="10" permissions="3">
+						11 22 33 44 55 66 77 88 99 00 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 11 22 33 44 55 66 77 88 99 00 11 22 33
+						<Descriptors>
+							<Descriptor uuid="B012" name="Long descriptor V2D1" handle="206" permissions="3">11 22 33 44 55 66 77 88 99 00 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 11 22 33 44 55 66 77 88 99 00 11 22 33</Descriptor>
+						</Descriptors>
+					</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="207" properties="10" permissions="3">
+						11 22 33 44 55 66 77 88 99 00 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 11 22 33 44 55 66 77 88 99 00 11 22 33 44
+						<Descriptors>
+							<Descriptor uuid="B013" name="Long descriptor V2D2" handle="209" permissions="3">11 22 33 44 55 66 77 88 99 00 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 11 22 33 44 55 66 77 88 99 00 11 22 33 44</Descriptor>
+						</Descriptors>
+					</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="210" properties="10" permissions="3">
+						11 22 33 44 55 66 77 88 99 00 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 11 22 33 44 55 66 77 88 99 00 11 22 33 44 55
+						<Descriptors>
+							<Descriptor uuid="B014" name="Long descriptor V2D3" handle="212" permissions="3">11 22 33 44 55 66 77 88 99 00 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 11 22 33 44 55 66 77 88 99 00 11 22 33 44 55</Descriptor>
+						</Descriptors>
+					</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="213" properties="10" permissions="48">
+						1111122222333334444455555666667777788888999
+						<Descriptors>
+							<Descriptor uuid="B012" name="Long descriptor V2D1" handle="215" permissions="48">11 22 33 44 55 66 77 88 99 00 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 11 22 33 44 55 66 77 88 99 00 11 22 33</Descriptor>
+						</Descriptors>
+					</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="216" properties="10" permissions="384">
+						22222333334444455555666667777788888999990000
+						<Descriptors>
+							<Descriptor uuid="B013" name="Long descriptor V2D2" handle="218" permissions="384">11 22 33 44 55 66 77 88 99 00 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 11 22 33 44 55 66 77 88 99 00 11 22 33 44</Descriptor>
+						</Descriptors>
+					</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="219" properties="10" permissions="12">
+						333334444455555666667777788888999990000011111
+						<Descriptors>
+							<Descriptor uuid="B014" name="Long descriptor V2D3" handle="221" permissions="12">11 22 33 44 55 66 77 88 99 00 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 12 34 56 78 90 11 22 33 44 55 66 77 88 99 00 11 22 33 44 55</Descriptor>
+						</Descriptors>
+					</Characteristic>
+				</Characteristics>
+			</Service>
+		</Services>
+	</ServiceSet_1>
+	<!-- These Service definitions are auto-generated from the Excel Workbook 'GATT_Test_Databases.xlsm' Sheet: 'Large Database 2' -->
+	<ServiceSet_2>
+		<Services>
+			<Service type="Primary Service" uuid="1801" name="Attribute Profile" handle="1">
+				<Characteristics>
+					<Characteristic uuid="2A05" name="Service Changed" handle="2" properties="32" permissions="0">
+						01 00 FF FF
+						<Descriptors>
+							<Descriptor uuid="2902" name="Client Characteristic Configuration" handle="4" permissions="3">00 00</Descriptor>
+						</Descriptors>
+					</Characteristic>
+					<Characteristic uuid="2B29" name="Client Features" handle="5" properties="10" permissions="3">00</Characteristic>
+					<Characteristic uuid="2B2A" name="Attribute Database Hash" handle="7" properties="2" permissions="1">81 F5 92 A4 3B 65 9D 3D 58 85 6C 8D 3A E7 50 AF</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="1800" name="Generic Access Profile" handle="9">
+				<Characteristics>
+					<Characteristic uuid="2A00" name="Device Name" handle="10" properties="10" permissions="9">Test Database</Characteristic>
+					<Characteristic uuid="2A01" name="Appearance" handle="12" properties="2" permissions="1">41 03</Characteristic>
+					<Characteristic uuid="2A04" name="Peripheral Preferred Connection Parameters" handle="14" properties="2" permissions="1">18 00 28 00 00 00 2A 00</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="0000A00C000000000123456789ABCDEF" name="Service C.2" handle="16">
+				<Characteristics>
+					<Characteristic uuid="B00A" name="Value V10" handle="17" properties="2" permissions="1">0A</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="19" properties="10" permissions="3">111112222233333444445</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="21" properties="10" permissions="3">2222233333444445555566</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="23" properties="10" permissions="3">33333444445555566666777</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="25" properties="10" permissions="3">1111122222333334444455555666667777788888999</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="27" properties="10" permissions="3">22222333334444455555666667777788888999990000</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="29" properties="10" permissions="3">333334444455555666667777788888999990000011111</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="0000A00C000000000123456789ABCDEF" name="Service C.1" handle="32">
+				<Includes>
+					<Include uuid="A00D" name="Service D" handle="33" first="64" last="69"/>
+				</Includes>
+				<Characteristics>
+					<Characteristic uuid="0000B009000000000123456789ABCDEF" name="Value V9 (128-bit UUID)" handle="34" properties="138" permissions="3">
+						09
+						<Descriptors>
+							<Descriptor uuid="0000D9D2000000000123456789ABCDEF" name="Descriptor V9D2 (128-bit UUID)" handle="36" permissions="3">22</Descriptor>
+							<Descriptor uuid="0000D9D3000000000123456789ABCDEF" name="Descriptor V9D3 (128-bit UUID)" handle="37" permissions="2">33</Descriptor>
+							<Descriptor uuid="2900" name="Characteristic Extended Properties" handle="38" permissions="1">01 00</Descriptor>
+						</Descriptors>
+					</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00B" name="Service B.4" handle="48">
+				<Characteristics>
+					<Characteristic uuid="B007" name="Value V7" handle="49" properties="8" permissions="2">07</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Secondary Service" uuid="A00D" name="Service D" handle="64">
+				<Includes>
+					<Include uuid="A00B" name="Service B.1" handle="65" first="80" last="82"/>
+				</Includes>
+				<Characteristics>
+					<Characteristic uuid="0000B00B000000000123456789ABCDEF" name="Value V11 (128-bit UUID)" handle="66" properties="2" permissions="1">0B</Characteristic>
+					<Characteristic uuid="B00C" name="Value V12" handle="68" properties="2" permissions="1">0C</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00B" name="Service B.1" handle="80">
+				<Characteristics>
+					<Characteristic uuid="B004" name="Value V4" handle="81" properties="10" permissions="3">04</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00A" name="Service A" handle="96">
+				<Includes>
+					<Include uuid="A00D" name="Service D" handle="97" first="64" last="69"/>
+					<Include uuid="0000A00C000000000123456789ABCDEF" name="Service C.1" handle="98" first="32" last="38"/>
+				</Includes>
+				<Characteristics>
+					<Characteristic uuid="B001" name="Value V1" handle="99" properties="2" permissions="1">01</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="101" properties="10" permissions="3">11111222223333344444555556666677777888889999900000</Characteristic>
+					<Characteristic uuid="B003" name="Value V3" handle="103" properties="8" permissions="2">03</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00B" name="Service B.3" handle="112">
+				<Characteristics>
+					<Characteristic uuid="B006" name="Value V6" handle="113" properties="62" permissions="3">
+						06
+						<Descriptors>
+							<Descriptor uuid="2902" name="Client Characteristic Configuration" handle="115" permissions="3">00 00</Descriptor>
+						</Descriptors>
+					</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00B" name="Service B.2" handle="144">
+				<Characteristics>
+					<Characteristic uuid="B005" name="Value V5" handle="145" properties="138" permissions="3">
+						05
+						<Descriptors>
+							<Descriptor uuid="0000D5D4000000000123456789ABCDEF" name="Descriptor V5D4 (128-bit UUID)" handle="147" permissions="1">44</Descriptor>
+							<Descriptor uuid="2900" name="Characteristic Extended Properties" handle="148" permissions="1">03 00</Descriptor>
+							<Descriptor uuid="2901" name="Characteristic User Description" handle="149" permissions="1">ABCDEFGHIJKLMNOPQRSTUVWXYZ</Descriptor>
+							<Descriptor uuid="2904" name="Characteristic Format" handle="150" permissions="1">04 00 01 30 01 11 31</Descriptor>
+						</Descriptors>
+					</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00B" name="Service B.5" handle="160">
+				<Characteristics>
+					<Characteristic uuid="B008" name="Value V8" handle="161" properties="2" permissions="1">08</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00E" name="Service E" handle="65533">
+				<Characteristics>
+					<Characteristic uuid="B00D" name="Value V13" handle="65534" properties="2" permissions="1">0D</Characteristic>
+				</Characteristics>
+			</Service>
+		</Services>
+	</ServiceSet_2>
+	<!-- These Service definitions are auto-generated from the Excel Workbook 'GATT_Test_Databases.xlsm' Sheet: 'Large Database 3' -->
+	<ServiceSet_3>
+		<Services>
+			<Service type="Primary Service" uuid="1801" name="Attribute Profile" handle="1">
+				<Characteristics>
+					<Characteristic uuid="2A05" name="Service Changed" handle="2" properties="32" permissions="0">
+						01 00 FF FF
+						<Descriptors>
+							<Descriptor uuid="2902" name="Client Characteristic Configuration" handle="4" permissions="3">00 00</Descriptor>
+						</Descriptors>
+					</Characteristic>
+					<Characteristic uuid="2B29" name="Client Features" handle="5" properties="10" permissions="3">00</Characteristic>
+					<Characteristic uuid="2B2A" name="Attribute Database Hash" handle="7" properties="2" permissions="1">B2 7A 1C C6 D9 E6 A2 88 A9 37 61 3F AF D5 3F A6</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="1800" name="Generic Access Profile" handle="9">
+				<Characteristics>
+					<Characteristic uuid="2A00" name="Device Name" handle="10" properties="10" permissions="9">Test Database</Characteristic>
+					<Characteristic uuid="2A01" name="Appearance" handle="12" properties="2" permissions="1">41 03</Characteristic>
+					<Characteristic uuid="2A04" name="Peripheral Preferred Connection Parameters" handle="14" properties="2" permissions="1">18 00 28 00 00 00 2A 00</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00B" name="Service B.1" handle="16">
+				<Characteristics>
+					<Characteristic uuid="B004" name="Value V4" handle="17" properties="10" permissions="3">04</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Secondary Service" uuid="A00D" name="Service D" handle="32">
+				<Includes>
+					<Include uuid="0000A00C000000000123456789ABCDEF" name="Service C.1" handle="33" first="128" last="133"/>
+				</Includes>
+				<Characteristics>
+					<Characteristic uuid="B00C" name="Value V12" handle="34" properties="2" permissions="1">0C</Characteristic>
+					<Characteristic uuid="0000B00B000000000123456789ABCDEF" name="Value V11 (128-bit UUID)" handle="36" properties="2" permissions="1">0B</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00B" name="Service B.5" handle="48">
+				<Characteristics>
+					<Characteristic uuid="B008" name="Value V8" handle="49" properties="2" permissions="1">08</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00B" name="Service B.4" handle="64">
+				<Characteristics>
+					<Characteristic uuid="B007" name="Value V7" handle="65" properties="8" permissions="2">07</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00B" name="Service B.3" handle="80">
+				<Characteristics>
+					<Characteristic uuid="B006" name="Value V6" handle="81" properties="62" permissions="3">
+						06
+						<Descriptors>
+							<Descriptor uuid="2902" name="Client Characteristic Configuration" handle="83" permissions="3">00 00</Descriptor>
+						</Descriptors>
+					</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00A" name="Service A" handle="112">
+				<Includes>
+					<Include uuid="A00D" name="Service D" handle="113" first="32" last="37"/>
+					<Include uuid="0000A00C000000000123456789ABCDEF" name="Service C.1" handle="114" first="128" last="133"/>
+				</Includes>
+				<Characteristics>
+					<Characteristic uuid="B001" name="Value V1" handle="115" properties="2" permissions="1">01</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="117" properties="10" permissions="3">11111222223333344444555556666677777888889999900000</Characteristic>
+					<Characteristic uuid="B003" name="Value V3" handle="119" properties="8" permissions="2">03</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="0000A00C000000000123456789ABCDEF" name="Service C.1" handle="128">
+				<Characteristics>
+					<Characteristic uuid="0000B009000000000123456789ABCDEF" name="Value V9 (128-bit UUID)" handle="129" properties="138" permissions="3">
+						09
+						<Descriptors>
+							<Descriptor uuid="0000D9D2000000000123456789ABCDEF" name="Descriptor V9D2 (128-bit UUID)" handle="131" permissions="3">22</Descriptor>
+							<Descriptor uuid="2900" name="Characteristic Extended Properties" handle="132" permissions="1">01 00</Descriptor>
+							<Descriptor uuid="0000D9D3000000000123456789ABCDEF" name="Descriptor V9D3 (128-bit UUID)" handle="133" permissions="2">33</Descriptor>
+						</Descriptors>
+					</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00B" name="Service B.2" handle="144">
+				<Characteristics>
+					<Characteristic uuid="B005" name="Value V5" handle="145" properties="138" permissions="3">
+						05
+						<Descriptors>
+							<Descriptor uuid="2901" name="Characteristic User Description" handle="147" permissions="1">ABCDEFGHIJKLMNOPQRSTUVWXYZ</Descriptor>
+							<Descriptor uuid="2900" name="Characteristic Extended Properties" handle="148" permissions="1">03 00</Descriptor>
+							<Descriptor uuid="0000D5D4000000000123456789ABCDEF" name="Descriptor V5D4 (128-bit UUID)" handle="149" permissions="1">44</Descriptor>
+							<Descriptor uuid="2904" name="Characteristic Format" handle="150" permissions="1">04 00 01 30 01 11 31</Descriptor>
+						</Descriptors>
+					</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="0000A00C000000000123456789ABCDEF" name="Service C.2" handle="160">
+				<Characteristics>
+					<Characteristic uuid="B00A" name="Value V10" handle="161" properties="2" permissions="1">0A</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="163" properties="10" permissions="3">111112222233333444445</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="165" properties="10" permissions="3">2222233333444445555566</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="167" properties="10" permissions="3">33333444445555566666777</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="169" properties="10" permissions="3">1111122222333334444455555666667777788888999</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="171" properties="10" permissions="3">22222333334444455555666667777788888999990000</Characteristic>
+					<Characteristic uuid="B002" name="Value V2" handle="173" properties="10" permissions="3">333334444455555666667777788888999990000011111</Characteristic>
+				</Characteristics>
+			</Service>
+			<Service type="Primary Service" uuid="A00E" name="Service E" handle="65535">
+			</Service>
+		</Services>
+	</ServiceSet_3>
+</ServiceSets>
