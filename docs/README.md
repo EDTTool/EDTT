@@ -2,13 +2,24 @@
 
 The EDTT (Embedded Device Test Tool) is a collection of python scripts, which include:
 
-* The PC side of a simple basic Remote Call Procedure (RCP)
-* A transport mechanism, which is used by this RCP to transport
+* The PC side of a simple basic Remote Procedure Call (RPC)
+* A transport mechanism, which is used by this RPC to transport
   data in an out of an embedded device
 * A set of self checking tests of the BLE functionality
   (both host and controller)
 * A basic tool which wraps all of this, and executes a set of
   tests as selected from command line
+
+## More information
+
+More information about the RPC transport can be found in
+[EDTT_transport.md](EDTT_transport.md)<br>
+And about the transport used with BabbleSim in
+[EDTT_transport_bsim.md](EDTT_transport_bsim.md)
+
+A document giving an introduction on how to use the EDTT
+with BabbleSim and how to write tests can be found in
+`docs/EDTT Framework BabbleSim.fodt`
 
 ## License
 
@@ -69,9 +80,3 @@ shown below:
        personal information I submit with it, including my sign-off) is
        maintained indefinitely and may be redistributed consistent with
        this project or the open source license(s) involved.
-
-
-
-## Usage example
-
-TODO
