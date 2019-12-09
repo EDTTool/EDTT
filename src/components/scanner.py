@@ -89,6 +89,7 @@ class Scanner:
         self.reportAddress = None;
         self.responseData = [];
         self.responseAddress = None;
+        self.targetAddress = None;
 
         self.firstTime = 0;
         self.lastTime = 0;
@@ -157,11 +158,12 @@ class Scanner:
 
             elif event.subEvent == MetaEvents.BT_HCI_EVT_LE_DIRECT_ADV_REPORT:
 
-                eventType, address = event.decode()[0:2];
+                eventType, address, targetAddress = event.decode()[0:3];
                 if eventType == self.reportType:
                     self.directReports += 1;
                     self.reportData = [];
-                    self.reportAddress = address
+                    self.reportAddress = address;
+                    self.targetAddress = targetAddress;
                     self.__updateDeltas(self.directReports, event.time, prevTime);
                     prevTime = event.time;
 
@@ -266,7 +268,7 @@ class Scanner:
                 success = success and (self.reportAddress == address);
             if not directAddress is None:
                 self.trace.trace(5, "Reported direct address %s / Expected direct address %s" % (str(self.reportAddress), str(directAddress)));
-                success = success and (self.reportAddress == directAddress);
+                success = success and (self.targetAddress == directAddress);
             self.clear();
         else:
             self.trace.trace(7, "Received no %s directed Advertise reports." % self.reportType.name);

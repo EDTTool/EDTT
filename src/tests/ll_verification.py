@@ -1987,80 +1987,108 @@ def ll_con_ini_bv_02_c(transport, upperTester, lowerTester, trace):
 """
     LL/CON/INI/BV-06-C [Filtered Connection to Advertiser using Undirected Advertising Packets]
 
-    Last modified: 02-08-2019
-    Reviewed and verified: 02-08-2019 Henrik Eriksen
+    Last modified: 09-12-2019
+    Reviewed and verified: 09-12-2019 Henrik Eriksen
 """
 def ll_con_ini_bv_06_c(transport, upperTester, lowerTester, trace):
+    global lowerRandomAddress, upperRandomAddress;
 
-    advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED, \
-                                               AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
-    """
-        Place Public address of lowerTester in the White List
-    """
-    success = addAddressesToWhiteList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace);
-
-    for i, advertiserAddress in enumerate( [ Address( ExtendedAddressType.RANDOM, 0x456789ABCDEFL ), 
-                                             Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEFL) ),
-                                             publicIdentityAddress(lowerTester) ] ):
-
-        advertiser.ownAddress = advertiserAddress;
-        if advertiserAddress.type == ExtendedAddressType.RANDOM:
-            success = preamble_set_random_address(transport, lowerTester, toNumber(advertiserAddress.address), trace) and success;
+    success = True;
+    for j in range(2):
+        if j == 0:
+            advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED, \
+                                                       AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
         else:
-            success = preamble_set_public_address(transport, lowerTester, toNumber(advertiserAddress.address), trace) and success;
+            advertiser, initiator = setPrivateInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED, \
+                                                        ExtendedAddressType.RANDOM, ExtendedAddressType.RANDOM, AdvertisingFilterPolicy.FILTER_NONE, \
+                                                        AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+        """
+            Place Public|Random address of lowerTester in the White List
+        """
+        whiteListAddress = publicIdentityAddress(lowerTester) if j == 0 else randomIdentityAddress(lowerTester); 
 
-        success = advertiser.enable() and success;
-        connected = initiator.connect();
-        success = (connected if i == 2 else not connected) and success;
+        success = addAddressesToWhiteList(transport, upperTester, [ whiteListAddress ], trace) and success;
+	
+        addresses = [ Address( ExtendedAddressType.RANDOM if whiteListAddress.type == SimpleAddressType.PUBLIC \
+                                                          else ExtendedAddressType.PUBLIC, whiteListAddress.address ), 
+                      Address( ExtendedAddressType.PUBLIC if whiteListAddress.type == SimpleAddressType.PUBLIC \
+                                                          else ExtendedAddressType.RANDOM, address_scramble_LAP(toNumber(whiteListAddress.address)) ),
+                      whiteListAddress ];
 
-        if connected:
-            success = initiator.disconnect(0x3E) and success;
-        else:
-            """
-                Need to stop connection attempt - otherwise following commands will fail with not allowed...
-            """
-            success = initiator.cancelConnect() and success;
-            success = advertiser.disable() and success;
+        for i, advertiserAddress in enumerate( addresses ):
+
+            advertiser.ownAddress = advertiserAddress;
+            if advertiserAddress.type == ExtendedAddressType.RANDOM:
+                success = preamble_set_random_address(transport, lowerTester, toNumber(advertiserAddress.address), trace) and success;
+            else:
+                success = preamble_set_public_address(transport, lowerTester, toNumber(advertiserAddress.address), trace) and success;
+
+            success = advertiser.enable() and success;
+            connected = initiator.connect();
+            success = (connected if i == 2 else not connected) and success;
+
+            if connected:
+                success = initiator.disconnect(0x3E) and success;
+            else:
+                """
+                    Need to stop connection attempt - otherwise following commands will fail with not allowed...
+                """
+                success = initiator.cancelConnect() and success;
+                success = advertiser.disable() and success;
         
     return success;
 
 """
     LL/CON/INI/BV-07-C [Filtered Connection to Advertiser using Directed Advertising Packets]
 
-    Last modified: 02-08-2019
-    Reviewed and verified: 02-08-2019 Henrik Eriksen
+    Last modified: 09-12-2019
+    Reviewed and verified: 09-12-2019 Henrik Eriksen
 """
 def ll_con_ini_bv_07_c(transport, upperTester, lowerTester, trace):
+    global lowerRandomAddress, upperRandomAddress;
 
-    advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_LDC_DIRECTED, \
-                                               AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
-    """
-        Place Public address of lowerTester in the White List
-    """
-    success = addAddressesToWhiteList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace);
-
-    for i, advertiserAddress in enumerate( [ Address( ExtendedAddressType.RANDOM, 0x456789ABCDEFL ), 
-                                             Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEFL) ),
-                                             publicIdentityAddress(lowerTester) ] ):
-
-        advertiser.ownAddress = advertiserAddress;
-        if advertiserAddress.type == ExtendedAddressType.RANDOM:
-            success = preamble_set_random_address(transport, lowerTester, toNumber(advertiserAddress.address), trace) and success;
+    success = True;
+    for j in range(2):
+        if j == 0:
+            advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_LDC_DIRECTED, \
+                                                       AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
         else:
-            success = preamble_set_public_address(transport, lowerTester, toNumber(advertiserAddress.address), trace) and success;
+            advertiser, initiator = setPrivateInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_LDC_DIRECTED, \
+                                                        ExtendedAddressType.RANDOM, ExtendedAddressType.RANDOM, AdvertisingFilterPolicy.FILTER_NONE, \
+                                                        AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+        """
+            Place Public|Random address of lowerTester in the White List
+        """
+        whiteListAddress = publicIdentityAddress(lowerTester) if j == 0 else randomIdentityAddress(lowerTester); 
 
-        success = advertiser.enable() and success;
-        connected = initiator.connect();
-        success = (connected if i == 2 else not connected) and success;
+        success = addAddressesToWhiteList(transport, upperTester, [ whiteListAddress ], trace) and success;
 
-        if connected:
-            success = initiator.disconnect(0x3E) and success;
-        else:
-            """
-                Need to stop connection attempt - otherwise following commands will fail with not allowed...
-            """
-            success = initiator.cancelConnect() and success;
-            success = advertiser.disable() and success;
+        addresses = [ Address( ExtendedAddressType.RANDOM if whiteListAddress.type == SimpleAddressType.PUBLIC \
+                                                          else ExtendedAddressType.PUBLIC, whiteListAddress.address ), 
+                      Address( ExtendedAddressType.PUBLIC if whiteListAddress.type == SimpleAddressType.PUBLIC \
+                                                          else ExtendedAddressType.RANDOM, address_scramble_LAP(toNumber(whiteListAddress.address)) ),
+                      whiteListAddress ];
+
+        for i, advertiserAddress in enumerate( addresses ):
+
+            advertiser.ownAddress = advertiserAddress;
+            if advertiserAddress.type == ExtendedAddressType.RANDOM:
+                success = preamble_set_random_address(transport, lowerTester, toNumber(advertiserAddress.address), trace) and success;
+            else:
+                success = preamble_set_public_address(transport, lowerTester, toNumber(advertiserAddress.address), trace) and success;
+
+            success = advertiser.enable() and success;
+            connected = initiator.connect();
+            success = (connected if i == 2 else not connected) and success;
+
+            if connected:
+                success = initiator.disconnect(0x3E) and success;
+            else:
+                """
+                    Need to stop connection attempt - otherwise following commands will fail with not allowed...
+                """
+                success = initiator.cancelConnect() and success;
+                success = advertiser.disable() and success;
         
     return success;
 
@@ -5168,8 +5196,8 @@ def ll_sec_adv_bv_10_c(transport, upperTester, lowerTester, trace):
 """
     LL/SEC/ADV/BV-11-C [Connecting with Directed Connectable Advertiser using local and remote IRK]
 
-    Last modified: 07-08-2019
-    Reviewed and verified: 07-08-2019 Henrik Eriksen
+    Last modified: 09-12-2019
+    Reviewed and verified: 09-12-2019 Henrik Eriksen
 """
 def ll_sec_adv_bv_11_c(transport, upperTester, lowerTester, trace):
 
@@ -5194,6 +5222,14 @@ def ll_sec_adv_bv_11_c(transport, upperTester, lowerTester, trace):
     success = success and connected;
 
     if connected:
+        """
+            Verify that connection was established with resolvable private addresses
+        """
+        isRPA = Address( None, initiator.localRPA() ).isResolvablePrivate();
+        isRPA = Address( None, initiator.peerRPA() ).isResolvablePrivate() and isRPA;
+        success = isRPA and success;
+        if not isRPA:
+            trace.trace(6, "Wrong RPAs - local RPA: %s peer RPA: %s" %(Address( None, initiator.localRPA() ), Address( None, initiator.peerRPA() )));
         """
             Upper tester (SLAVE) terminates the connection
         """
