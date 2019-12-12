@@ -166,9 +166,9 @@ class Advertiser:
     """
         Check for a advertise timeout - when using connectable high duty cycle directed advertising
     """
-    def timeout(self):
+    def timeout(self, timeout=100):
         self.status = 0;
-        if has_event(self.transport, self.idx, 100)[0]:
+        if has_event(self.transport, self.idx, timeout)[0]:
             event = get_event(self.transport, self.idx, 100);
             self.trace.trace(7, str(event));
             if (event.subEvent == MetaEvents.BT_HCI_EVT_LE_CONN_COMPLETE) or (event.subEvent == MetaEvents.BT_HCI_EVT_LE_ENH_CONN_COMPLETE):
