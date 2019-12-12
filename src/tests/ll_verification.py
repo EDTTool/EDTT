@@ -5196,8 +5196,8 @@ def ll_sec_adv_bv_10_c(transport, upperTester, lowerTester, trace):
 """
     LL/SEC/ADV/BV-11-C [Connecting with Directed Connectable Advertiser using local and remote IRK]
 
-    Last modified: 09-12-2019
-    Reviewed and verified: 09-12-2019 Henrik Eriksen
+    Last modified: 10-12-2019
+    Reviewed and verified: 10-12-2019 Henrik Eriksen
 """
 def ll_sec_adv_bv_11_c(transport, upperTester, lowerTester, trace):
 
@@ -5240,6 +5240,34 @@ def ll_sec_adv_bv_11_c(transport, upperTester, lowerTester, trace):
         success = advertiser.disable() and success;
 
     success = RPAs[upperTester].disable() and RPAs[lowerTester].disable() and success;
+
+    advertiserTimeout = False;
+    success = advertiser.enable() and success;
+    initiator.checkPrematureDisconnect = False;
+    """
+        In order to fire connection requests 20 times before the advertiser times out (1.28 sec.),
+        we need to use short timeouts and cancel connection attempts between attempts.
+    """
+    for i in range(20):
+        connected = initiator.connect(10);
+        success = success and not connected;
+        if connected:
+            success = initiator.disconnect(0x13) and success;
+            break;
+        else:
+            """
+                Need to stop connection attempt - otherwise following commands will fail with command not allowed...
+            """
+            if initiator.status == 0:
+                initiator.cancelConnect();
+
+            advertiserTimeout = advertiser.timeout(10);
+            if advertiserTimeout:
+                trace.trace(7, "Advertising done!");
+                break;
+
+    if not advertiserTimeout:
+        success = advertiser.disable() and success;
 
     return success;
 
