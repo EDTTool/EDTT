@@ -297,7 +297,7 @@ class Initiator:
         Carry out last part of the connect procedure...
         Wait for (connection complete | enhanced connection complete) events
     """
-    def postConnect(self):
+    def postConnect(self, timeout=300):
         success = self.pre_connected;
         """
             Both initiator and peer can receive a LE Connection Complete Event if connection succeeds...
@@ -306,22 +306,22 @@ class Initiator:
             """
                 Check for LE Connection Complete Event | LE Enhanced Connection Complete Event in initiator...
             """
-            initiatorConnected, handle, role, localRPA, interval = self.__hasConnectionCompleteEvent(self.initiator, 300);
+            initiatorConnected, handle, role, localRPA, interval = self.__hasConnectionCompleteEvent(self.initiator, timeout);
             if initiatorConnected:
                 self.handles[0] = handle; self.prevInterval = interval;
                 self.RPAs[0] = localRPA[ : ];
                 self.trace.trace(7, "%s is %s" % ('UpperTester' if self.initiator == 0 else 'LowerTester', 'MASTER' if role == 0 else 'SLAVE'));
-            """
-                Check for LE Connection Complete Event | LE Enhanced Connection Complete Event in peer...
-            """
-            if not self.peer is None:
-                peerConnected, handle, role, localRPA, interval = self.__hasConnectionCompleteEvent(self.peer, 100);
-                if peerConnected:
-                    self.handles[1] = handle;
-                    self.RPAs[1] = localRPA[ : ];
-                    self.trace.trace(7, "%s is %s" % ('UpperTester' if self.peer == 0 else 'LowerTester', 'MASTER' if role == 0 else 'SLAVE'));
-            else:
-                peerConnected = True;
+                """
+                    Check for LE Connection Complete Event | LE Enhanced Connection Complete Event in peer...
+                """
+                if not self.peer is None:
+                    peerConnected, handle, role, localRPA, interval = self.__hasConnectionCompleteEvent(self.peer, timeout);
+                    if peerConnected:
+                        self.handles[1] = handle;
+                        self.RPAs[1] = localRPA[ : ];
+                        self.trace.trace(7, "%s is %s" % ('UpperTester' if self.peer == 0 else 'LowerTester', 'MASTER' if role == 0 else 'SLAVE'));
+                else:
+                    peerConnected = True;
             """
                 Check for Disconnection Complete Event in initiator...
             """
@@ -336,9 +336,9 @@ class Initiator:
     """
         Carry out the connect procedure...
     """
-    def connect(self):
+    def connect(self, timeout=300):
         success = self.preConnect();
-        success = success and self.postConnect();
+        success = success and self.postConnect(timeout);
         if success:
             self.txPhys = self.rxPhys = 1;
 
