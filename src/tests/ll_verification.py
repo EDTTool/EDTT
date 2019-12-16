@@ -2570,6 +2570,99 @@ def ll_con_ini_bv_21_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
+    LL/CON/INI/BV-23-C [Network Privacy - Connection Establishment using whitelist and resolving list with address resolution disabled]
+
+    Last modified: 16-12-2019
+    Reviewed and verified: 16-12-2019 Henrik Eriksen
+"""
+def ll_con_ini_bv_23_c(transport, upperTester, lowerTester, trace):
+
+    advertiser, initiator = setPrivateInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED, ExtendedAddressType.PUBLIC,
+                                                ExtendedAddressType.RESOLVABLE_OR_PUBLIC, AdvertisingFilterPolicy.FILTER_NONE, 
+                                                AdvertiseChannel.ALL_CHANNELS, InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+    """
+        Add Public address of lowerTester to the Resolving List
+    """
+    RPAs = [ ResolvableAddresses( transport, upperTester, trace, upperIRK ), ResolvableAddresses( transport, lowerTester, trace ) ];
+    success = RPAs[upperTester].clear() and RPAs[lowerTester].clear();
+    success = RPAs[upperTester].add( publicIdentityAddress(lowerTester) ) and success;
+    success = RPAs[lowerTester].add( publicIdentityAddress(upperTester), upperIRK ) and success;
+    """
+        Add two more entries not equal to lower tester with different local IRK for each entry
+    """
+    extraAddressses = [ Address( SimpleAddressType.PUBLIC, address_scramble_OUI(toNumber(publicIdentityAddress(lowerTester).address)) ),
+                        Address( SimpleAddressType.PUBLIC, address_scramble_LAP(toNumber(publicIdentityAddress(lowerTester).address)) ) ];
+    RPAs[upperTester].localIRK = [ random.randint(0,255) for _ in range(16) ]; 
+    success = RPAs[upperTester].add( extraAddressses[0] ) and success;
+    RPAs[upperTester].localIRK = [ random.randint(0,255) for _ in range(16) ]; 
+    success = RPAs[upperTester].add( extraAddressses[1] ) and success;
+    """
+        Set resolvable private address timeout in seconds ( sixty seconds )
+    """
+    success = RPAs[upperTester].timeout( 60 ) and RPAs[lowerTester].timeout( 60 ) and success;
+    success = RPAs[lowerTester].enable() and success;
+    """
+        Set Privacy Mode
+    """
+    success = setPrivacyMode(transport, upperTester, publicIdentityAddress(lowerTester), PrivacyMode.DEVICE_PRIVACY, trace) and success;
+    """
+        Add Lower tester identity address to plus two more to White List
+    """
+    success = addAddressesToWhiteList(transport, upperTester, [ publicIdentityAddress(lowerTester), extraAddressses[0], extraAddressses[1] ], trace);
+
+    success = success and advertiser.enable();
+    connected = initiator.connect();
+    success = success and connected;
+        
+    if connected:
+        transport.wait(200);
+   
+        success = initiator.disconnect(0x3E) and success;
+    else:
+        success = advertiser.disable() and success;
+
+    success = RPAs[lowerTester].disable() and success;
+
+    return success;
+
+"""
+    LL/CON/INI/BV-24-C [Network Privacy - Connection Establishment using resolving list with address resolution disabled]
+
+    Last modified: 16-12-2019
+    Reviewed and verified: 16-12-2019 Henrik Eriksen
+"""
+def ll_con_ini_bv_24_c(transport, upperTester, lowerTester, trace):
+
+    advertiser, initiator = setPrivateInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_LDC_DIRECTED, ExtendedAddressType.PUBLIC);
+    """
+        Add Public address of lowerTester to the Resolving List
+    """
+    RPA = ResolvableAddresses( transport, upperTester, trace, upperIRK );
+    success = RPA.clear();
+    success = RPA.add( publicIdentityAddress(lowerTester), lowerIRK ) and success;
+    """
+        Set resolvable private address timeout in seconds ( sixty seconds )
+    """
+    success = RPA.timeout( 60 ) and success;
+    """
+        Set Privacy Mode
+    """
+    success = setPrivacyMode(transport, upperTester, publicIdentityAddress(lowerTester), PrivacyMode.DEVICE_PRIVACY, trace) and success;
+
+    success = success and advertiser.enable();
+    connected = initiator.connect();
+    success = success and connected;
+        
+    if connected:
+        transport.wait(2660);
+   
+        success = initiator.disconnect(0x3E) and success;
+    else:
+        success = advertiser.disable() and success;
+
+    return success;
+
+"""
     LL/CON/SLA/BV-04-C [Connection where Slave sends data to Master]
 
     Last modified: 05-08-2019
@@ -5239,7 +5332,7 @@ def ll_sec_adv_bv_11_c(transport, upperTester, lowerTester, trace):
     else:
         success = advertiser.disable() and success;
 
-    success = RPAs[upperTester].disable() and RPAs[lowerTester].disable() and success;
+    success = RPAs[upperTester].disable() and success;
 
     advertiserTimeout = False;
     success = advertiser.enable() and success;
@@ -5761,6 +5854,8 @@ __tests__ = {
     "LL/CON/INI/BV-19-C": [ ll_con_ini_bv_19_c, "Don't connect to Directed Advertiser using Identity address with Network Privacy thru Resolving List" ],
     "LL/CON/INI/BV-20-C": [ ll_con_ini_bv_20_c, "Connect to Advertiser using Identity address with Device Privacy thru Resolving List" ],
     "LL/CON/INI/BV-21-C": [ ll_con_ini_bv_21_c, "Connect to Directed Advertiser using Identity address with Device Privacy thru Resolving List" ],
+    "LL/CON/INI/BV-23-C": [ ll_con_ini_bv_23_c, "Network Privacy - Connection Establishment using whitelist and resolving list with address resolution disabled" ],
+    "LL/CON/INI/BV-24-C": [ ll_con_ini_bv_24_c, "Network Privacy - Connection Establishment using resolving list with address resolution disabled" ],
     "LL/CON/MAS/BI-06-C": [ ll_con_mas_bi_06_c, "Master responds to Connection Parameter Request – illegal parameters" ],
     "LL/CON/MAS/BV-03-C": [ ll_con_mas_bv_03_c, "Master sending Data packets to Slave" ],
     "LL/CON/MAS/BV-04-C": [ ll_con_mas_bv_04_c, "Master receiving Data packets from Slave" ],
