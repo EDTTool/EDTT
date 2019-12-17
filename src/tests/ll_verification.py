@@ -2572,8 +2572,8 @@ def ll_con_ini_bv_21_c(transport, upperTester, lowerTester, trace):
 """
     LL/CON/INI/BV-23-C [Network Privacy - Connection Establishment using whitelist and resolving list with address resolution disabled]
 
-    Last modified: 16-12-2019
-    Reviewed and verified: 16-12-2019 Henrik Eriksen
+    Last modified: 17-12-2019
+    Reviewed and verified: 17-12-2019 Henrik Eriksen
 """
 def ll_con_ini_bv_23_c(transport, upperTester, lowerTester, trace):
 
@@ -2616,7 +2616,10 @@ def ll_con_ini_bv_23_c(transport, upperTester, lowerTester, trace):
         
     if connected:
         transport.wait(200);
-   
+        """
+            Check that the InitA from the connect indication is a RPA
+        """
+        success = Address( None, initiator.localRPA() ).isResolvablePrivate() and success;
         success = initiator.disconnect(0x3E) and success;
     else:
         success = advertiser.disable() and success;
