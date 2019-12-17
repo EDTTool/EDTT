@@ -2602,10 +2602,6 @@ def ll_con_ini_bv_23_c(transport, upperTester, lowerTester, trace):
     success = RPAs[upperTester].timeout( 60 ) and RPAs[lowerTester].timeout( 60 ) and success;
     success = RPAs[lowerTester].enable() and success;
     """
-        Set Privacy Mode
-    """
-    success = setPrivacyMode(transport, upperTester, publicIdentityAddress(lowerTester), PrivacyMode.DEVICE_PRIVACY, trace) and success;
-    """
         Add Lower tester identity address to plus two more to White List
     """
     success = addAddressesToWhiteList(transport, upperTester, [ publicIdentityAddress(lowerTester), extraAddressses[0], extraAddressses[1] ], trace);
@@ -2631,8 +2627,8 @@ def ll_con_ini_bv_23_c(transport, upperTester, lowerTester, trace):
 """
     LL/CON/INI/BV-24-C [Network Privacy - Connection Establishment using resolving list with address resolution disabled]
 
-    Last modified: 16-12-2019
-    Reviewed and verified: 16-12-2019 Henrik Eriksen
+    Last modified: 17-12-2019
+    Reviewed and verified: 17-12-2019 Henrik Eriksen
 """
 def ll_con_ini_bv_24_c(transport, upperTester, lowerTester, trace):
 
@@ -2647,10 +2643,6 @@ def ll_con_ini_bv_24_c(transport, upperTester, lowerTester, trace):
         Set resolvable private address timeout in seconds ( sixty seconds )
     """
     success = RPA.timeout( 60 ) and success;
-    """
-        Set Privacy Mode
-    """
-    success = setPrivacyMode(transport, upperTester, publicIdentityAddress(lowerTester), PrivacyMode.DEVICE_PRIVACY, trace) and success;
 
     success = success and advertiser.enable();
     connected = initiator.connect();
@@ -5292,8 +5284,8 @@ def ll_sec_adv_bv_10_c(transport, upperTester, lowerTester, trace):
 """
     LL/SEC/ADV/BV-11-C [Connecting with Directed Connectable Advertiser using local and remote IRK]
 
-    Last modified: 10-12-2019
-    Reviewed and verified: 10-12-2019 Henrik Eriksen
+    Last modified: 17-12-2019
+    Reviewed and verified: 17-12-2019 Henrik Eriksen
 """
 def ll_sec_adv_bv_11_c(transport, upperTester, lowerTester, trace):
 
@@ -5341,25 +5333,26 @@ def ll_sec_adv_bv_11_c(transport, upperTester, lowerTester, trace):
     success = advertiser.enable() and success;
     initiator.checkPrematureDisconnect = False;
     """
-        In order to fire connection requests 20 times before the advertiser times out (1.28 sec.),
-        we need to use short timeouts and cancel connection attempts between attempts.
+        Retry connection 20 times.
     """
     for i in range(20):
-        connected = initiator.connect(10);
+        connected = initiator.connect();
         success = success and not connected;
         if connected:
             success = initiator.disconnect(0x13) and success;
             break;
         else:
-            """
-                Need to stop connection attempt - otherwise following commands will fail with command not allowed...
-            """
-            if initiator.status == 0:
-                initiator.cancelConnect();
-
-            advertiserTimeout = advertiser.timeout(10);
+            advertiserTimeout, waitTime = False, 0;
+            while not advertiserTimeout:
+                flush_events(transport, lowerTester, 100);
+                advertiserTimeout = advertiser.timeout();
+                waitTime += 100;
+                if waitTime >= 1300:
+                    break;
             if advertiserTimeout:
                 trace.trace(7, "Advertising done!");
+                success = advertiser.enable(True) and success;
+            else:
                 break;
 
     if not advertiserTimeout:
