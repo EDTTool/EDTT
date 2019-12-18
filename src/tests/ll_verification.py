@@ -2647,7 +2647,7 @@ def ll_con_sla_bv_05_c(transport, upperTester, lowerTester, trace):
             Sending Data Packets with a fixed length less than 27...
         """
         for count in [ 100, 100, 1, 99 ]:
-            pbFlags ^= 3;
+            pbFlags ^= 1;
             for j in range(count):
                 dataSent = writeData(transport, lowerTester, initiator.handles[0], pbFlags, txData, trace);
                 success = success and dataSent;
@@ -2677,7 +2677,7 @@ def ll_con_sla_bv_06_c(transport, upperTester, lowerTester, trace):
             
     if connected:
         txData = [0 for _ in range(10)];
-        pbFlags = 2;
+        pbFlags = 0;
         """
             Sending Data Packets with a fixed length less than 27...
         """
@@ -2685,7 +2685,7 @@ def ll_con_sla_bv_06_c(transport, upperTester, lowerTester, trace):
             """
                 Upper Tester is sending Data...
             """
-            pbFlags ^= 2;
+            pbFlags ^= 1;
             dataSent = writeData(transport, upperTester, initiator.handles[1], pbFlags, txData, trace);
             success = success and dataSent;
             if dataSent:
@@ -2694,7 +2694,7 @@ def ll_con_sla_bv_06_c(transport, upperTester, lowerTester, trace):
             """
                 Lower Tester is sending Data...
             """
-            pbFlags ^= 2;
+            pbFlags ^= 1;
             dataSent = writeData(transport, lowerTester, initiator.handles[0], pbFlags, txData, trace);
             success = success and dataSent;
             if dataSent:
@@ -3723,7 +3723,7 @@ def ll_con_mas_bv_04_c(transport, upperTester, lowerTester, trace):
             Sending Data Packets with a fixed length less than 27...
         """
         for count in [ 100, 100, 1, 99 ]:
-            pbFlags ^= 3;
+            pbFlags ^= 1;
             for j in range(count):
                 dataSent = writeData(transport, lowerTester, initiator.handles[1], pbFlags, txData, trace);
                 success = success and dataSent;
@@ -3770,7 +3770,7 @@ def ll_con_mas_bv_05_c(transport, upperTester, lowerTester, trace):
                 Lower Tester is sending Data...
             """
             if j == 0:
-                pbFlags = 2;
+                pbFlags = 0;
 
             txData = [0xFF for _ in range(10)];
             dataSent = writeData(transport, lowerTester, initiator.handles[1], pbFlags, txData, trace);
