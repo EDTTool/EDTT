@@ -2426,7 +2426,7 @@ def ll_con_ini_bv_17_c(transport, upperTester, lowerTester, trace):
 """
 def ll_con_ini_bv_18_c(transport, upperTester, lowerTester, trace):
 
-    advertiser, initiator = setPrivateInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
+    advertiser, initiator = setPrivateInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED, ExtendedAddressType.PUBLIC);
     """
         Add Public address of lowerTester to the Resolving List
     """
@@ -2632,7 +2632,7 @@ def ll_con_ini_bv_23_c(transport, upperTester, lowerTester, trace):
 """
 def ll_con_ini_bv_24_c(transport, upperTester, lowerTester, trace):
 
-    advertiser, initiator = setPrivateInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_LDC_DIRECTED, ExtendedAddressType.PUBLIC);
+    advertiser, initiator = setPrivateInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED, ExtendedAddressType.PUBLIC);
     """
         Add Public address of lowerTester to the Resolving List
     """
@@ -2643,16 +2643,16 @@ def ll_con_ini_bv_24_c(transport, upperTester, lowerTester, trace):
         Set resolvable private address timeout in seconds ( sixty seconds )
     """
     success = RPA.timeout( 60 ) and success;
+    success = RPA.disable() and success;
 
     success = success and advertiser.enable();
     connected = initiator.connect();
-    success = success and connected;
+    success = success and not connected;
         
-    if connected:
-        transport.wait(2660);
-   
+    if connected:       
         success = initiator.disconnect(0x3E) and success;
     else:
+        success = initiator.cancelConnect();
         success = advertiser.disable() and success;
 
     return success;
@@ -2736,12 +2736,14 @@ def ll_con_sla_bv_05_c(transport, upperTester, lowerTester, trace):
         """
         for count in [ 100, 100, 1, 99 ]:
             pbFlags ^= 1;
+            trace.trace(7, '-'*77);
             for j in range(count):
                 dataSent = writeData(transport, lowerTester, initiator.handles[0], pbFlags, txData, trace);
                 success = success and dataSent;
                 if dataSent:
                     dataReceived, rxData = readData(transport, upperTester, trace);
                     success = success and dataReceived and (len(rxData) == len(txData)) and (rxData == txData);
+        trace.trace(7, '-'*77);
             
         success = initiator.disconnect(0x3E) and success;
     else:
@@ -2774,6 +2776,7 @@ def ll_con_sla_bv_06_c(transport, upperTester, lowerTester, trace):
                 Upper Tester is sending Data...
             """
             pbFlags ^= 1;
+            trace.trace(7, '-'*77);
             dataSent = writeData(transport, upperTester, initiator.handles[1], pbFlags, txData, trace);
             success = success and dataSent;
             if dataSent:
@@ -2788,6 +2791,7 @@ def ll_con_sla_bv_06_c(transport, upperTester, lowerTester, trace):
             if dataSent:
                 dataReceived, rxData = readData(transport, upperTester, trace);
                 success = success and dataReceived and (len(rxData) == len(txData)) and (rxData == txData);
+        trace.trace(7, '-'*77);
             
         success = initiator.disconnect(0x3E) and success;
     else:
@@ -3518,8 +3522,12 @@ def ll_con_sla_bv_78_c(transport, upperTester, lowerTester, trace):
 
             if changed:
                 gotEvent, handle, cmaxTxOctets, cmaxTxTime, maxRxOctets, maxRxTime = hasDataLengthChangedEvent(transport, upperTester, trace);
+                if not gotEvent:
+                    trace.trace(7, "Missing Data Length Changed event from upperTester!");
                 success = success and gotEvent;
                 gotEvent = hasDataLengthChangedEvent(transport, lowerTester, trace)[0];
+                if not gotEvent:
+                    trace.trace(7, "Missing Data Length Changed event from lowerTester!");
                 success = success and gotEvent;
             
             pbFlags = 0;
@@ -3812,12 +3820,14 @@ def ll_con_mas_bv_04_c(transport, upperTester, lowerTester, trace):
         """
         for count in [ 100, 100, 1, 99 ]:
             pbFlags ^= 1;
+            trace.trace(7, '-'*77);
             for j in range(count):
                 dataSent = writeData(transport, lowerTester, initiator.handles[1], pbFlags, txData, trace);
                 success = success and dataSent;
                 if dataSent:
                     dataReceived, rxData = readData(transport, upperTester, trace);
                     success = success and dataReceived and (len(rxData) == len(txData)) and (rxData == txData);
+        trace.trace(7, '-'*77);
             
         success = initiator.disconnect(0x3E) and success;
     else:
@@ -3848,6 +3858,7 @@ def ll_con_mas_bv_05_c(transport, upperTester, lowerTester, trace):
             """
                 Upper Tester is sending Data...
             """
+            trace.trace(7, '-'*77);
             txData = [0x00 for _ in range(10)];
             dataSent = writeData(transport, upperTester, initiator.handles[0], pbFlags, txData, trace);
             success = success and dataSent;
@@ -3857,9 +3868,6 @@ def ll_con_mas_bv_05_c(transport, upperTester, lowerTester, trace):
             """
                 Lower Tester is sending Data...
             """
-            if j == 0:
-                pbFlags = 0;
-
             txData = [0xFF for _ in range(10)];
             dataSent = writeData(transport, lowerTester, initiator.handles[1], pbFlags, txData, trace);
             success = success and dataSent;
@@ -3869,6 +3877,7 @@ def ll_con_mas_bv_05_c(transport, upperTester, lowerTester, trace):
 
             if j == 0:
                 pbFlags = 1;
+        trace.trace(7, '-'*77);
             
         success = initiator.disconnect(0x3E) and success;
     else:
@@ -4790,8 +4799,12 @@ def ll_con_mas_bv_77_c(transport, upperTester, lowerTester, trace):
 
             if changed:
                 gotEvent, handle, cmaxTxOctets, cmaxTxTime, maxRxOctets, maxRxTime = hasDataLengthChangedEvent(transport, upperTester, trace);
+                if not gotEvent:
+                    trace.trace(7, "Missing Data Length Changed Event from upperTester!");
                 success = success and gotEvent;
                 gotEvent = hasDataLengthChangedEvent(transport, lowerTester, trace)[0];
+                if not gotEvent:
+                    trace.trace(7, "Missing Data Length Changed Event from lowerTester!");
                 success = success and gotEvent;
 
             pbFlags = 0
