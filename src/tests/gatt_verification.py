@@ -844,6 +844,7 @@ def gap_gat_bv_04_c(transport, upperTester, trace):
             connected = initiator.connect();
             success = success and connected;
             if connected:
+                transport.wait(200);
                 success = initiator.disconnect(0x3E) and success;
 
     return success;
