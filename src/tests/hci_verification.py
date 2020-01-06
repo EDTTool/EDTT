@@ -581,18 +581,11 @@ def hci_ddi_bi_02_c(transport, upperTester, trace):
     advertiser.minInterval, advertiser.maxInterval = 32-2, 32-1;
         
     successA = not advertiser.enable();
-    successA = successA and (advertiser.status == 0x12);
+    success = successA and (advertiser.status == 0x12);
 
     if not successA:
         advertiser.disable();
 
-    advertiser.minInterval, advertiser.maxInterval = 32+1, 32;
-        
-    successB = not advertiser.enable();
-    successB = successB and (advertiser.status == 0x11);
-
-    success = successA and successB;
-        
     return success;
 
 """

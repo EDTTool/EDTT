@@ -153,11 +153,11 @@ class Advertiser:
     def enable(self, sameSetup=False):
         if not sameSetup:
             success = self.__set_advertise_parameters();
-            success = self.__set_advertise_data() and success;
-            success = self.__set_scan_response() and success;
+            success = success and self.__set_advertise_data();
+            success = success and self.__set_scan_response();
         else:
             success = True;
-        success = self.__advertise_enable(Advertise.ENABLE) and success;
+        success = success and self.__advertise_enable(Advertise.ENABLE);
         return success;
 
     """
