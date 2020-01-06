@@ -396,17 +396,17 @@ def inquire(transport, idx, lap, length, NumRsp, to):
     cmd += struct.pack('<BB', length, NumRsp);
     transport.send(idx, cmd);
     
-    packet = transport.recv(idx, 8, to);
+    packet = transport.recv(idx, 5, to);
     
-    if ( 8 != len(packet) ):
+    if ( 5 != len(packet) ):
         raise Exception("Inquire command failed: Response too short (Expected %i bytes got %i bytes)" % (8, len(packet)));
     
-    RespCmd, RespLen, status, ncmd, opcode = struct.unpack('<HHBBH', packet);
+    RespCmd, RespLen, status = struct.unpack('<HHB', packet);
     
     if ( RespCmd != Commands.CMD_INQUIRE_RSP ):
         raise Exception("Inquire command failed: Inappropriate command response received");
     
-    if ( RespLen != 4 ):
+    if ( RespLen != 1 ):
         raise Exception("Inquire command failed: Response length field corrupted (%i)" % RespLen);
     
     return status;
