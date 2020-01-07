@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from enum import IntEnum;
-from utils import *;
+from .utils import *;
 
 class ADType(IntEnum):
     FLAGS                   =   1 # «Flags» Bluetooth Core Specification : Vol. 3, Part C, section 8.1.3 (v2.1 + EDR, 3.0 + HS and 4.0) Vol. 3, Part C, sections 11.1.3 and 18.1 (v4.0) Core Specification Supplement, Part A, section 1.3
@@ -365,7 +365,7 @@ class ADData:
             name = args[0].encode('UTF-8');
             if len(name) > 29:
                 name = name[:29];
-            self.data = [ 1+len(name), adType ] + [ ord(_) for _ in name ];
+            self.data = [ 1+len(name), adType ] + [ _ for _ in name ];
       #
       # ADType.DEVICE_CLASS, <device_class>
       #
@@ -451,10 +451,11 @@ class ADData:
             nPos = args[0].find(':');
             if nPos > -1 and args[0][:nPos] in __schemeNames__:
                 rest = args[0][(nPos+1):].encode('UTF-8');
-                self.data = [ 1+len(__schemeNames__[args[0][:nPos]])+len(rest), adType ] + __schemeNames__[args[0][:nPos]] + [ ord(_) for _ in rest ];
+                self.data = [ 1+len(__schemeNames__[args[0][:nPos]])+len(rest),
+                        adType ] + __schemeNames__[args[0][:nPos]] + [ _ for _ in rest ];
             else:
                 rest = args[0].encode('UTF-8');
-                self.data = [ 2+len(rest), adType ] + [ 1 ] + [ ord(_) for _ in rest ];
+                self.data = [ 2+len(rest), adType ] + [ 1 ] + [ _ for _ in rest ];
 
         return self.data;
 
@@ -514,8 +515,8 @@ class ADData:
                   # ADType.COMPLETE_LOCAL_NAME,  <unicode_name>
                   #
                     elif ( adType == ADType.SHORTENED_LOCAL_NAME or adType == ADType.COMPLETE_LOCAL_NAME ):
-                        name = [ chr(_) for _ in data[n:n+length] ];
-                        result[adType] = ''.join(name).decode('utf-8');
+                        name = bytes(data[n:n+length])
+                        result[adType] = name.decode('utf-8');
                   #
                   # ADType.DEVICE_CLASS, <device_class>
                   #
@@ -593,7 +594,7 @@ class ADData:
                         codePoint = ord(name[0]);
                         name = name[1:];
                         if codePoint > 1:
-                            for scheme, code in __schemeNames__.iteritems():
+                            for scheme, code in __schemeNames__.items():
                                 if codePoint == code[-1]:
                                     name = scheme + ':' + name;
                                     break; 

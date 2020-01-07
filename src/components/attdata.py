@@ -590,7 +590,7 @@ class ATTData:
                        uuid += int(octet, 16);
                        octet = '';
         else:
-            if data <= 0xFFFFFFFFL:
+            if data <= 0xFFFFFFFF:
                 uuid = ('%08X' % data) + '00001000800000805F9B34FB'
             else:
                 uuid = ('%032X' % data)
@@ -600,7 +600,7 @@ class ATTData:
     def __formatEnumSet(self, value, texts):
         txt = '';
         for n in range(len(texts)):
-            if ( value & (1L<<n) ):
+            if ( value & (1<<n) ):
                 if ( len(txt) ):
                     txt += '|';
                 txt += texts[n];

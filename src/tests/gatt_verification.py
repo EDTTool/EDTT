@@ -468,7 +468,7 @@ def readMultipleCharacteristics(transport, initiator, handles, trace):
 def readStringCharacteristic(transport, initiator, handle, trace):
     success, data = readCharacteristic(transport, initiator, handle, trace);
 
-    return success, ''.join([chr(_) for _ in data]).decode('utf-8') if success else '';
+    return success, bytes(data).decode('utf-8') if success else '';
 
 """
     Writing Characteristic passing handle
@@ -669,7 +669,7 @@ def preambleConnected(transport, idx, mtuSizeRequested, trace):
     """
         Initiate connection with Advertiser
     """
-    initiator = Initiator(transport, idx, None, trace, Address( ExtendedAddressType.PUBLIC, 0x123456789ABCL ), address );
+    initiator = Initiator(transport, idx, None, trace, Address( ExtendedAddressType.PUBLIC, 0x123456789ABC ), address );
     connected = initiator.connect();
     success = success and connected;
     if connected:
@@ -731,7 +731,7 @@ def gap_gat_bv_01_c(transport, upperTester, trace):
                 """
                     Verify Characteristics outline...
                 """
-                success = cmp(characteristics, _characteristics) == 0;
+                success = characteristics == _characteristics
                 trace.trace(6, "GAP Characteristics structure verified %s" % success);
                 if success:
                     """
@@ -869,7 +869,7 @@ def gap_gat_bv_05_c(transport, upperTester, trace):
             name = ''.join([chr(_) for _ in data]).decode('utf-8');
             trace.trace(6,"Device Name: %s" % name);
 
-            setName = u'Rødgrød & Blåbær med fløde'.encode('UTF-8');
+            setName = 'Rødgrød & Blåbær med fløde'.encode('UTF-8');
             data = [ ord(_) for _ in setName ];
             success, reply = writeCharacteristic(transport, initiator, handle, data, trace);
             
@@ -934,7 +934,7 @@ def gap_idle_namp_bv_01_c(transport, upperTester, trace):
         success, characteristic = characteristicByType(transport, initiator, service["handles"][0], 0x2A00, False, trace);
         if success:
             data = characteristic["value"][0];
-            name = ''.join([chr(_) for _ in data]).decode('utf-8');
+            name = bytes(data).decode('utf-8');
             trace.trace(6,"Device Name: %s" % name);
         else:
             trace.trace(6,"Device Name: Not present!");
@@ -994,7 +994,7 @@ def gatt_sr_gad_bv_01_c(transport, upperTester, lowerTester, trace):
             if success:
                 for _uuid, _handles in zip(services["uuids"], services["handles"]):
                     trace.trace(6, "Service %s covers handles [0x%02X, 0x%02X]" % (attData.uuid(_uuid), _handles[0], _handles[1]));
-                success = cmp(services, gattData.primaryServices(sset)) == 0;
+                success = services == gattData.primaryServices(sset)
                 trace.trace(6, "Verified Service Set: %s" % success);
             else:
                 trace.trace(6, "Unable to discover Primary Services!");
@@ -1021,7 +1021,7 @@ def gatt_sr_gad_bv_02_c(transport, upperTester, lowerTester, trace):
                 Iterate over the unique Service UUIDs in the Service Set...
             """
             trace.trace(6, "Service Set #%d:" % sset);
-            for uuid in list(set(gattData.primaryServices(sset)['uuids'])):
+            for uuid in sorted(list(set(gattData.primaryServices(sset)['uuids']))):
                 found, services = discoverPrimaryService(transport, initiator, uuid, trace);
                 if found:
                     for _uuid, _handles in zip(services["uuids"], services["handles"]):
@@ -1030,7 +1030,7 @@ def gatt_sr_gad_bv_02_c(transport, upperTester, lowerTester, trace):
                     trace.trace(6, "Couldn't find Service %s" % attData.uuid(uuid));
 
                 success = success and found;
-                success = success and (cmp(services, gattData.primaryServices(sset, uuid)) == 0);
+                success = success and (services == gattData.primaryServices(sset, uuid));
                 trace.trace(6, "Verified Services: %s" % success);
         
         success = initiator.disconnect(0x3E) and success;
@@ -1063,7 +1063,7 @@ def gatt_sr_gad_bv_03_c(transport, upperTester, lowerTester, trace):
                 success = success and not found;
             else:
                 success = success and found;
-                success = success and cmp(services, gattData.includedServices(sset)) == 0;
+                success = success and (services == gattData.includedServices(sset))
             trace.trace(6, "Verified Included Services: %s" % success);
 
         success = initiator.disconnect(0x3E) and success;
@@ -1101,7 +1101,7 @@ def gatt_sr_gad_bv_04_c(transport, upperTester, lowerTester, trace):
                                                                        characteristics["property"], characteristics["value_handle"]): 
                         trace.trace(6, "    Characteristic %s handle 0x%02X value-handle 0x%02X properties %s" % \
                                        (attData.uuid(c_uuid), c_handle, c_vhandle, attData.property(c_property)));
-                    success = success and cmp(characteristics, _characteristics) == 0;
+                    success = success and (characteristics == _characteristics)
                 else:
                     success = success and len(_characteristics["uuid"]) == 0; 
                 trace.trace(6, "Characteristics for Service %s Verified: %s" % (attData.uuid(uuid), success));
@@ -1141,7 +1141,7 @@ def gatt_sr_gad_bv_05_c(transport, upperTester, lowerTester, trace):
                                                                        characteristics["property"], characteristics["value_handle"]): 
                         trace.trace(6, "    Characteristic %s handle 0x%02X value-handle 0x%02X properties %s" % \
                                        (attData.uuid(c_uuid), c_handle, c_vhandle, attData.property(c_property)));
-                    success = success and cmp(characteristics, _characteristics) == 0;
+                    success = success and (characteristics == _characteristics)
                 else:
                     success = success and len(_characteristics["uuid"]) == 0; 
                 trace.trace(6, "Characteristics for Service %s Verified: %s" % (attData.uuid(uuid), success));
@@ -1178,7 +1178,7 @@ def gatt_sr_gad_bv_06_c(transport, upperTester, lowerTester, trace):
                 if found:
                     for c_uuid, c_handle in zip(descriptors["uuid"], descriptors["handle"]): 
                         trace.trace(6, "    Descriptor %s handle 0x%02X" % (attData.uuid(c_uuid), c_handle));
-                    success = success and cmp(descriptors, _descriptors) == 0;
+                    success = success and (descriptors == _descriptors)
                 else:
                     success = success and len(_descriptors["uuid"]) == 0;
                 trace.trace(6, "Descriptors for Service %s Verified: %s" % (attData.uuid(uuid), success));
@@ -1237,9 +1237,9 @@ def gatt_sr_gar_bi_01_c(transport, upperTester, lowerTester, trace):
             trace.trace(6, "Service %s covers handles [%02d, %02d]" % (attData.uuid(uuid), handles[0], handles[1]));
             
             if handles[0] > (prevLast+1):
-                ok, data = readCharacteristic(transport, initiator, (handles[0] + prevLast)/2, trace);
+                ok, data = readCharacteristic(transport, initiator, (handles[0] + prevLast)//2, trace);
                 success = success and not ok and data == ATTError.ATT_ERROR_INVALID_HANDLE;
-                trace.trace(6, "Attempted to read Characteristic @ handle %02d - %s" % ((handles[0] + prevLast)/2, attData.error(data)));
+                trace.trace(6, "Attempted to read Characteristic @ handle %02d - %s" % ((handles[0] + prevLast)//2, attData.error(data)));
             prevLast = handles[1];
 
         success = initiator.disconnect(0x3E) and success;
@@ -1521,7 +1521,7 @@ def gatt_sr_gar_bv_04_c(transport, upperTester, lowerTester, trace):
         characteristics = gattData.characteristics(sset, None, ATTPermission.ATT_PERM_READ);
 
         prevSize = 513;
-        for m,n in zip([2,2,1,0], [mtuSize/2,0,0,mtuSize/2]):
+        for m,n in zip([2,2,1,0], [mtuSize//2,0,0,mtuSize//2]):
             _characteristics = { 'uuid': [], 'handle': [], 'value_handle': [] };
             for _uuid, _handle, _value_handle in zip(characteristics['uuid'], characteristics['handle'], characteristics['value_handle']):
                 _size = len(gattData.characteristicValue(sset, _handle));
@@ -1620,8 +1620,8 @@ def gatt_sr_gar_bi_14_c(transport, upperTester, lowerTester, trace):
             trace.trace(6, "Service %s covers [%02d, %02d]" % (attData.uuid(uuid), handles[0], handles[1]));
             
             if handles[0] > (prevLast+1):
-                trace.trace(6, "Read Blob @[#%d]" % ((handles[0] + prevLast)/2));
-                found, reply = __readBlob(transport, initiator, (handles[0] + prevLast)/2, 0, trace);
+                trace.trace(6, "Read Blob @[#%d]" % ((handles[0] + prevLast)//2));
+                found, reply = __readBlob(transport, initiator, (handles[0] + prevLast)//2, 0, trace);
                 success = success and not found and reply['error'] == ATTError.ATT_ERROR_INVALID_HANDLE;
                 if not found:
                     trace.trace(6, "Reply: %s" % attData.error(reply['error']));
@@ -1796,7 +1796,7 @@ def gatt_sr_gar_bi_19_c(transport, upperTester, lowerTester, trace):
         _handles = [];
         for handles in services["handles"]:
             if handles[0] > (prevLast+1):
-                _handles += [ (handles[0] + prevLast)/2 ];
+                _handles += [ (handles[0] + prevLast)//2 ];
             prevLast = handles[1];
 
         trace.trace(6, "Read Multiple Characteristics @[%s]" % formatArray(_handles));
@@ -2065,8 +2065,8 @@ def gatt_sr_gaw_bi_02_c(transport, upperTester, lowerTester, trace):
             trace.trace(6, "Service %s covers [%02d, %02d]" % (attData.uuid(uuid), handles[0], handles[1]));
             
             if handles[0] > (prevLast+1):
-                trace.trace(6, "Write Characteristic @[#%d]" % ((handles[0] + prevLast)/2));
-                ok, reply = writeCharacteristic(transport, initiator, (handles[0] + prevLast)/2, [ 0x00 ], trace);
+                trace.trace(6, "Write Characteristic @[#%d]" % ((handles[0] + prevLast)//2));
+                ok, reply = writeCharacteristic(transport, initiator, (handles[0] + prevLast)//2, [ 0x00 ], trace);
                 success = success and not ok and reply['error'] == ATTError.ATT_ERROR_INVALID_HANDLE;
                 if not ok:
                     trace.trace(6, "Write failed: %s" % attData.error(reply['error'])); 
@@ -2258,8 +2258,8 @@ def gatt_sr_gaw_bi_07_c(transport, upperTester, lowerTester, trace):
             trace.trace(6, "Service %s covers [%02d, %02d]" % (attData.uuid(uuid), handles[0], handles[1]));
             
             if handles[0] > (prevLast+1):
-                trace.trace(6, "Write Long Characteristic @[#%d]" % ((handles[0] + prevLast)/2));
-                ok, reply = writeLong(transport, initiator, (handles[0] + prevLast)/2, [ 0x00 ], mtuSize, trace);
+                trace.trace(6, "Write Long Characteristic @[#%d]" % ((handles[0] + prevLast)//2));
+                ok, reply = writeLong(transport, initiator, (handles[0] + prevLast)//2, [ 0x00 ], mtuSize, trace);
                 success = success and not ok and reply['error'] == ATTError.ATT_ERROR_INVALID_HANDLE;
                 if not ok:
                     trace.trace(6, "Write failed: %s" % attData.error(reply['error'])); 
@@ -2748,7 +2748,7 @@ def gatt_sr_gpa_bv_01_c(transport, upperTester, lowerTester, trace):
             if ok:
                 for _uuid, _handles in zip(services["uuids"], services["handles"]):
                     trace.trace(6, "Service %s covers handles [0x%02X, 0x%02X]" % (attData.uuid(_uuid), _handles[0], _handles[1]));
-                ok = cmp(services, gattData.primaryServices(sset)) == 0;
+                ok = services == gattData.primaryServices(sset)
                 trace.trace(6, "Verified Service Set: %s" % ok);
             else:
                 trace.trace(6, "Unable to discover Primary Services!");
@@ -2779,10 +2779,10 @@ def gatt_sr_gpa_bv_02_c(transport, upperTester, lowerTester, trace):
             if ok:
                 for _uuid, _handle in zip(services["uuid"], services["handle"]):
                     trace.trace(6, "Service %s at handle 0x%02X" % (attData.uuid(_uuid), _handle));
-                ok = cmp(services, gattData.secondaryServices(sset)) == 0;
+                ok = services == gattData.secondaryServices(sset)
                 trace.trace(6, "Verified Service Set: %s" % ok);
             elif sset == 0:
-                ok = cmp(services, gattData.secondaryServices(sset)) == 0;
+                ok = services == gattData.secondaryServices(sset)
                 trace.trace(6, "Verified Service Set: %s" % ok);
             else:
                 trace.trace(6, "Unable to discover Secondary Services!");
@@ -2813,10 +2813,10 @@ def gatt_sr_gpa_bv_03_c(transport, upperTester, lowerTester, trace):
             if ok:
                 for _uuid, _handles in zip(services["uuids"], services["handles"]):
                     trace.trace(6, "Service %s covers handles [0x%02X, 0x%02X]" % (attData.uuid(_uuid), _handles[0], _handles[1]));
-                ok = cmp(services, gattData.includedServices(sset)) == 0;
+                ok = services == gattData.includedServices(sset)
                 trace.trace(6, "Verified Service Set: %s" % ok);
             elif sset == 0:
-                ok = cmp(services, gattData.includedServices(sset)) == 0;
+                ok = services == gattData.includedServices(sset)
                 trace.trace(6, "Verified Service Set: %s" % ok);
             else:
                 trace.trace(6, "Unable to discover Included Services!");
@@ -2854,7 +2854,7 @@ def gatt_sr_gpa_bv_04_c(transport, upperTester, lowerTester, trace):
                 _characteristics = gattData.characteristics(sset);
                 _characteristics.pop("permission");
 
-                ok = cmp(characteristics, _characteristics) == 0;
+                ok = characteristics == _characteristics
                 trace.trace(6, "Verified Characteristics: %s" % ok);
             else:
                 trace.trace(6, "Unable to discover Characteristic Declarations!");
@@ -2897,10 +2897,10 @@ def gatt_sr_gpa_bv_05_c(transport, upperTester, lowerTester, trace):
                         trace.trace(6, "Descriptor %s handle 0x%02X value %s" % (attData.uuid(_uuid), _handle, attData.error(value)));
                     success = success and _success;
 
-                ok = cmp(descriptors, _descriptors) == 0;
+                ok = descriptors == _descriptors
                 trace.trace(6, "Verified Descriptors: %s" % ok);
             elif sset == 0:
-                ok = cmp(descriptors, _descriptors) == 0;
+                ok = descriptors == _descriptors
                 trace.trace(6, "Verified Descriptors: %s" % ok);
             else:
                 trace.trace(6, "Unable to discover Extended Properties Descriptors!");
@@ -2943,10 +2943,10 @@ def gatt_sr_gpa_bv_06_c(transport, upperTester, lowerTester, trace):
                         trace.trace(6, "Descriptor %s handle 0x%02X value %s" % (attData.uuid(_uuid), _handle, attData.error(value)));
                     success = success and _success;
 
-                ok = cmp(descriptors, _descriptors) == 0;
+                ok = descriptors == _descriptors
                 trace.trace(6, "Verified Descriptors: %s" % ok);
             elif sset == 0:
-                ok = cmp(descriptors, _descriptors) == 0;
+                ok = descriptors == _descriptors
                 trace.trace(6, "Verified Descriptors: %s" % ok);
             else:
                 trace.trace(6, "Unable to discover User Description Descriptors!");
@@ -2989,10 +2989,10 @@ def gatt_sr_gpa_bv_07_c(transport, upperTester, lowerTester, trace):
                         trace.trace(6, "Descriptor %s handle 0x%02X value %s" % (attData.uuid(_uuid), _handle, attData.error(value)));
                     success = success and _success;
 
-                ok = cmp(descriptors, _descriptors) == 0;
+                ok = descriptors == _descriptors
                 trace.trace(6, "Verified Descriptors: %s" % ok);
             elif sset == 0:
-                ok = cmp(descriptors, _descriptors) == 0;
+                ok = descriptors == _descriptors
                 trace.trace(6, "Verified Descriptors: %s" % ok);
             else:
                 trace.trace(6, "Unable to discover Client Characteristic Configuration Descriptors!");
@@ -3035,10 +3035,10 @@ def gatt_sr_gpa_bv_08_c(transport, upperTester, lowerTester, trace):
                         trace.trace(6, "Descriptor %s handle 0x%02X value %s" % (attData.uuid(_uuid), _handle, attData.error(value)));
                     success = success and _success;
 
-                ok = cmp(descriptors, _descriptors) == 0;
+                ok = descriptors == _descriptors
                 trace.trace(6, "Verified Descriptors: %s" % ok);
             elif sset == 0:
-                ok = cmp(descriptors, _descriptors) == 0;
+                ok = descriptors == _descriptors
                 trace.trace(6, "Verified Descriptors: %s" % ok);
             else:
                 trace.trace(6, "Unable to discover Server Characteristic Configuration Descriptors!");
@@ -3086,10 +3086,10 @@ def gatt_sr_gpa_bv_12_c(transport, upperTester, lowerTester, trace):
                     trace.trace(6, "Characteristic %s handle 0x%02X value %s" % \
                                    (attData.uuid(characteristic['uuid']), characteristic['handle'], formatArray(value)));
 
-                ok = cmp(descriptors, _descriptors) == 0;
+                ok = descriptors == _descriptors
                 trace.trace(6, "Verified Descriptors: %s" % ok);
             elif sset == 0:
-                ok = cmp(descriptors, _descriptors) == 0;
+                ok = descriptors == _descriptors
                 trace.trace(6, "Verified Descriptors: %s" % ok);
             else:
                 trace.trace(6, "Unable to discover Characteristic Presentation Format Descriptors!");
@@ -3215,6 +3215,8 @@ def run_a_test(args, transport, trace, test_spec):
         else:
             success = success and test_f(transport, 0, trace);
     except Exception as e: 
+        import traceback
+        traceback.print_exc()
         trace.trace(3, "Test generated exception: %s" % str(e));
         success = False;
 

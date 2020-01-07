@@ -222,6 +222,8 @@ def preamble_standby(transport, idx, trace):
         trace.trace(6, "Set Event Mask Page2 Command returns status: 0x%02X" % status);
         success = __getCommandCompleteEvent(transport, idx, trace) and (status == 0) and success;
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         trace.trace(3, "Standby preamble steps failed: %s" % str(e));
         success = False;
 
@@ -241,11 +243,11 @@ def __calculateIRK(transport, idx, key, trace):
 def preamble_random_static_address(transport, idx, key, trace):
     success, rand = __random(transport, idx, trace);
 
-    nrand = (toNumber(rand) & 0xFFFFFFL) | 0xC00000L;
+    nrand = (toNumber(rand) & 0xFFFFFF) | 0xC00000;
     _success, localHash = __encrypt(transport, idx, key, toArray(nrand, 16), trace);
     success = success and _success;
         
-    nlocalHash = toNumber(localHash) & 0xFFFFFFL;
+    nlocalHash = toNumber(localHash) & 0xFFFFFF;
     address = nlocalHash | (nrand << 24);
     return success, toArray(address, 6);
     
@@ -255,11 +257,11 @@ def preamble_random_static_address(transport, idx, key, trace):
 def preamble_random_non_resolvable_address(transport, idx, key, trace):
     success, rand = __random(transport, idx, trace);
 
-    nrand = toNumber(rand) & 0x3FFFFFL;
+    nrand = toNumber(rand) & 0x3FFFFF;
     _success, localHash = __encrypt(transport, idx, key, toArray(nrand, 16), trace);
     success = success and _success;
         
-    nlocalHash = toNumber(localHash) & 0xFFFFFFL;
+    nlocalHash = toNumber(localHash) & 0xFFFFFF;
     address = nlocalHash | (nrand << 24);
     return success, toArray(address, 6);
 
@@ -308,9 +310,9 @@ def preamble_excryption_keys_calculated(transport, idx, trace):
         _success, rand = __random(transport, idx, trace);
         success = success and _success;
 
-        ir = er = 0x112233445566778899AABBCCDDEEFF00L;
+        ir = er = 0x112233445566778899AABBCCDDEEFF00;
 
-        _success, dhk = _-encrypt(transport, idx, toArray(ir, 16), toArray(0x02L, 16), trace);
+        _success, dhk = _-encrypt(transport, idx, toArray(ir, 16), toArray(0x02, 16), trace);
         success = success and _success;
 
         _success, y   = __encrypt(transport, idx, dhk, rand, trace);
@@ -399,7 +401,7 @@ def preamble_device_address_set(transport, idx, trace):
         """
             The Identity Root IR has the default value 0x112233445566778899AABBCCDDEEFF00
         """
-        ir = 0x00112233445566778899AABBCCDDEEFFL if idx == 0 else 0x112233445566778899AABBCCDDEEFF00L;
+        ir = 0x00112233445566778899AABBCCDDEEFF if idx == 0 else 0x112233445566778899AABBCCDDEEFF00;
         trace.trace(6, "Using default identity root value ir: 0x%032X" % ir);
 
         success, irk, randAddress = preamble_random_address_calculated(transport, idx, toArray(ir, 16), trace);
@@ -407,7 +409,7 @@ def preamble_device_address_set(transport, idx, trace):
         trace.trace(6, "Generated random address %s" % formatAddress(randAddress));
         success = True;
         
-        address = 0x123456789ABCL if idx == 0 else 0x456789ABCDEFL;
+        address = 0x123456789ABC if idx == 0 else 0x456789ABCDEF;
         success = success and preamble_set_public_address(transport, idx, address, trace);
         success = success and preamble_set_random_address(transport, idx, toNumber(randAddress), trace);
 
@@ -444,19 +446,19 @@ def preamble_device_address_set(transport, idx, trace):
     Scramble the company_id part of the Bluetooth address.
 """
 def address_scramble_OUI(address):
-    return (address & 0x00ff00ffffffL) | ((address << 16) & 0xff0000000000L) | ((address >> 16) & 0x0000ff000000L);
+    return (address & 0x00ff00ffffff) | ((address << 16) & 0xff0000000000) | ((address >> 16) & 0x0000ff000000);
 
 """
     Scramble the company_assigned part of the Bluetooth address.
 """
 def address_scramble_LAP(address):
-    return (address & 0xffffff00ff00L) | ((address << 16) & 0x000000ff0000L) | ((address >> 16) & 0x0000000000ffL);
+    return (address & 0xffffff00ff00) | ((address << 16) & 0x000000ff0000) | ((address >> 16) & 0x0000000000ff);
 
 """
     Scramble both the company_id part and the company_assigned part of the Bluetooth address.
 """
 def address_exchange_OUI_LAP(address):
-    return (address & 0x00ffffffff00L) | ((address << 40) & 0xff0000000000L) | ((address >> 40) & 0x0000000000ffL);
+    return (address & 0x00ffffffff00) | ((address << 40) & 0xff0000000000) | ((address >> 40) & 0x0000000000ff);
 
 def preamble_specific_white_listed(transport, idx, addresses, trace):
     trace.trace(5, "Specific White Listed preamble steps...");

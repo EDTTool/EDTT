@@ -279,15 +279,15 @@ def showEventMask(eventMask, trace):
     for part in reversed(eventMask):
         value <<= 8;
         value += part;
-    if ( value & 0x3FFFFFFFFFFFFFFFL ):
-        if ( value == 0x1FFFFFFFFFFFL ):
+    if ( value & 0x3FFFFFFFFFFFFFFF ):
+        if ( value == 0x1FFFFFFFFFFF ):
             txt = 'Default';
         else:
             txt = '';
             for n in range(len(EventTexts)):
                 if ( len(txt) ):
                     txt += ' | ';
-                if ( value & (1L<<n) ):
+                if ( value & (1<<n) ):
                     txt += LEEventTexts[n];
     else:
         txt = 'No events specified';

@@ -6,7 +6,7 @@ import statistics;
 from enum import IntEnum;
 from components.utils import *;
 from components.basic_commands import *;
-from ll_verification import *;
+from .ll_verification import *;
 from components.test_spec import TestSpec;
 
 """
@@ -20,7 +20,7 @@ def ll_multiple_connections(transport, trace):
             Scan interval should be three times the average Advertise interval. Scan window should be the maximum possible.
         """ 
         ownAddress = Address( ExtendedAddressType.PUBLIC );
-        rawPeerAddress = 0x456789ABCDEFL        
+        rawPeerAddress = 0x456789ABCDEF        
         peerAddress = Address( SimpleAddressType.PUBLIC, rawPeerAddress );
         advertiser = Advertiser(transport, 0, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
         advertiser.responseData = [ 0x04, 0x09 ] + [ ord(char) for char in "IUT" ];
@@ -44,12 +44,12 @@ def ll_multiple_connections(transport, trace):
         success = success and scanner1.qualifyReports( 1 );
         
         initiatorAddress = Address( ExtendedAddressType.PUBLIC );
-        initiator1 = Initiator(transport, 1, 0, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, 0x123456789ABCL ));
+        initiator1 = Initiator(transport, 1, 0, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, 0x123456789ABC ));
         connected = initiator1.connect();
         success = success and connected;
 
         initiatorAddress = Address( ExtendedAddressType.PUBLIC );        
-        initiator2 = Initiator(transport, 2, 0, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, 0x123456789ABCL ));
+        initiator2 = Initiator(transport, 2, 0, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, 0x123456789ABC ));
             
         if connected:          
             print("\nStarting slave advertising...");
@@ -97,13 +97,13 @@ def get_tests_specs():
 """
 def main(transport, trace):
     success = True
-    print("preamble Standby Slave "    + ("PASS" if preamble_standby(transport, 0, trace) else "FAIL"));
-    print("preamble Standby Master 1 " + ("PASS" if preamble_standby(transport, 1, trace) else "FAIL"));
-    print("preamble Standby Master 2 " + ("PASS" if preamble_standby(transport, 2, trace) else "FAIL"));
-    print("preamble Device Address Set Slave "    + ("PASS" if preamble_device_address_set(transport, 0, trace) else "FAIL"));
-    print("preamble Device Address Set Master 1 " + ("PASS" if preamble_device_address_set(transport, 1, trace) else "FAIL"));    
-    print("preamble Device Address Set Master 2 " + ("PASS" if preamble_device_address_set(transport, 2, trace) else "FAIL"));    
-    print;
+    print(("preamble Standby Slave "    + ("PASS" if preamble_standby(transport, 0, trace) else "FAIL")));
+    print(("preamble Standby Master 1 " + ("PASS" if preamble_standby(transport, 1, trace) else "FAIL")));
+    print(("preamble Standby Master 2 " + ("PASS" if preamble_standby(transport, 2, trace) else "FAIL")));
+    print(("preamble Device Address Set Slave "    + ("PASS" if preamble_device_address_set(transport, 0, trace) else "FAIL")));
+    print(("preamble Device Address Set Master 1 " + ("PASS" if preamble_device_address_set(transport, 1, trace) else "FAIL")));    
+    print(("preamble Device Address Set Master 2 " + ("PASS" if preamble_device_address_set(transport, 2, trace) else "FAIL")));    
+    print();
     success = ll_multiple_connections(transport, trace);
     return (0 if success else 1)
 
