@@ -35,7 +35,7 @@ class Address:
             else:
                 self.address = toArray(address, 6);
         else:
-            self.address = toArray(0L, 6);
+            self.address = toArray(0, 6);
 
     def isStaticRandom(self):
         return (self.address[5] & 0xC0) == 0xC0;

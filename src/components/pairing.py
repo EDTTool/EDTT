@@ -153,8 +153,8 @@ class Pairing:
             s1 = e(tk, r)
     """
     def __calcSTK(self, idx, tk, r1, r2):
-        r1 &= 0x00FFFFFFFFFFFFFFFFL;
-        r2 &= 0x00FFFFFFFFFFFFFFFFL;
+        r1 &= 0x00FFFFFFFFFFFFFFFF;
+        r2 &= 0x00FFFFFFFFFFFFFFFF;
         r1 = (r1 << 64) | r2;
         success, r1 = self.__encrypt(idx, tk, r1);
         return success, r1;
@@ -177,7 +177,7 @@ class Pairing:
             d1 = e(k, d')
     """
     def __calcLTK(self, idx, er, div):
-        success, d1 = self.__encrypt(idx, er, div & 0xFFFFL);
+        success, d1 = self.__encrypt(idx, er, div & 0xFFFF);
         return success, d1;
 
     """
@@ -197,7 +197,7 @@ class Pairing:
     """
     def __calcDIVMask(self, idx, k, r):
         success, dm = self.__encrypt(idx, k, r);
-        return success, (dm & 0x00FFFFL);
+        return success, (dm & 0x00FFFF);
 
     """
         Generate EDIV for distribution (Encrypted Diversifier)
@@ -255,14 +255,14 @@ class Pairing:
             ediv = dm(dhk, rand) XOR div
     """
     def __calculateKeys(self, idx):
-        ir = er = 0x00112233445566778899AABBCCDDEEFFL if idx == 0 else 0x112233445566778899AABBCCDDEEFF00L;
+        ir = er = 0x00112233445566778899AABBCCDDEEFF if idx == 0 else 0x112233445566778899AABBCCDDEEFF00;
 
-        success, dhk = self.__encrypt(idx, ir, 0x02L);
+        success, dhk = self.__encrypt(idx, ir, 0x02);
         success, div = self.__random128(idx);
         success, ltk = self.__calcLTK(idx, er, div);
         success, rand = self.__random(idx);
         success, ediv = self.__generateEDIV(idx, dhk, rand, div);
-        ediv &= 0x00FFFFL;
+        ediv &= 0x00FFFF;
 
         return success, ediv, rand, ltk;
 

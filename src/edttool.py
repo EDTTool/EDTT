@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 # Copyright 2019 Oticon A/S
 # SPDX-License-Identifier: Apache-2.0
 
@@ -59,7 +59,7 @@ def try_to_import(module_path, type, def_path):
 
         return loaded_module;
     except ImportError as e:
-        print("\n Could not load the %s %s . Does it exist?\n"% (type, module_path))
+        print(("\n Could not load the %s %s . Does it exist?\n"% (type, module_path)))
         raise;
 
 # Initialize the transport and connect to devices
@@ -93,7 +93,7 @@ def run_tests(args, xtra_args, transport, trace):
     t = args.case
 
     if t.lower() == "all" or t.lower() == "randomize":
-        tests_list = list(test_specs.iteritems());
+        tests_list = list(test_specs.items());
         if t.lower() == "randomize" or args.shuffle:
             random.shuffle(tests_list)
 
@@ -128,7 +128,7 @@ def run_tests(args, xtra_args, transport, trace):
                 if result != 0 and args.stop_on_failure:
                     break;
             else:
-                print("unkown test " + t + ". Skipping")
+                print(("unkown test " + t + ". Skipping"))
         file.close();
 
     else:

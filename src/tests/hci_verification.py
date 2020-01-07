@@ -324,12 +324,12 @@ def hci_cco_bv_07_c(transport, idx, trace):
 def hci_cco_bv_09_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     advertiser.responseData = [ 0x04, 0x09 ] + [ ord(char) for char in "IUT" ];
     initiatorAddress = Address( ExtendedAddressType.PUBLIC );
-    initiator = Initiator(transport, upperTester, lowerTester, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, 0x456789ABCDEFL ));
+    initiator = Initiator(transport, upperTester, lowerTester, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, 0x456789ABCDEF ));
     success = advertiser.enable();
 
     connected = initiator.connect();
@@ -381,7 +381,7 @@ def hci_cco_bv_10_c(transport, idx, trace):
 """
 def hci_cco_bv_11_c(transport, idx, trace):
 
-    maxTxOctetsIn, maxTxTimeIn = (0x001B + 0x00FB)/2, (0x0148 + 0x4290)/2;
+    maxTxOctetsIn, maxTxTimeIn = (0x001B + 0x00FB)//2, (0x0148 + 0x4290)//2;
     status = le_write_suggested_default_data_length(transport, idx, maxTxOctetsIn, maxTxTimeIn, 100);
     trace.trace(6, "LE Write Suggested Default Data Length Command returns status: 0x%02X" % status);
     success = __check_command_complete_event(transport, idx, trace) and (status == 0);
@@ -405,7 +405,7 @@ def hci_cco_bv_11_c(transport, idx, trace):
 """
 def hci_cco_bv_12_c(transport, idx, trace):
 
-    peerAddress = Address(SimpleAddressType.PUBLIC, 0x123456789ABCL);
+    peerAddress = Address(SimpleAddressType.PUBLIC, 0x123456789ABC);
     status = le_add_device_to_resolving_list(transport, idx, peerAddress.type, peerAddress.address, lowerIRK, upperIRK, 100);
     trace.trace(6, "LE Add Device to Resolving List Command returns status: 0x%02X" % status);
     success = __check_command_complete_event(transport, idx, trace) and (status == 0);
@@ -421,7 +421,7 @@ def hci_cco_bv_12_c(transport, idx, trace):
 """
 def hci_cco_bv_13_c(transport, idx, trace):
 
-    peerAddress = Address(SimpleAddressType.PUBLIC, 0x456789ABCDEFL);
+    peerAddress = Address(SimpleAddressType.PUBLIC, 0x456789ABCDEF);
     status = le_add_device_to_resolving_list(transport, idx, peerAddress.type, peerAddress.address, lowerIRK, upperIRK, 100);
     trace.trace(6, "LE Add Device to Resolving List Command returns status: 0x%02X" % status);
     success = __check_command_complete_event(transport, idx, trace) and (status == 0);
@@ -476,7 +476,7 @@ def hci_cco_bv_17_c(transport, idx, trace):
     trace.trace(6, "LE Clear Periodic Advertiser List Command returns status: 0x%02X" % status);
     success = __check_command_complete_event(transport, idx, trace) and (status == 0);
 
-    peerAddress = Address(SimpleAddressType.PUBLIC, 0x123456789ABCL);
+    peerAddress = Address(SimpleAddressType.PUBLIC, 0x123456789ABC);
     status = le_add_device_to_periodic_advertiser_list(transport, idx, peerAddress.type, peerAddress.address, 1, 100);
     trace.trace(6, "LE Add Device to Periodic Advertiser List Command returns status: 0x%02X" % status);
     success = success and __check_command_complete_event(transport, idx, trace) and (status == 0);
@@ -518,7 +518,7 @@ def hci_cco_bv_18_c(transport, idx, trace):
 def hci_ddi_bv_03_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( SimpleAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     advertiser.responseData = [ 0x04, 0x09 ] + [ ord(char) for char in "IUT" ];
@@ -546,7 +546,7 @@ def hci_ddi_bv_03_c(transport, upperTester, lowerTester, trace):
 def hci_ddi_bv_04_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( SimpleAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     advertiser.responseData = [ 0x04, 0x09 ] + [ ord(char) for char in "IUT" ];
@@ -573,7 +573,7 @@ def hci_ddi_bv_04_c(transport, upperTester, lowerTester, trace):
 def hci_ddi_bi_02_c(transport, upperTester, trace):
 
     ownAddress = Address( SimpleAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.NON_CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     advertiser.responseData = [ 0x04, 0x09 ] + [ ord(char) for char in "IUT" ];
@@ -620,14 +620,14 @@ def hci_hfc_bv_04_c(transport, upperTester, lowerTester, trace):
     """
 
     ownAddress = Address( SimpleAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     advertiser.responseData = [ 0x04, 0x09 ] + [ ord(char) for char in "IUT" ];
     ownAddress = Address( SimpleAddressType.PUBLIC );
     scanner = Scanner(transport, upperTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 5, 5);
     initiatorAddress = Address( ExtendedAddressType.PUBLIC );
-    initiator = Initiator(transport, upperTester, lowerTester, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, 0x456789ABCDEFL ));
+    initiator = Initiator(transport, upperTester, lowerTester, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, 0x456789ABCDEF ));
 
     success = advertiser.enable();
 
@@ -658,8 +658,8 @@ def hci_cm_bv_01_c(transport, upperTester, lowerTester, trace):
         Add Public address of lowerTester and upperTester to the Resolving List
     """
     RPAs = [ ResolvableAddresses( transport, upperTester, trace, upperIRK ), ResolvableAddresses( transport, lowerTester, trace, lowerIRK ) ];
-    ownAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    ownAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     success = RPAs[upperTester].clear() and RPAs[lowerTester].clear();
     success = success and RPAs[upperTester].add( peerAddress, lowerIRK );
     success = success and RPAs[lowerTester].add( ownAddress, upperIRK );
@@ -671,8 +671,8 @@ def hci_cm_bv_01_c(transport, upperTester, lowerTester, trace):
     success = success and RPAs[upperTester].enable() and RPAs[lowerTester].enable();
 
     for iutRole in [ Role.MASTER, Role.SLAVE ]:
-        ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC, 0x456789ABCDEFL if iutRole is Role.MASTER else 0x123456789ABCL);
-        peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL if iutRole is Role.MASTER else 0x456789ABCDEFL);
+        ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC, 0x456789ABCDEF if iutRole is Role.MASTER else 0x123456789ABC);
+        peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC if iutRole is Role.MASTER else 0x456789ABCDEF);
         if iutRole == Role.MASTER:        
             advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, ownAddress, peerAddress);
         else:
@@ -689,7 +689,7 @@ def hci_cm_bv_01_c(transport, upperTester, lowerTester, trace):
         connected = initiator.connect();
         success = success and connected;
 
-        peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );        
+        peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );        
         status, RPA = le_read_peer_resolvable_address(transport, upperTester, peerAddress.type, peerAddress.address, 100);
         trace.trace(6, "LE Read Peer Resolvable Address Command returns status: 0x%02X RPA: %s" % (status, formatAddress(RPA)));
         success = success and __check_command_complete_event(transport, upperTester, trace) and (status == 0);
@@ -697,7 +697,7 @@ def hci_cm_bv_01_c(transport, upperTester, lowerTester, trace):
         if iutRole == Role.MASTER:        
             success = success and (initiator.peerRPA() == RPA);
             if initiator.peerRPA() != RPA:
-                print(initiator.peerRPA());
+                print((initiator.peerRPA()));
                 print(RPA);
                 trace.trace(5, "Expected: %s Received: %s" % (Address(None, initiator.peerRPA()), Address(None, RPA)));
         else:
@@ -722,8 +722,8 @@ def hci_cm_bv_02_c(transport, upperTester, lowerTester, trace):
         Add Public address of lowerTester and upperTester to the Resolving List
     """
     RPAs = [ ResolvableAddresses( transport, upperTester, trace, upperIRK ), ResolvableAddresses( transport, lowerTester, trace, lowerIRK ) ];
-    ownAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    ownAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     success = RPAs[upperTester].clear() and RPAs[lowerTester].clear();
     success = success and RPAs[upperTester].add( peerAddress, lowerIRK );
     success = success and RPAs[lowerTester].add( ownAddress, upperIRK );
@@ -735,8 +735,8 @@ def hci_cm_bv_02_c(transport, upperTester, lowerTester, trace):
     success = success and RPAs[upperTester].enable() and RPAs[lowerTester].enable();
 
     for iutRole in [ Role.MASTER, Role.SLAVE ]:
-        ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC, 0x456789ABCDEFL if iutRole is Role.MASTER else 0x123456789ABCL);
-        peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL if iutRole is Role.MASTER else 0x456789ABCDEFL);
+        ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC, 0x456789ABCDEF if iutRole is Role.MASTER else 0x123456789ABC);
+        peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC if iutRole is Role.MASTER else 0x456789ABCDEF);
         if iutRole == Role.MASTER:        
             advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, ownAddress, peerAddress);
         else:
@@ -753,7 +753,7 @@ def hci_cm_bv_02_c(transport, upperTester, lowerTester, trace):
         connected = initiator.connect();
         success = success and connected;
 
-        peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );        
+        peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );        
         status, RPA = le_read_local_resolvable_address(transport, upperTester, peerAddress.type, peerAddress.address, 100);
         trace.trace(6, "LE Read Local Resolvable Address Command returns status: 0x%02X RPA: %s" % (status, formatAddress(RPA)));
         success = success and __check_command_complete_event(transport, upperTester, trace) and (status == 0);
@@ -777,12 +777,12 @@ def hci_cm_bv_02_c(transport, upperTester, lowerTester, trace):
 def hci_cm_bv_03_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     advertiser.responseData = [ 0x04, 0x09 ] + [ ord(char) for char in "IUT" ];
     initiatorAddress = Address( ExtendedAddressType.PUBLIC );
-    initiator = Initiator(transport, upperTester, lowerTester, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, 0x456789ABCDEFL ));
+    initiator = Initiator(transport, upperTester, lowerTester, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, 0x456789ABCDEF ));
     success = advertiser.enable();
 
     connected = initiator.connect();
@@ -805,7 +805,7 @@ def hci_cm_bv_03_c(transport, upperTester, lowerTester, trace):
 def hci_dsu_bv_02_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( SimpleAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     advertiser.responseData = [ 0x04, 0x09 ] + [ ord(char) for char in "IUT" ];
@@ -839,12 +839,12 @@ def hci_dsu_bv_02_c(transport, upperTester, lowerTester, trace):
 def hci_dsu_bv_03_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     advertiser.responseData = [ 0x04, 0x09 ] + [ ord(char) for char in "IUT" ];
     initiatorAddress = Address( ExtendedAddressType.PUBLIC );
-    initiator = Initiator(transport, lowerTester, upperTester, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, 0x123456789ABCL ));
+    initiator = Initiator(transport, lowerTester, upperTester, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, 0x123456789ABC ));
     success = advertiser.enable();
 
     success = success and initiator.connect();
@@ -880,7 +880,7 @@ def hci_dsu_bv_03_c(transport, upperTester, lowerTester, trace):
 def hci_dsu_bv_04_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( SimpleAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     advertiser.responseData = [ 0x04, 0x09 ] + [ ord(char) for char in "IUT" ];
@@ -914,12 +914,12 @@ def hci_dsu_bv_04_c(transport, upperTester, lowerTester, trace):
 def hci_dsu_bv_05_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     advertiser.responseData = [ 0x04, 0x09 ] + [ ord(char) for char in "IUT" ];
     initiatorAddress = Address( ExtendedAddressType.PUBLIC );
-    initiator = Initiator(transport, upperTester, lowerTester, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, 0x456789ABCDEFL ));
+    initiator = Initiator(transport, upperTester, lowerTester, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, 0x456789ABCDEF ));
 
     success = initiator.preConnect();
 
@@ -939,12 +939,12 @@ def hci_dsu_bv_05_c(transport, upperTester, lowerTester, trace):
 def hci_dsu_bv_06_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     advertiser.responseData = [ 0x04, 0x09 ] + [ ord(char) for char in "IUT" ];
     initiatorAddress = Address( ExtendedAddressType.PUBLIC );
-    initiator = Initiator(transport, upperTester, lowerTester, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, 0x456789ABCDEFL ));
+    initiator = Initiator(transport, upperTester, lowerTester, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, 0x456789ABCDEF ));
     success = advertiser.enable();
 
     success = success and initiator.connect();
@@ -1034,6 +1034,8 @@ def run_a_test(args, transport, trace, test_spec):
         else:
             success = success and test_f(transport, 0, trace);
     except Exception as e: 
+        import traceback
+        traceback.print_exc()
         trace.trace(3, "Test generated exception: %s" % str(e));
         success = False;
 

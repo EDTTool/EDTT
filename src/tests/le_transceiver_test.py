@@ -25,7 +25,7 @@ def LE_Transceiver_Test(transport, trace):
         trace.trace(1, "LE Transceiver Test failed: %s" %str(e));
         return 1;
 
-    print (RxCount, TxCount);
+    print((RxCount, TxCount));
 
     success = True if RxCount[0] == 0 and RxCount[1] > 3200 else False;    
     success = success and True if TxCount[0] == 0 and TxCount[1] > 3200 else False;    

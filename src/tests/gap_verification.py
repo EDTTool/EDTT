@@ -26,7 +26,7 @@ global lowerIRK, upperIRK, lowerRandomAddress, upperRandomAddress;
 def gap_disc_nonm_bv_01_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.NON_CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -35,7 +35,7 @@ def gap_disc_nonm_bv_01_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
     if success: 
@@ -56,7 +56,7 @@ def gap_disc_nonm_bv_01_c(transport, upperTester, lowerTester, trace):
 def gap_disc_nonm_bv_02_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -65,7 +65,7 @@ def gap_disc_nonm_bv_02_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
     if success: 
@@ -86,7 +86,7 @@ def gap_disc_nonm_bv_02_c(transport, upperTester, lowerTester, trace):
 def gap_disc_limm_bv_01_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.NON_CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -95,7 +95,7 @@ def gap_disc_limm_bv_01_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
     if success: 
@@ -115,7 +115,7 @@ def gap_disc_limm_bv_01_c(transport, upperTester, lowerTester, trace):
 def gap_disc_limm_bv_02_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -124,7 +124,7 @@ def gap_disc_limm_bv_02_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
     if success: 
@@ -144,7 +144,7 @@ def gap_disc_limm_bv_02_c(transport, upperTester, lowerTester, trace):
 def gap_disc_limm_bv_03_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.NON_CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -153,7 +153,7 @@ def gap_disc_limm_bv_03_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
     if success: 
@@ -173,7 +173,7 @@ def gap_disc_limm_bv_03_c(transport, upperTester, lowerTester, trace):
 def gap_disc_limm_bv_04_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -182,7 +182,7 @@ def gap_disc_limm_bv_04_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
     if success: 
@@ -202,7 +202,7 @@ def gap_disc_limm_bv_04_c(transport, upperTester, lowerTester, trace):
 def gap_disc_genm_bv_01_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.NON_CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -211,7 +211,7 @@ def gap_disc_genm_bv_01_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_GENERAL_DISCOVERABLE );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
     if success: 
@@ -231,7 +231,7 @@ def gap_disc_genm_bv_01_c(transport, upperTester, lowerTester, trace):
 def gap_disc_genm_bv_02_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -240,7 +240,7 @@ def gap_disc_genm_bv_02_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_GENERAL_DISCOVERABLE );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
     if success: 
@@ -260,7 +260,7 @@ def gap_disc_genm_bv_02_c(transport, upperTester, lowerTester, trace):
 def gap_disc_genm_bv_03_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.NON_CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -269,7 +269,7 @@ def gap_disc_genm_bv_03_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
     if success: 
@@ -289,7 +289,7 @@ def gap_disc_genm_bv_03_c(transport, upperTester, lowerTester, trace):
 def gap_disc_genm_bv_04_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -298,7 +298,7 @@ def gap_disc_genm_bv_04_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
     if success: 
@@ -318,7 +318,7 @@ def gap_disc_genm_bv_04_c(transport, upperTester, lowerTester, trace):
 def gap_disc_limp_bv_01_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
 
@@ -326,7 +326,7 @@ def gap_disc_limp_bv_01_c(transport, upperTester, lowerTester, trace):
 
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
-    advertiser.responseData  = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData  = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
     if success: 
@@ -346,14 +346,14 @@ def gap_disc_limp_bv_01_c(transport, upperTester, lowerTester, trace):
 def gap_disc_limp_bv_02_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, upperTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
 
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.FLAGS, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
-    advertiser.responseData  = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData  = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
     if success: 
@@ -374,7 +374,7 @@ def gap_disc_limp_bv_02_c(transport, upperTester, lowerTester, trace):
 def gap_disc_limp_bv_04_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, upperTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -382,7 +382,7 @@ def gap_disc_limp_bv_04_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
     if success: 
@@ -403,7 +403,7 @@ def gap_disc_limp_bv_04_c(transport, upperTester, lowerTester, trace):
 def gap_disc_limp_bv_05_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, upperTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -412,7 +412,7 @@ def gap_disc_limp_bv_05_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
     if success: 
@@ -433,14 +433,14 @@ def gap_disc_limp_bv_05_c(transport, upperTester, lowerTester, trace):
 def gap_disc_genp_bv_01_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, upperTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
 
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.FLAGS, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
-    advertiser.responseData  = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData  = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
     if success: 
@@ -460,14 +460,14 @@ def gap_disc_genp_bv_01_c(transport, upperTester, lowerTester, trace):
 def gap_disc_genp_bv_02_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, upperTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
 
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
-    advertiser.responseData  = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData  = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
     if success: 
@@ -487,7 +487,7 @@ def gap_disc_genp_bv_02_c(transport, upperTester, lowerTester, trace):
 def gap_disc_genp_bv_04_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, upperTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -495,7 +495,7 @@ def gap_disc_genp_bv_04_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData  = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData  = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
     if success: 
@@ -516,7 +516,7 @@ def gap_disc_genp_bv_04_c(transport, upperTester, lowerTester, trace):
 def gap_disc_genp_bv_05_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, upperTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -525,7 +525,7 @@ def gap_disc_genp_bv_05_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
     if success: 
@@ -551,8 +551,8 @@ def gap_disc_rpa_bv_01_c(transport, upperTester, lowerTester, trace):
     """
     RPAs = [ ResolvableAddresses( transport, upperTester, trace ), ResolvableAddresses( transport, lowerTester, trace, lowerIRK ) ];
     success = RPAs[upperTester].clear() and RPAs[lowerTester].clear();
-    success = success and RPAs[lowerTester].add( Address( SimpleAddressType.PUBLIC, 0x123456789ABCL ) );
-    success = success and RPAs[upperTester].add( Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL ), lowerIRK );
+    success = success and RPAs[lowerTester].add( Address( SimpleAddressType.PUBLIC, 0x123456789ABC ) );
+    success = success and RPAs[upperTester].add( Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF ), lowerIRK );
     """
         Set Resolvable Private Address timeout in seconds ( sixty seconds )
     """
@@ -562,7 +562,7 @@ def gap_disc_rpa_bv_01_c(transport, upperTester, lowerTester, trace):
         Scan interval should be three times the average Advertise interval. Scan window should be the maximum possible.
     """ 
     ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, upperTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -571,7 +571,7 @@ def gap_disc_rpa_bv_01_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
     if success: 
@@ -592,16 +592,16 @@ def gap_disc_rpa_bv_01_c(transport, upperTester, lowerTester, trace):
 def gap_conn_ncon_bv_01_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.NON_CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
-    initiator = Initiator(transport, lowerTester, upperTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x123456789ABCL ));
+    initiator = Initiator(transport, lowerTester, upperTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x123456789ABC ));
 
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
     """
         Attempt to initiate connection with Advertiser
     """
@@ -618,7 +618,7 @@ def gap_conn_ncon_bv_01_c(transport, upperTester, lowerTester, trace):
 def gap_conn_ncon_bv_02_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.NON_CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -627,7 +627,7 @@ def gap_conn_ncon_bv_02_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
 
     success = advertiser.enable();
     if success: 
@@ -655,7 +655,7 @@ def gap_conn_ncon_bv_02_c(transport, upperTester, lowerTester, trace):
 def gap_conn_ncon_bv_03_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.NON_CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -664,7 +664,7 @@ def gap_conn_ncon_bv_03_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
 
     success = advertiser.enable();
     if success: 
@@ -692,7 +692,7 @@ def gap_conn_ncon_bv_03_c(transport, upperTester, lowerTester, trace):
 def gap_conn_dcon_bv_01_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_DIRECT_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -730,7 +730,7 @@ def gap_conn_dcon_bv_01_c(transport, upperTester, lowerTester, trace):
 def gap_conn_ucon_bv_01_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -739,7 +739,7 @@ def gap_conn_ucon_bv_01_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
 
     success = advertising = advertiser.enable();
 
@@ -773,7 +773,7 @@ def gap_conn_ucon_bv_01_c(transport, upperTester, lowerTester, trace):
 def gap_conn_ucon_bv_02_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -782,7 +782,7 @@ def gap_conn_ucon_bv_02_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
 
     success = advertising = advertiser.enable();
 
@@ -816,7 +816,7 @@ def gap_conn_ucon_bv_02_c(transport, upperTester, lowerTester, trace):
 def gap_conn_ucon_bv_03_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1 );
@@ -825,7 +825,7 @@ def gap_conn_ucon_bv_03_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Flødebolle' );
+    advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
 
     success = advertising = advertiser.enable();
 
@@ -861,15 +861,15 @@ def gap_conn_acep_bv_01_c(transport, upperTester, lowerTester, trace):
     """
         Place Public address of lowerTester in the White List for the Scanner
     """
-    addresses = [[ SimpleAddressType.PUBLIC, 0x456789ABCDEFL ]];
+    addresses = [[ SimpleAddressType.PUBLIC, 0x456789ABCDEF ]];
     success = preamble_specific_white_listed(transport, upperTester, addresses, trace);
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), \
-                          Address( IdentityAddressType.PUBLIC, 0x456789ABCDEFL ), InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+                          Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
 
     advertising = advertiser.enable();
     success = success and advertising;
@@ -898,8 +898,8 @@ def gap_conn_acep_bv_03_c(transport, upperTester, lowerTester, trace):
     """
     RPAs = [ ResolvableAddresses( transport, upperTester, trace ), ResolvableAddresses( transport, lowerTester, trace, lowerIRK ) ];
     success = RPAs[upperTester].clear() and RPAs[lowerTester].clear();
-    success = success and RPAs[lowerTester].add( Address( SimpleAddressType.PUBLIC, 0x123456789ABCL ) );
-    success = success and RPAs[upperTester].add( Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL ), lowerIRK );
+    success = success and RPAs[lowerTester].add( Address( SimpleAddressType.PUBLIC, 0x123456789ABC ) );
+    success = success and RPAs[upperTester].add( Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF ), lowerIRK );
     """
         Set Resolvable Private Address timeout in seconds ( sixty seconds )
     """
@@ -908,15 +908,15 @@ def gap_conn_acep_bv_03_c(transport, upperTester, lowerTester, trace):
     """
         Place Public address of lowerTester in the White List for the Scanner
     """
-    addresses = [[ SimpleAddressType.PUBLIC, 0x456789ABCDEFL ]];
+    addresses = [[ SimpleAddressType.PUBLIC, 0x456789ABCDEF ]];
     success = preamble_specific_white_listed(transport, upperTester, addresses, trace);
 
     ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), \
-                          Address( IdentityAddressType.PUBLIC, 0x456789ABCDEFL ), InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+                          Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
 
     advertising = advertiser.enable();
     success = success and advertising;
@@ -947,8 +947,8 @@ def gap_conn_acep_bv_04_c(transport, upperTester, lowerTester, trace):
     """
     RPAs = [ ResolvableAddresses( transport, upperTester, trace ), ResolvableAddresses( transport, lowerTester, trace, lowerIRK ) ];
     success = RPAs[upperTester].clear() and RPAs[lowerTester].clear();
-    success = success and RPAs[lowerTester].add( Address( SimpleAddressType.PUBLIC, 0x123456789ABCL ) );
-    success = success and RPAs[upperTester].add( Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL ), lowerIRK );
+    success = success and RPAs[lowerTester].add( Address( SimpleAddressType.PUBLIC, 0x123456789ABC ) );
+    success = success and RPAs[upperTester].add( Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF ), lowerIRK );
     """
         Set Resolvable Private Address timeout in seconds ( sixty seconds )
     """
@@ -957,15 +957,15 @@ def gap_conn_acep_bv_04_c(transport, upperTester, lowerTester, trace):
     """
         Place Public address of lowerTester in the White List for the Scanner
     """
-    addresses = [[ SimpleAddressType.PUBLIC, 0x456789ABCDEFL ]];
+    addresses = [[ SimpleAddressType.PUBLIC, 0x456789ABCDEF ]];
     success = preamble_specific_white_listed(transport, upperTester, addresses, trace);
 
     ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), \
-                          Address( IdentityAddressType.PUBLIC, 0x456789ABCDEFL ), InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+                          Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
 
     advertising = advertiser.enable();
     success = success and advertising;
@@ -991,10 +991,10 @@ def gap_conn_acep_bv_04_c(transport, upperTester, lowerTester, trace):
 def gap_conn_gcep_bv_01_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
-    initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEFL ));
+    initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ));
  
     success = advertising = advertiser.enable();
     connected = initiator.connect()
@@ -1016,10 +1016,10 @@ def gap_conn_gcep_bv_01_c(transport, upperTester, lowerTester, trace):
 def gap_conn_gcep_bv_02_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
-    initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEFL ));
+    initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ));
  
     success = advertising = advertiser.enable();
     connected = initiator.connect()
@@ -1046,8 +1046,8 @@ def gap_conn_gcep_bv_05_c(transport, upperTester, lowerTester, trace):
     """
     RPAs = [ ResolvableAddresses( transport, upperTester, trace ), ResolvableAddresses( transport, lowerTester, trace, lowerIRK ) ];
     success = RPAs[upperTester].clear() and RPAs[lowerTester].clear();
-    success = success and RPAs[lowerTester].add( Address( SimpleAddressType.PUBLIC, 0x123456789ABCL ) );
-    success = success and RPAs[upperTester].add( Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL ), lowerIRK );
+    success = success and RPAs[lowerTester].add( Address( SimpleAddressType.PUBLIC, 0x123456789ABC ) );
+    success = success and RPAs[upperTester].add( Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF ), lowerIRK );
     """
         Set Resolvable Private Address timeout in seconds ( sixty seconds )
     """
@@ -1055,10 +1055,10 @@ def gap_conn_gcep_bv_05_c(transport, upperTester, lowerTester, trace):
     success = success and RPAs[upperTester].enable() and RPAs[lowerTester].enable();
 
     ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
-    initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEFL ));
+    initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ));
  
     success = advertising = advertiser.enable();
     connected = initiator.connect()
@@ -1087,8 +1087,8 @@ def gap_conn_gcep_bv_06_c(transport, upperTester, lowerTester, trace):
     """
     RPAs = [ ResolvableAddresses( transport, upperTester, trace ), ResolvableAddresses( transport, lowerTester, trace, lowerIRK ) ];
     success = RPAs[upperTester].clear() and RPAs[lowerTester].clear();
-    success = success and RPAs[lowerTester].add( Address( SimpleAddressType.PUBLIC, 0x123456789ABCL ) );
-    success = success and RPAs[upperTester].add( Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL ), lowerIRK );
+    success = success and RPAs[lowerTester].add( Address( SimpleAddressType.PUBLIC, 0x123456789ABC ) );
+    success = success and RPAs[upperTester].add( Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF ), lowerIRK );
     """
         Set Resolvable Private Address timeout in seconds ( sixty seconds )
     """
@@ -1096,10 +1096,10 @@ def gap_conn_gcep_bv_06_c(transport, upperTester, lowerTester, trace):
     success = success and RPAs[upperTester].enable() and RPAs[lowerTester].enable();
 
     ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
-    initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEFL ));
+    initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ));
  
     success = advertising = advertiser.enable();
     connected = initiator.connect()
@@ -1123,10 +1123,10 @@ def gap_conn_gcep_bv_06_c(transport, upperTester, lowerTester, trace):
 def gap_conn_cpup_bv_01_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC )
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL )
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF )
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE)
-    initiator = Initiator(transport, lowerTester, upperTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x123456789ABCL ))
+    initiator = Initiator(transport, lowerTester, upperTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x123456789ABC ))
  
     success = advertising = advertiser.enable()
     connected = initiator.connect()
@@ -1168,10 +1168,10 @@ def gap_conn_cpup_bv_01_c(transport, upperTester, lowerTester, trace):
 def gap_conn_cpup_bv_02_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC )
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL )
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF )
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE)
-    initiator = Initiator(transport, lowerTester, upperTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x123456789ABCL ))
+    initiator = Initiator(transport, lowerTester, upperTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x123456789ABC ))
  
     success = advertising = advertiser.enable()
     connected = initiator.connect()
@@ -1211,10 +1211,10 @@ def gap_conn_cpup_bv_02_c(transport, upperTester, lowerTester, trace):
 def gap_conn_cpup_bv_03_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC )
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL )
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF )
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE)
-    initiator = Initiator(transport, lowerTester, upperTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x123456789ABCL ))
+    initiator = Initiator(transport, lowerTester, upperTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x123456789ABC ))
  
     success = advertising = advertiser.enable()
     connected = initiator.connect()
@@ -1254,10 +1254,10 @@ def gap_conn_cpup_bv_03_c(transport, upperTester, lowerTester, trace):
 def gap_conn_cpup_bv_04_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC )
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL )
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC )
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE)
-    initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEFL ))
+    initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ))
  
     success = advertising = advertiser.enable()
     connected = initiator.connect()
@@ -1297,10 +1297,10 @@ def gap_conn_cpup_bv_04_c(transport, upperTester, lowerTester, trace):
 def gap_conn_cpup_bv_05_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC )
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL )
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC )
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE)
-    initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEFL ))
+    initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ))
  
     success = advertising = advertiser.enable()
     connected = initiator.connect()
@@ -1340,10 +1340,10 @@ def gap_conn_cpup_bv_05_c(transport, upperTester, lowerTester, trace):
 def gap_conn_cpup_bv_06_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC )
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL )
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC )
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE)
-    initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEFL ))
+    initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ))
  
     success = advertising = advertiser.enable()
     connected = initiator.connect()
@@ -1381,7 +1381,7 @@ def gap_conn_cpup_bv_06_c(transport, upperTester, lowerTester, trace):
 def gap_adv_bv_01_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1, 1);
@@ -1400,8 +1400,8 @@ def gap_adv_bv_01_c(transport, upperTester, lowerTester, trace):
                 
     success = success and advertiser.disable();
 
-    advertiser.advertiseData = adData.encode( ADType.ILIST_UUIDS_128, 0x1429304977D74244AE6AD3873E4A3184L );
-    advertiser.responseData = adData.encode( ADType.ILIST_UUIDS_128, 0x1429304977D74244AE6AD3873E4A3184L );
+    advertiser.advertiseData = adData.encode( ADType.ILIST_UUIDS_128, 0x1429304977D74244AE6AD3873E4A3184 );
+    advertiser.responseData = adData.encode( ADType.ILIST_UUIDS_128, 0x1429304977D74244AE6AD3873E4A3184 );
         
     success = advertiser.enable();
 
@@ -1421,14 +1421,14 @@ def gap_adv_bv_01_c(transport, upperTester, lowerTester, trace):
 def gap_adv_bv_02_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1, 1);
 
     adData = ADData();
-    advertiser.advertiseData = adData.encode( ADType.SHORTENED_LOCAL_NAME, u'Blåbær' );
-    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'Rødgrød med fløde' );
+    advertiser.advertiseData = adData.encode( ADType.SHORTENED_LOCAL_NAME, 'Blåbær' );
+    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Rødgrød med fløde' );
         
     success = advertiser.enable();
 
@@ -1448,7 +1448,7 @@ def gap_adv_bv_02_c(transport, upperTester, lowerTester, trace):
 def gap_adv_bv_03_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1, 1);
@@ -1475,7 +1475,7 @@ def gap_adv_bv_03_c(transport, upperTester, lowerTester, trace):
 def gap_adv_bv_04_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1, 1);
@@ -1502,7 +1502,7 @@ def gap_adv_bv_04_c(transport, upperTester, lowerTester, trace):
 def gap_adv_bv_05_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1, 1);
@@ -1529,7 +1529,7 @@ def gap_adv_bv_05_c(transport, upperTester, lowerTester, trace):
 def gap_adv_bv_08_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1, 1);
@@ -1556,14 +1556,14 @@ def gap_adv_bv_08_c(transport, upperTester, lowerTester, trace):
 def gap_adv_bv_09_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1, 1);
 
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.SS_UUIDS_16, 0x1234, 0x5678, 0x9ABC );
-    advertiser.responseData = adData.encode( ADType.SS_UUIDS_128, 0x1429304977D74244AE6AD3873E4A3184L );
+    advertiser.responseData = adData.encode( ADType.SS_UUIDS_128, 0x1429304977D74244AE6AD3873E4A3184 );
         
     success = advertiser.enable();
 
@@ -1583,14 +1583,14 @@ def gap_adv_bv_09_c(transport, upperTester, lowerTester, trace):
 def gap_adv_bv_10_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1, 1);
 
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.SERVICE_DATA_16, 0x1234, 0x01, 0x02, 0x03 );
-    advertiser.responseData = adData.encode( ADType.SERVICE_DATA_128, 0x1429304977D74244AE6AD3873E4A3184L, 0x04, 0x05, 0x06 );
+    advertiser.responseData = adData.encode( ADType.SERVICE_DATA_128, 0x1429304977D74244AE6AD3873E4A3184, 0x04, 0x05, 0x06 );
         
     success = advertiser.enable();
 
@@ -1610,7 +1610,7 @@ def gap_adv_bv_10_c(transport, upperTester, lowerTester, trace):
 def gap_adv_bv_11_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1, 1);
@@ -1637,14 +1637,14 @@ def gap_adv_bv_11_c(transport, upperTester, lowerTester, trace):
 def gap_adv_bv_12_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1, 1);
 
     adData = ADData();
-    advertiser.advertiseData = adData.encode( ADType.PUBLIC_ADDRESS, 0x456789ABCDEFL, 0x123456789ABCL );
-    advertiser.responseData = adData.encode( ADType.PUBLIC_ADDRESS, 0x123456789ABCL, 0x456789ABCDEFL );
+    advertiser.advertiseData = adData.encode( ADType.PUBLIC_ADDRESS, 0x456789ABCDEF, 0x123456789ABC );
+    advertiser.responseData = adData.encode( ADType.PUBLIC_ADDRESS, 0x123456789ABC, 0x456789ABCDEF );
         
     success = advertiser.enable();
 
@@ -1664,14 +1664,14 @@ def gap_adv_bv_12_c(transport, upperTester, lowerTester, trace):
 def gap_adv_bv_13_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1, 1);
 
     adData = ADData();
-    advertiser.advertiseData = adData.encode( ADType.RANDOM_ADDRESS, 0x456789ABCDEFL, 0x123456789ABCL );
-    advertiser.responseData = adData.encode( ADType.RANDOM_ADDRESS, 0x123456789ABCL, 0x456789ABCDEFL );
+    advertiser.advertiseData = adData.encode( ADType.RANDOM_ADDRESS, 0x456789ABCDEF, 0x123456789ABC );
+    advertiser.responseData = adData.encode( ADType.RANDOM_ADDRESS, 0x123456789ABC, 0x456789ABCDEF );
         
     success = advertiser.enable();
 
@@ -1691,7 +1691,7 @@ def gap_adv_bv_13_c(transport, upperTester, lowerTester, trace):
 def gap_adv_bv_14_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1, 1);
@@ -1718,14 +1718,14 @@ def gap_adv_bv_14_c(transport, upperTester, lowerTester, trace):
 def gap_adv_bv_15_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1, 1);
 
     adData = ADData();
-    advertiser.advertiseData = adData.encode( ADType.DEVICE_ADDRESS, 0x123456789ABCL, 0 ); # Public Device Address
-    advertiser.responseData = adData.encode( ADType.DEVICE_ADDRESS, 0x123456789ABCL, 1 );  # Random Device Address
+    advertiser.advertiseData = adData.encode( ADType.DEVICE_ADDRESS, 0x123456789ABC, 0 ); # Public Device Address
+    advertiser.responseData = adData.encode( ADType.DEVICE_ADDRESS, 0x123456789ABC, 1 );  # Random Device Address
         
     success = advertiser.enable();
 
@@ -1745,7 +1745,7 @@ def gap_adv_bv_15_c(transport, upperTester, lowerTester, trace):
 def gap_adv_bv_16_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1, 1);
@@ -1772,14 +1772,14 @@ def gap_adv_bv_16_c(transport, upperTester, lowerTester, trace):
 def gap_adv_bv_17_c(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEFL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1, 1);
 
     adData = ADData();
-    advertiser.advertiseData = adData.encode( ADType.URI, u'http://www.bluetooth.org' );
-    advertiser.responseData = adData.encode( ADType.URI, u'example://z.com/Ålborg' );
+    advertiser.advertiseData = adData.encode( ADType.URI, 'http://www.bluetooth.org' );
+    advertiser.responseData = adData.encode( ADType.URI, 'example://z.com/Ålborg' );
         
     success = advertiser.enable();
 
@@ -1799,11 +1799,11 @@ def gap_adv_bv_17_c(transport, upperTester, lowerTester, trace):
 def gap_conn_enc(transport, upperTester, lowerTester, trace):
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABCL );
+    peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
-    ownAddress = Address( ExtendedAddressType.PUBLIC, 0x123456789ABCL );
-    peerAddress = Address( IdentityAddressType.PUBLIC, 0x456789ABCDEFL );
+    ownAddress = Address( ExtendedAddressType.PUBLIC, 0x123456789ABC );
+    peerAddress = Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF );
     initiator = Initiator(transport, upperTester, lowerTester, trace, ownAddress, peerAddress);
  
     success = advertising = advertiser.enable();
@@ -1935,6 +1935,8 @@ def run_a_test(args, transport, trace, test_spec):
         else:
             success = success and test_f(transport, 0, trace);
     except Exception as e: 
+        import traceback
+        traceback.print_exc()
         trace.trace(3, "Test generated exception: %s" % str(e));
         success = False;
 

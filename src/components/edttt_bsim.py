@@ -163,7 +163,7 @@ class EDTTT:
 
     def read(self, nbytes):
       received_nbytes = 0;
-      packet ="";
+      packet = bytearray();
       #print "Will try to pick " + str(nbytes) + " bytes"
       while ( len(packet) < nbytes):
         packet += self.ll_read(nbytes - received_nbytes);
@@ -179,7 +179,7 @@ class EDTTT:
         if to == None:
             to = self.default_to
         if ( number_bytes == 0 ):
-          return ""
+          return b""
 
         timeout = to*1000 + self.last_t;
         # Poll the bridge for a response
@@ -194,8 +194,8 @@ class EDTTT:
         self.last_t = struct.unpack('<Q',header[1:])[0];
         #print "last_t updated to " + str(self.last_t) 
 
-        packet=""
-        if header[0] == "\0": #correct reception => packet follows
+        packet=b""
+        if header[0] == 0x00: #correct reception => packet follows
           #print "correctly received " + str(number_bytes) + " bytes"
           packet = self.read(number_bytes)
           if (len(packet) != number_bytes):

@@ -272,7 +272,7 @@ def matchingReportType(advertiseType):
 
 def publicIdentityAddress(idx):
 
-    return Address( SimpleAddressType.PUBLIC, 0x123456789ABCL if idx == 0 else 0x456789ABCDEFL );
+    return Address( SimpleAddressType.PUBLIC, 0x123456789ABC if idx == 0 else 0x456789ABCDEF );
  
 def randomIdentityAddress(idx):
     global lowerRandomAddress, upperRandomAddress;
@@ -281,14 +281,14 @@ def randomIdentityAddress(idx):
 
 def resolvablePublicAddress(idx):
 
-    return Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC, 0x123456789ABCL if idx == 0 else 0x456789ABCDEFL );
+    return Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC, 0x123456789ABC if idx == 0 else 0x456789ABCDEF );
 
 def setStaticRandomAddress(transport, idx, trace):
     global lowerRandomAddress, upperRandomAddress;
 
     address = upperRandomAddress if idx == 0 else lowerRandomAddress;
-    if (toNumber(address)) & 0xC00000000000L != 0xC00000000000L:
-        address = toArray(toNumber(address) | 0xC00000000000L, 6);
+    if (toNumber(address)) & 0xC00000000000 != 0xC00000000000:
+        address = toArray(toNumber(address) | 0xC00000000000, 6);
         preamble_set_random_address(transport, idx, toNumber(address), trace);
         if idx == 0:
             upperRandomAddress = address;
@@ -299,8 +299,8 @@ def setNonResolvableRandomAddress(transport, idx, trace):
     global lowerRandomAddress, upperRandomAddress;
 
     address = upperRandomAddress if idx == 0 else lowerRandomAddress;
-    if (toNumber(address)) & 0xC00000000000L != 0x000000000000L:
-        address = toArray(toNumber(address) & 0x3FFFFFFFFFFFL, 6);
+    if (toNumber(address)) & 0xC00000000000 != 0x000000000000:
+        address = toArray(toNumber(address) & 0x3FFFFFFFFFFF, 6);
         preamble_set_random_address(transport, idx, toNumber(address), trace);
         if idx == 0:
             upperRandomAddress = address;
@@ -471,7 +471,7 @@ def ll_ddi_adv_bv_03_c(transport, upperTester, lowerTester, trace):
     advertiser, scanner = setPassiveScanning(transport, lowerTester, trace, Advertising.NON_CONNECTABLE_UNDIRECTED, 50, AdvertisingFilterPolicy.FILTER_BOTH_REQUESTS);
     success = True;
     adData = ADData();
-    adData.encode( ADType.COMPLETE_LOCAL_NAME, u'THIS IS JUST A RANDOM NAME...' );
+    adData.encode( ADType.COMPLETE_LOCAL_NAME, 'THIS IS JUST A RANDOM NAME...' );
 
     for dataLength in [ 1, 0, 31, 0 ]:
         trace.trace(7, '-'*80);
@@ -505,7 +505,7 @@ def ll_ddi_adv_bv_04_c(transport, upperTester, lowerTester, trace):
         trace.trace(7, '-'*80);
             
         advertiser.advertiseData = [ ] if dataLength == 0 else [ 0x01 ] if dataLength == 1 else \
-                                   adData.encode( ADType.COMPLETE_LOCAL_NAME, u'THIS IS JUST A RANDOM NAME...' );
+                                   adData.encode( ADType.COMPLETE_LOCAL_NAME, 'THIS IS JUST A RANDOM NAME...' );
 
         advertising = advertiser.enable(); 
         success = success and advertising;
@@ -532,12 +532,12 @@ def ll_ddi_adv_bv_05_c(transport, upperTester, lowerTester, trace):
     success = True;
     adData = ADData();
     
-    for address in [ 0x456789ABCDEFL, address_scramble_OUI( 0x456789ABCDEFL ), address_exchange_OUI_LAP( 0x456789ABCDEFL ) ]:
+    for address in [ 0x456789ABCDEF, address_scramble_OUI( 0x456789ABCDEF ), address_exchange_OUI_LAP( 0x456789ABCDEF ) ]:
         for nameLength in [ 2, 31 ]:
             trace.trace(7, '-'*80);
                 
-            advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'' ) if nameLength < 31 else \
-                                      adData.encode( ADType.COMPLETE_LOCAL_NAME, u'IUT IUT IUT IUT IUT IUT IUT IUT' );
+            advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, '' ) if nameLength < 31 else \
+                                      adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IUT IUT IUT IUT IUT IUT IUT IUT' );
 
             advertising = advertiser.enable(); 
             success = success and advertising;
@@ -568,12 +568,12 @@ def ll_ddi_adv_bv_06_c(transport, upperTester, lowerTester, trace):
 
     success = True;
     adData = ADData();
-    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'IUT' );
+    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IUT' );
 
     initiatorAddress = Address( ExtendedAddressType.PUBLIC );
     initiator = Initiator(transport, lowerTester, upperTester, trace, initiatorAddress, publicIdentityAddress(upperTester));
 
-    for address in [ 0x456789ABCDEFL, address_scramble_OUI( 0x456789ABCDEFL ), address_scramble_LAP( 0x456789ABCDEFL ), address_exchange_OUI_LAP( 0x456789ABCDEFL ) ]:
+    for address in [ 0x456789ABCDEF, address_scramble_OUI( 0x456789ABCDEF ), address_scramble_LAP( 0x456789ABCDEF ), address_exchange_OUI_LAP( 0x456789ABCDEF ) ]:
         trace.trace(7, '-'*80);
             
         trace.trace(6, "\nUsing initiator address: %s\n" % formatAddress( toArray(address, 6), SimpleAddressType.PUBLIC)); 
@@ -611,7 +611,7 @@ def ll_ddi_adv_bv_07_c(transport, upperTester, lowerTester, trace):
 
     success = True;
     adData = ADData();
-    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'IUT' );
+    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IUT' );
 
     success = advertiser.enable();
     success = scanner.enable() and success;
@@ -654,11 +654,11 @@ def ll_ddi_adv_bv_08_c(transport, upperTester, lowerTester, trace):
         Place Public and static Random addresses of lowerTester in the White List for the Advertiser
     """
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddresses = [ Address( IdentityAddressType.PUBLIC, 0x456789ABCDEFL ), Address( IdentityAddressType.RANDOM, 0x456789ABCDEFL | 0xC00000000000L ) ];
+    peerAddresses = [ Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), Address( IdentityAddressType.RANDOM, 0x456789ABCDEF | 0xC00000000000 ) ];
     success = addAddressesToWhiteList(transport, upperTester, peerAddresses, trace);
         
     adData = ADData();
-    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'IUT' );
+    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IUT' );
 
     for filterPolicy in [ AdvertisingFilterPolicy.FILTER_BOTH_REQUESTS, AdvertisingFilterPolicy.FILTER_SCAN_REQUESTS ]:
         trace.trace(7, "\nTesting Advertising Filter Policy: %s" % filterPolicy.name);
@@ -678,10 +678,10 @@ def ll_ddi_adv_bv_08_c(transport, upperTester, lowerTester, trace):
                     """
                     if useAddressType == ExtendedAddressType.PUBLIC:
                         trace.trace(7, "-- (%s,%d) Using scrambled PUBLIC address..." % (addressType.name,i));
-                        success = success and preamble_set_public_address( transport, lowerTester, address_scramble_LAP( 0x456789ABCDEFL ), trace );
+                        success = success and preamble_set_public_address( transport, lowerTester, address_scramble_LAP( 0x456789ABCDEF ), trace );
                     else:
                         trace.trace(7, "-- (%s,%d) Using scrambled RANDOM static address..." % (addressType.name,i));
-                        success = success and preamble_set_random_address( transport, lowerTester, address_scramble_LAP( 0x456789ABCDEFL ) | 0xC00000000000L, trace );
+                        success = success and preamble_set_random_address( transport, lowerTester, address_scramble_LAP( 0x456789ABCDEF ) | 0xC00000000000, trace );
                 elif i == 1:
                     """
                         Incorrect Address Type - correct Address
@@ -733,7 +733,7 @@ def ll_ddi_adv_bv_09_c(transport, upperTester, lowerTester, trace):
         Place Public address and Random static address of lowerTester in the White List for the Advertiser
     """
     ownAddress = Address( ExtendedAddressType.PUBLIC );
-    peerAddresses = [ Address( IdentityAddressType.PUBLIC, 0x456789ABCDEFL ), Address( IdentityAddressType.RANDOM, 0x456789ABCDEFL | 0xC00000000000L ) ];
+    peerAddresses = [ Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), Address( IdentityAddressType.RANDOM, 0x456789ABCDEF | 0xC00000000000 ) ];
     success = addAddressesToWhiteList(transport, upperTester, peerAddresses, trace);
     """
         Initialize Advertiser with Connectable Undirected advertising using a Public Address
@@ -742,7 +742,7 @@ def ll_ddi_adv_bv_09_c(transport, upperTester, lowerTester, trace):
                             ownAddress, peerAddresses[0], AdvertisingFilterPolicy.FILTER_BOTH_REQUESTS);
 
     adData = ADData();
-    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'IUT' );
+    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IUT' );
 
     for filterPolicy in [ AdvertisingFilterPolicy.FILTER_BOTH_REQUESTS, AdvertisingFilterPolicy.FILTER_CONNECTION_REQUESTS, AdvertisingFilterPolicy.FILTER_SCAN_REQUESTS ]:
         trace.trace(7, "\nTesting Advertising Filter Policy: %s" % filterPolicy.name);
@@ -762,10 +762,10 @@ def ll_ddi_adv_bv_09_c(transport, upperTester, lowerTester, trace):
                     """
                     if useAddressType == ExtendedAddressType.PUBLIC:
                         trace.trace(7, "-- (%s,%d) Using scrambled PUBLIC address..." % (addressType.name,i));
-                        success = success and preamble_set_public_address( transport, lowerTester, address_scramble_OUI( 0x456789ABCDEFL ), trace );
+                        success = success and preamble_set_public_address( transport, lowerTester, address_scramble_OUI( 0x456789ABCDEF ), trace );
                     else:
                         trace.trace(7, "-- (%s,%d) Using scrambled RANDOM static address..." % (addressType.name,i));
-                        success = success and preamble_set_random_address( transport, lowerTester, address_scramble_OUI( 0x456789ABCDEFL ) | 0xC00000000000L, trace );
+                        success = success and preamble_set_random_address( transport, lowerTester, address_scramble_OUI( 0x456789ABCDEF ) | 0xC00000000000, trace );
                 elif i == 1:
                     """
                         Incorrect Address Type - correct Address
@@ -906,12 +906,12 @@ def ll_ddi_adv_bv_17_c(transport, upperTester, lowerTester, trace):
 
     for i in range(3):
         for j in range(2):
-            advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'' ) if j == 0 else \
-                                      adData.encode( ADType.COMPLETE_LOCAL_NAME, u'IUT IUT IUT IUT IUT IUT IUT I' );            
+            advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, '' ) if j == 0 else \
+                                      adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IUT IUT IUT IUT IUT IUT IUT I' );            
             if   i == 1:
-                success = success and preamble_set_public_address( transport, lowerTester, address_scramble_OUI( 0x456789ABCDEFL ), trace );
+                success = success and preamble_set_public_address( transport, lowerTester, address_scramble_OUI( 0x456789ABCDEF ), trace );
             elif i == 2:
-                success = success and preamble_set_public_address( transport, lowerTester, address_exchange_OUI_LAP( 0x456789ABCDEFL ), trace );
+                success = success and preamble_set_public_address( transport, lowerTester, address_exchange_OUI_LAP( 0x456789ABCDEF ), trace );
                     
             success = scanner.enable() and success;
             success = advertiser.enable() and success;
@@ -940,17 +940,17 @@ def ll_ddi_adv_bv_18_c(transport, upperTester, lowerTester, trace):
     success = addAddressesToWhiteList(transport, upperTester, [ peerAddress ], trace);
         
     adData = ADData();
-    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'IUT' );
+    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IUT' );
 
     success = advertiser.enable() and success;
 
     for i, addressType in enumerate([ ExtendedAddressType.PUBLIC, ExtendedAddressType.RANDOM, ExtendedAddressType.PUBLIC ]):
         if   i == 0:
-            success = success and preamble_set_public_address( transport, lowerTester, address_scramble_LAP( 0x456789ABCDEFL ), trace);
+            success = success and preamble_set_public_address( transport, lowerTester, address_scramble_LAP( 0x456789ABCDEF ), trace);
         elif i == 1:
-            success = success and preamble_set_random_address( transport, lowerTester, 0x456789ABCDEFL, trace );
+            success = success and preamble_set_random_address( transport, lowerTester, 0x456789ABCDEF, trace );
         else:
-            success = success and preamble_set_public_address( transport, lowerTester, 0x456789ABCDEFL, trace );
+            success = success and preamble_set_public_address( transport, lowerTester, 0x456789ABCDEF, trace );
             scanner.expectedResponses = 1;
                 
         scanner.ownAddress = Address( addressType );
@@ -1038,7 +1038,7 @@ def ll_ddi_adv_bv_21_c(transport, upperTester, lowerTester, trace):
     PrimMaxInterval = toArray(0x0022, 3); # Maximum Advertise Interval = 34 x 0.625 ms = 21.25 ms
     PrimChannelMap  = 0x07;  # Advertise on all three channels (#37, #38 and #39)
     OwnAddrType     = SimpleAddressType.PUBLIC;
-    PeerAddrType, PeerAddress = random_address( 0x456789ABCDEFL );
+    PeerAddrType, PeerAddress = random_address( 0x456789ABCDEF );
     FilterPolicy    = AdvertisingFilterPolicy.FILTER_NONE;
     TxPower         = 0;
     PrimAdvPhy      = PhysicalChannel.LE_1M; # Primary advertisement PHY is LE 1M
@@ -1117,9 +1117,9 @@ def ll_ddi_scn_bv_01_c(transport, upperTester, lowerTester, trace):
         if   i == 0:
             advertiser.ownAddress = publicIdentityAddress(lowerTester);
         elif i == 1:
-            advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEFL) );
+            advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEF) );
         elif i == 2:
-            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, address_scramble_OUI(0x456789ABCDEFL) );
+            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, address_scramble_OUI(0x456789ABCDEF) );
             
         if advertiser.ownAddress.type == ExtendedAddressType.PUBLIC:
             success = success and preamble_set_public_address(transport, lowerTester, toNumber(advertiser.ownAddress.address), trace);
@@ -1160,11 +1160,11 @@ def ll_ddi_scn_bv_02_c(transport, upperTester, lowerTester, trace):
         if   i == 0:
             advertiser.ownAddress = publicIdentityAddress(lowerTester);
         elif i == 1:
-            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, 0x456789ABCDEFL );
+            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, 0x456789ABCDEF );
         elif i == 2:
-            advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEFL) );
+            advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEF) );
         elif i == 3:
-            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, address_exchange_OUI_LAP(0x456789ABCDEFL) );
+            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, address_exchange_OUI_LAP(0x456789ABCDEF) );
 
         if advertiser.ownAddress.type == ExtendedAddressType.PUBLIC:
             success = success and preamble_set_public_address(transport, lowerTester, toNumber(advertiser.ownAddress.address), trace);
@@ -1196,7 +1196,7 @@ def ll_ddi_scn_bv_03_c(transport, upperTester, lowerTester, trace):
     advertiser, scanner = setActiveScanning(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED, 20, 1);
         
     adData = ADData();
-    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'IX' );
+    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IX' );
     success = scanner.enable();
 
     for channel in [ AdvertiseChannel.CHANNEL_37, AdvertiseChannel.CHANNEL_38, AdvertiseChannel.CHANNEL_39 ]:
@@ -1204,11 +1204,11 @@ def ll_ddi_scn_bv_03_c(transport, upperTester, lowerTester, trace):
             if   i == 0:
                 advertiser.ownAddress = publicIdentityAddress(lowerTester);
             elif i == 1:
-                advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_OUI(0x456789ABCDEFL) );
+                advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_OUI(0x456789ABCDEF) );
             elif i == 2:
-                advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEFL) );
+                advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEF) );
             else:
-                advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_exchange_OUI_LAP(0x456789ABCDEFL) );
+                advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_exchange_OUI_LAP(0x456789ABCDEF) );
                 
             success = success and preamble_set_public_address(transport, lowerTester, toNumber(advertiser.ownAddress.address), trace);
             advertiser.channels = channel;
@@ -1241,7 +1241,7 @@ def ll_ddi_scn_bv_04_c(transport, upperTester, lowerTester, trace):
     success = addAddressesToWhiteList(transport, upperTester, [ peerAddress ], trace);
         
     adData = ADData();
-    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'IX' );
+    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IX' );
     success = scanner.enable();
 
     for channel in [ AdvertiseChannel.CHANNEL_37, AdvertiseChannel.CHANNEL_38, AdvertiseChannel.CHANNEL_39 ]:
@@ -1249,9 +1249,9 @@ def ll_ddi_scn_bv_04_c(transport, upperTester, lowerTester, trace):
             if   i == 0:
                 advertiser.ownAddress = publicIdentityAddress(lowerTester);
             elif i == 1:
-                advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEFL) );
+                advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEF) );
             else:
-                advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_exchange_OUI_LAP(0x456789ABCDEFL) );
+                advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_exchange_OUI_LAP(0x456789ABCDEF) );
                 
             success = success and preamble_set_public_address(transport, lowerTester, toNumber(advertiser.ownAddress.address), trace);
             advertiser.channels = channel;
@@ -1283,7 +1283,7 @@ def ll_ddi_scn_bv_05_c(transport, upperTester, lowerTester, trace):
         
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.FLAGS, ADFlag.BR_EDR_NOT_SUPPORTED );
-    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'IX' );
+    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IX' );
     success = scanner.enable();
 
     for i, (channel, advertiseType, reports) in enumerate(zip( \
@@ -1291,11 +1291,11 @@ def ll_ddi_scn_bv_05_c(transport, upperTester, lowerTester, trace):
                              [ Advertising.NON_CONNECTABLE_UNDIRECTED, Advertising.SCANNABLE_UNDIRECTED, Advertising.CONNECTABLE_HDC_DIRECTED ], \
                              [ 20, 30, 15 ] )):
         if   i == 0:
-            advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_OUI(0x456789ABCDEFL) );
+            advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_OUI(0x456789ABCDEF) );
         elif i == 1:
-            advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEFL) );
+            advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEF) );
         else:
-            advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_exchange_OUI_LAP(0x456789ABCDEFL) );
+            advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_exchange_OUI_LAP(0x456789ABCDEF) );
 
         success = success and preamble_set_public_address(transport, lowerTester, toNumber(advertiser.ownAddress.address), trace);
         advertiser.channels = channel;
@@ -1334,9 +1334,9 @@ def ll_ddi_scn_bv_10_c(transport, upperTester, lowerTester, trace):
         if   i == 0:
             advertiser.ownAddress = publicIdentityAddress(lowerTester);
         elif i == 1:
-            advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEFL) );
+            advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEF) );
         elif i == 2:
-            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, address_scramble_OUI(0x456789ABCDEFL) );
+            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, address_scramble_OUI(0x456789ABCDEF) );
 
         if (advertiser.ownAddress.type == ExtendedAddressType.PUBLIC):
             success = success and preamble_set_public_address(transport, lowerTester, toNumber(advertiser.ownAddress.address), trace);
@@ -1375,9 +1375,9 @@ def ll_ddi_scn_bv_11_c(transport, upperTester, lowerTester, trace):
         if   i == 0:
             advertiser.ownAddress = publicIdentityAddress(lowerTester);
         elif i == 1:
-            advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEFL) );
+            advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEF) );
         elif i == 2:
-            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, 0x456789ABCDEFL );
+            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, 0x456789ABCDEF );
 
         if (advertiser.ownAddress.type == ExtendedAddressType.PUBLIC):
             success = success and preamble_set_public_address(transport, lowerTester, toNumber(advertiser.ownAddress.address), trace);
@@ -1418,9 +1418,9 @@ def ll_ddi_scn_bv_12_c(transport, upperTester, lowerTester, trace):
         if   i == 0:
             advertiser.ownAddress = publicIdentityAddress(lowerTester);
         elif i == 1:
-            advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEFL) );
+            advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEF) );
         elif i == 2:
-            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, address_scramble_OUI(0x456789ABCDEFL) );
+            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, address_scramble_OUI(0x456789ABCDEF) );
 
         if (advertiser.ownAddress.type == ExtendedAddressType.PUBLIC):
             success = success and preamble_set_public_address(transport, lowerTester, toNumber(advertiser.ownAddress.address), trace);
@@ -1474,7 +1474,7 @@ def ll_ddi_scn_bv_13_c(transport, upperTester, lowerTester, trace):
     """
         Verify that the Advertise address of the lowerTester has been correctly resolved
     """
-    success = success and scanner.qualifyReports( 20, Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC, 0x456789ABCDEFL ) );
+    success = success and scanner.qualifyReports( 20, Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC, 0x456789ABCDEF ) );
         
     success = RPAs[upperTester].disable() and RPAs[lowerTester].disable() and success;
 
@@ -1533,7 +1533,7 @@ def ll_ddi_scn_bv_15_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.channels = AdvertiseChannel.CHANNEL_37; 
     advertiser.advertiseData = [ 0x00 ];
-    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'IX' );
+    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IX' );
     """
         Add Public address of lowerTester to the Resolving List
     """
@@ -1572,7 +1572,7 @@ def ll_ddi_scn_bv_16_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.channels = AdvertiseChannel.CHANNEL_37; 
     advertiser.advertiseData = [ 0x00 ];
-    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'IX' );
+    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IX' );
 
     lowerIdentityAddress = publicIdentityAddress(lowerTester);
     """
@@ -1625,7 +1625,7 @@ def ll_ddi_scn_bv_17_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.channels = AdvertiseChannel.CHANNEL_37; 
     advertiser.advertiseData = [ 0x00 ];
-    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'IX' );
+    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IX' );
     """
         Add Public address of lowerTester to the Resolving List
     """
@@ -1664,7 +1664,7 @@ def ll_ddi_scn_bv_18_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.channels = AdvertiseChannel.CHANNEL_37; 
     advertiser.advertiseData = [ 0x00 ];
-    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'IX' );
+    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IX' );
     """
         Add Public address of lowerTester to the Resolving List
     """
@@ -1807,7 +1807,7 @@ def ll_con_adv_bv_04_c(transport, upperTester, lowerTester, trace):
     advertiser, scanner = setPassiveScanning(transport, lowerTester, trace, Advertising.CONNECTABLE_HDC_DIRECTED);
 
     initiatorAddress = Address( ExtendedAddressType.PUBLIC );
-    initiator = Initiator(transport, lowerTester, upperTester, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, address_scramble_OUI(0x123456789ABCL) ));
+    initiator = Initiator(transport, lowerTester, upperTester, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, address_scramble_OUI(0x123456789ABC) ));
     """
         Verify that connection is not established to wrong Init Address
     """        
@@ -1934,7 +1934,7 @@ def ll_con_ini_bv_01_c(transport, upperTester, lowerTester, trace):
 
         advertiser.channels = channel;
 
-        for address in [ 0x456789ABCDEFL, address_scramble_OUI(0x456789ABCDEFL), address_scramble_LAP(0x456789ABCDEFL), address_exchange_OUI_LAP(0x456789ABCDEFL) ]:
+        for address in [ 0x456789ABCDEF, address_scramble_OUI(0x456789ABCDEF), address_scramble_LAP(0x456789ABCDEF), address_exchange_OUI_LAP(0x456789ABCDEF) ]:
             
             trace.trace(7, "\nUsing channel %s and Lower Tester address %s\n" % (str(channel), formatAddress(toArray(address, 6))));
                 
@@ -3356,7 +3356,7 @@ def ll_con_sla_bv_40_c(transport, upperTester, lowerTester, trace):
 
     with open('src/tests/params_con_sla_bv_40.csv') as f:
         reader = csv.reader(f);
-        reader.next();
+        next(reader);
         for row in reader:
             for (i,v) in enumerate(row):
                 columns[i].append(int(v, 16));
@@ -3407,7 +3407,7 @@ def ll_con_sla_bv_42_c(transport, upperTester, lowerTester, trace):
 
         initiator.resetRoles();
 
-        tabel = zip( [2, 1, 2, 1, 3, 3, 1, 2, 3], [2, 2, 1, 1, 2, 1, 3, 3, 3], [2, 1, 2, 1, 2, 2, 1, 2, 2], [2, 2, 1, 1, 2, 1, 2, 2, 2] );
+        tabel = list(zip( [2, 1, 2, 1, 3, 3, 1, 2, 3], [2, 2, 1, 1, 2, 1, 3, 3, 3], [2, 1, 2, 1, 2, 2, 1, 2, 2], [2, 2, 1, 1, 2, 1, 2, 2, 2] ));
 
         for i in range(2):
             for txPhys, rxPhys, expTxPhys, expRxPhys in tabel:
@@ -3434,7 +3434,7 @@ def ll_con_sla_bv_77_c(transport, upperTester, lowerTester, trace):
         Obtain maximum Data Packet size and maximum number of Data Packets
     """
     success, maxPacketLength, maxPacketNumbers = readBufferSize(transport, lowerTester, trace);
-    maxPacketTime, cmaxTxOctets, cmaxTxTime = 2120 * maxPacketLength / 251, 27, 328;
+    maxPacketTime, cmaxTxOctets, cmaxTxTime = 2120 * maxPacketLength // 251, 27, 328;
 
     success = advertiser.enable() and success;
     connected = initiator.connect();
@@ -3444,8 +3444,8 @@ def ll_con_sla_bv_77_c(transport, upperTester, lowerTester, trace):
         """
             Exchange data...
         """
-        lenValues  = range(28, maxPacketLength-1) + range(maxPacketLength+1, 250);
-        timeValues = range(329, maxPacketTime-1) + range(maxPacketTime+1, 2119);
+        lenValues  = list(range(28, maxPacketLength-1)) + list(range(maxPacketLength+1, 250));
+        timeValues = list(range(329, maxPacketTime-1)) + list(range(maxPacketTime+1, 2119));
 
         for txOctets, txTime in zip( [ 27, 251, maxPacketLength, 27, 27, 27, 251, 251, 251, maxPacketLength, maxPacketLength, maxPacketLength, \
                                        random.choice(lenValues), random.choice(lenValues), random.choice(lenValues), random.choice(lenValues) ], \
@@ -3572,7 +3572,7 @@ def ll_con_sla_bv_80_c(transport, upperTester, lowerTester, trace):
         Obtain maximum Data Packet size and maximum number of Data Packets
     """
     success, maxPacketLength, maxPacketNumbers = readBufferSize(transport, lowerTester, trace);
-    maxPacketTime, cmaxTxOctets, cmaxTxTime = 2120 * maxPacketLength / 251, 27, 328;
+    maxPacketTime, cmaxTxOctets, cmaxTxTime = 2120 * maxPacketLength // 251, 27, 328;
 
     success = advertiser.enable() and success;
     connected = initiator.connect();
@@ -3589,8 +3589,8 @@ def ll_con_sla_bv_80_c(transport, upperTester, lowerTester, trace):
         """
             Exchange data...
         """
-        lenValues  = range(28, maxPacketLength-1) + range(maxPacketLength+1, 250);
-        timeValues = range(329, maxPacketTime-1) + range(maxPacketTime+1, 2119);
+        lenValues  = list(range(28, maxPacketLength-1)) + list(range(maxPacketLength+1, 250));
+        timeValues = list(range(329, maxPacketTime-1)) + list(range(maxPacketTime+1, 2119));
 
         for txOctets, txTime in zip( [ 27, 251, maxPacketLength, 27, 27, 27, 251, 251, 251, maxPacketLength, maxPacketLength, maxPacketLength, \
                                        random.choice(lenValues), random.choice(lenValues), random.choice(lenValues), random.choice(lenValues) ], \
@@ -4492,11 +4492,11 @@ def ll_con_mas_bv_41_c(transport, upperTester, lowerTester, trace):
     if connected:
         optionPhys = 0;
 
-        table = zip( [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3], \
+        table = list(zip( [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3], \
                      [2, 1, 2, 1, 3, 3, 1, 2, 3, 0, 2, 0], \
                      [2, 2, 1, 1, 2, 1, 3, 3, 3, 2, 0, 0], \
                      [2, 1, 2, 1, 2, 2, 1, 2, 2, 2, 2, 2], \
-                     [2, 2, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2] );
+                     [2, 2, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2] ));
 
         for i in range(2):
             for allPhys, txPhys, rxPhys, expTxPhys, expRxPhys in table:
@@ -4530,10 +4530,10 @@ def ll_con_mas_bv_43_c(transport, upperTester, lowerTester, trace):
         success = initiator.updatePhys(allPhys, 1, 1, optionPhys) and success;
         success = success and (initiator.txPhys == expTxPhys) and (initiator.rxPhys == expRxPhys);
 
-        table = zip( [2, 1, 2, 1, 3, 3, 1, 2, 3], \
+        table = list(zip( [2, 1, 2, 1, 3, 3, 1, 2, 3], \
                      [2, 2, 1, 1, 2, 1, 3, 3, 3], \
                      [2, 1, 2, 1, 2, 2, 1, 2, 2], \
-                     [2, 2, 1, 1, 2, 1, 2, 2, 2] );
+                     [2, 2, 1, 1, 2, 1, 2, 2, 2] ));
         allPhys = 0;
 
         initiator.switchRoles();
@@ -4565,7 +4565,7 @@ def ll_con_mas_bv_73_c(transport, upperTester, lowerTester, trace):
         Obtain maximum Data Packet size and maximum number of Data Packets
     """
     success, maxPacketLength, maxPacketNumbers = readBufferSize(transport, lowerTester, trace);
-    maxPacketTime, cmaxTxOctets, cmaxTxTime = 2120 * maxPacketLength / 251, 27, 328;
+    maxPacketTime, cmaxTxOctets, cmaxTxTime = 2120 * maxPacketLength // 251, 27, 328;
 
     success = advertiser.enable() and success;
     connected = initiator.connect();
@@ -4575,8 +4575,8 @@ def ll_con_mas_bv_73_c(transport, upperTester, lowerTester, trace):
         """
             Exchange data...
         """
-        lenValues  = range(28, maxPacketLength-1) + range(maxPacketLength+1, 250);
-        timeValues = range(329, maxPacketTime-1) + range(maxPacketTime+1, 2119);
+        lenValues  = list(range(28, maxPacketLength-1)) + list(range(maxPacketLength+1, 250));
+        timeValues = list(range(329, maxPacketTime-1)) + list(range(maxPacketTime+1, 2119));
 
         for txOctets, txTime in zip( [ 27, 251, maxPacketLength, 27, 27, 27, 251, 251, 251, maxPacketLength, maxPacketLength, maxPacketLength, \
                                        random.choice(lenValues), random.choice(lenValues), random.choice(lenValues), random.choice(lenValues) ], \
@@ -4639,7 +4639,7 @@ def ll_con_mas_bv_74_c(transport, upperTester, lowerTester, trace):
         Obtain maximum Data Packet size and maximum number of Data Packets
     """
     success, maxPacketLength, maxPacketNumbers = readBufferSize(transport, lowerTester, trace);
-    maxPacketTime, cmaxTxOctets, cmaxTxTime = 2120 * maxPacketLength / 251, 27, 328;
+    maxPacketTime, cmaxTxOctets, cmaxTxTime = 2120 * maxPacketLength // 251, 27, 328;
 
     success = advertiser.enable() and success;
     connected = initiator.connect();
@@ -4701,7 +4701,7 @@ def ll_con_mas_bv_76_c(transport, upperTester, lowerTester, trace):
         Obtain maximum Data Packet size and maximum number of Data Packets
     """
     success, maxPacketLength, maxPacketNumbers = readBufferSize(transport, lowerTester, trace);
-    maxPacketTime, cmaxTxOctets, cmaxTxTime = 2120 * maxPacketLength / 251, 27, 328;
+    maxPacketTime, cmaxTxOctets, cmaxTxTime = 2120 * maxPacketLength // 251, 27, 328;
 
     success = advertiser.enable() and success;
     connected = initiator.connect();
@@ -4718,8 +4718,8 @@ def ll_con_mas_bv_76_c(transport, upperTester, lowerTester, trace):
         """
             Exchange data...
         """
-        lenValues  = range(28, maxPacketLength-1) + range(maxPacketLength+1, 250);
-        timeValues = range(329, maxPacketTime-1) + range(maxPacketTime+1, 2119);
+        lenValues  = list(range(28, maxPacketLength-1)) + list(range(maxPacketLength+1, 250));
+        timeValues = list(range(329, maxPacketTime-1)) + list(range(maxPacketTime+1, 2119));
 
         for txOctets, txTime in zip( [ 27, 251, maxPacketLength, 27, 27, 27, 251, 251, 251, maxPacketLength, maxPacketLength, maxPacketLength, \
                                        random.choice(lenValues), random.choice(lenValues), random.choice(lenValues), random.choice(lenValues) ], \
@@ -4778,7 +4778,7 @@ def ll_con_mas_bv_77_c(transport, upperTester, lowerTester, trace):
         Obtain maximum Data Packet size and maximum number of Data Packets
     """
     success, maxPacketLength, maxPacketNumbers = readBufferSize(transport, lowerTester, trace);
-    maxPacketTime, cmaxTxOctets, cmaxTxTime = 2120 * maxPacketLength / 251, 27, 328;
+    maxPacketTime, cmaxTxOctets, cmaxTxTime = 2120 * maxPacketLength // 251, 27, 328;
 
     success = advertiser.enable() and success;
     connected = initiator.connect();
@@ -4883,7 +4883,7 @@ def ll_sec_adv_bv_01_c(transport, upperTester, lowerTester, trace):
     advertiser, scanner = setPrivateActiveScanning(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED, 30, 5, \
                                                    ExtendedAddressType.RANDOM, ExtendedAddressType.RANDOM, AdvertisingFilterPolicy.FILTER_BOTH_REQUESTS);
     adData = ADData();
-    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'IUT' );
+    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IUT' );
     """
         Adding lowerTester address to the White List
     """
@@ -5087,8 +5087,8 @@ def ll_sec_adv_bv_06_c(transport, upperTester, lowerTester, trace):
                                                 ExtendedAddressType.RESOLVABLE_OR_RANDOM, ExtendedAddressType.PUBLIC);
 
     lowerAddresses = [ publicIdentityAddress(lowerTester), \
-                       Address( ExtendedAddressType.RESOLVABLE_OR_RANDOM, toNumber(lowerRandomAddress) | 0xC00000000000L ), \
-                       Address( ExtendedAddressType.RESOLVABLE_OR_RANDOM, toNumber(lowerRandomAddress) & 0x3FFFFFFFFFFFL ) ];
+                       Address( ExtendedAddressType.RESOLVABLE_OR_RANDOM, toNumber(lowerRandomAddress) | 0xC00000000000 ), \
+                       Address( ExtendedAddressType.RESOLVABLE_OR_RANDOM, toNumber(lowerRandomAddress) & 0x3FFFFFFFFFFF ) ];
 
     success = True;
     for lowerAddress in lowerAddresses:
@@ -5809,7 +5809,7 @@ def ll_sec_scn_bv_01_c(transport, upperTester, lowerTester, trace):
     advertiser, scanner = setPrivateActiveScanning(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED, 20, 1, \
                                                    ExtendedAddressType.RANDOM, ExtendedAddressType.RANDOM);
     adData = ADData();
-    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, u'IUT' );
+    advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IUT' );
     
     success = advertiser.enable();
     success = scanner.enable() and success;
@@ -5833,13 +5833,13 @@ def ll_sec_scn_bv_01_c(transport, upperTester, lowerTester, trace):
     success = advertiser.disable() and success;
 
     address = toNumber( randomIdentityAddress(lowerTester).address );
-    randAddr = (address >> 24) & 0xFFFFFFL;
-    hashAddr = address & 0xFFFFFFL;
+    randAddr = (address >> 24) & 0xFFFFFF;
+    hashAddr = address & 0xFFFFFF;
     
     trace.trace(8, "Address parts: rand: 0x%06X hash: 0x%06X" % (randAddr, hashAddr));
     ok, localHash = encrypt(transport, upperTester, lowerIRK, toArray(randAddr, 16), trace);
-    success = success and ok and (toNumber(localHash) & 0xFFFFFFL == hashAddr);
-    trace.trace(8, "Regenerated: hash: 0x%06X" % (toNumber(localHash) & 0xFFFFFFL));
+    success = success and ok and (toNumber(localHash) & 0xFFFFFF == hashAddr);
+    trace.trace(8, "Regenerated: hash: 0x%06X" % (toNumber(localHash) & 0xFFFFFF));
 
     return success;
 
@@ -6015,6 +6015,8 @@ def run_a_test(args, transport, trace, test_spec):
         else:
             success = success and test_f(transport, 0, trace);
     except Exception as e: 
+        import traceback
+        traceback.print_exc()
         trace.trace(3, "Test generated exception: %s" % str(e));
         success = False;
 
