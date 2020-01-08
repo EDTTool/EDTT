@@ -2,7 +2,7 @@
 # Copyright 2019 Oticon A/S
 # SPDX-License-Identifier: Apache-2.0
 
-import random;
+from numpy import random;
 import os;
 from enum import IntEnum;
 from components.utils import *;

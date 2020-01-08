@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os;
-import random;
+from numpy import random;
 
 def parse_arguments():
     import argparse
