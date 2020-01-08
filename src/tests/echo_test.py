@@ -9,7 +9,7 @@ def _echo_test(transport, trace):
 
     try:
         for i in range(0,transport.n_devices):
-            echo(transport, i, "A random test string", 100);
+            echo(transport, i, str.encode("A random test string"), 100);
     except Exception as e:
         trace.trace(1,"Echo test failed: %s"%str(e));
         return 1;
