@@ -4096,7 +4096,6 @@ def ll_con_mas_bv_23_c(transport, upperTester, lowerTester, trace):
     success = success and connected;
             
     if connected:
-        success, expectedFeatures = success and readLocalFeatures(transport, upperTester, trace)
         """
             Issue the LE Read Remote Features Command, verify the reception of a Command Status Event
         """
@@ -4108,7 +4107,8 @@ def ll_con_mas_bv_23_c(transport, upperTester, lowerTester, trace):
         success = success and hasFeatures;
         if hasFeatures:
             showLEFeatures(features, trace);
-            success = (toNumber(features) == toNumber(expectedFeatures)) and success;
+            # Bit 27 is "Masked to Peer" an must be cleared
+            success = ((toNumber(features) & (1 << 27)) == 0) and success;
 
         success = initiator.disconnect(0x3E) and success;
     else:
