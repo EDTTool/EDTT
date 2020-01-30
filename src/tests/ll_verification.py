@@ -3442,6 +3442,13 @@ def ll_con_sla_bv_77_c(transport, upperTester, lowerTester, trace):
 
     if connected:
         """
+            Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
+        """
+        success = readRemoteFeatures(transport, upperTester, initiator.handles[1], trace) and success;
+        hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, upperTester, trace);
+        showLEFeatures(features, trace);
+
+        """
             Exchange data...
         """
         lenValues  = list(range(28, maxPacketLength-1)) + list(range(maxPacketLength+1, 250));
@@ -3513,6 +3520,13 @@ def ll_con_sla_bv_78_c(transport, upperTester, lowerTester, trace):
     success = success and connected;
 
     if connected:
+        """
+            Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
+        """
+        success = readRemoteFeatures(transport, upperTester, initiator.handles[1], trace) and success;
+        hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, upperTester, trace);
+        showLEFeatures(features, trace);
+
         for txOctets, txTime in zip([ maxPacketLength, 27, 251, maxPacketLength, 27, 251, maxPacketLength, 27, 251, maxPacketLength, 27, 251 ], \
                                     [ maxPacketTime, maxPacketTime, maxPacketTime, 328, 328, 328, 2120, 2120, 2120, 2120, 2120, 2120 ]):
 
@@ -3579,6 +3593,13 @@ def ll_con_sla_bv_80_c(transport, upperTester, lowerTester, trace):
     success = success and connected;
 
     if connected:
+        """
+            Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
+        """
+        success = readRemoteFeatures(transport, upperTester, initiator.handles[1], trace) and success;
+        hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, upperTester, trace);
+        showLEFeatures(features, trace);
+
         """
             Switch to LE 2M PHY channel...
         """
@@ -3658,6 +3679,13 @@ def ll_con_sla_bv_81_c(transport, upperTester, lowerTester, trace):
     success = success and connected;
 
     if connected:
+        """
+            Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
+        """
+        success = readRemoteFeatures(transport, upperTester, initiator.handles[1], trace) and success;
+        hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, upperTester, trace);
+        showLEFeatures(features, trace);
+
         initiator.switchRoles();
         """
             Switch to the 2M PHY channel
@@ -4573,6 +4601,13 @@ def ll_con_mas_bv_73_c(transport, upperTester, lowerTester, trace):
 
     if connected:
         """
+            Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
+        """
+        success = readRemoteFeatures(transport, upperTester, initiator.handles[1], trace) and success;
+        hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, upperTester, trace);
+        showLEFeatures(features, trace);
+
+        """
             Exchange data...
         """
         lenValues  = list(range(28, maxPacketLength-1)) + list(range(maxPacketLength+1, 250));
@@ -4646,6 +4681,13 @@ def ll_con_mas_bv_74_c(transport, upperTester, lowerTester, trace):
     success = success and connected;
 
     if connected:
+        """
+            Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
+        """
+        success = readRemoteFeatures(transport, upperTester, initiator.handles[1], trace) and success;
+        hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, upperTester, trace);
+        showLEFeatures(features, trace);
+
         for txOctets, txTime in zip( [ maxPacketLength, 27, 251, maxPacketLength, 27, 251, maxPacketLength, 27, 251, 60, 27, 251 ], \
                                      [ maxPacketTime, maxPacketTime, maxPacketTime, 328, 328, 328, 2120, 2120, 2120, 2120, 2120, 2120 ] ):
 
@@ -4708,6 +4750,13 @@ def ll_con_mas_bv_76_c(transport, upperTester, lowerTester, trace):
     success = success and connected;
 
     if connected:
+        """
+            Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
+        """
+        success = readRemoteFeatures(transport, upperTester, initiator.handles[1], trace) and success;
+        hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, upperTester, trace);
+        showLEFeatures(features, trace);
+
         """
             Switch to LE 2M PHY channel...
         """
@@ -4785,6 +4834,13 @@ def ll_con_mas_bv_77_c(transport, upperTester, lowerTester, trace):
     success = success and connected;
 
     if connected:
+        """
+            Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
+        """
+        success = readRemoteFeatures(transport, upperTester, initiator.handles[1], trace) and success;
+        hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, upperTester, trace);
+        showLEFeatures(features, trace);
+
         allPhys, txPhys, rxPhys, optionPhys = 0, 2, 2, 0;
 
         success = initiator.updatePhys(allPhys, txPhys, rxPhys, optionPhys) and success;
