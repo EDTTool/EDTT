@@ -589,11 +589,9 @@ def host_buffer_size(transport, idx, AclMtu, ScoMtu, AclPkts, ScoPkts, to):
     was sent to the Controller.
 """
 def host_number_of_completed_packets(transport, idx, NumHandles, HHandle, HCount, to):
-    
-    if NumHandles > 0:
-        cmd = struct.pack('<HHHB' + 'HH' * NumHandles, Commands.CMD_HOST_NUMBER_OF_COMPLETED_PACKETS_REQ, 7 + 4 * NumHandles, HCICommands.BT_HCI_OP_HOST_NUM_COMPLETED_PACKETS, NumHandles, *list(chain(*list(zip(HHandle, HCount)))));
-    else:
-        cmd = struct.pack('<HHHB', Commands.CMD_HOST_NUMBER_OF_COMPLETED_PACKETS_REQ, 7, HCICommands.BT_HCI_OP_HOST_NUM_COMPLETED_PACKETS, NumHandles);
+    cmd = struct.pack('<HHHB' + 'HH' * NumHandles, Commands.CMD_HOST_NUMBER_OF_COMPLETED_PACKETS_REQ, 7 + 4 * NumHandles,
+                      HCICommands.BT_HCI_OP_HOST_NUM_COMPLETED_PACKETS, NumHandles, *list(chain(*list(zip(HHandle, HCount)))));
+
     transport.send(idx, cmd);
     
     packet = transport.recv(idx, 4, to);
@@ -2194,11 +2192,10 @@ def le_set_extended_scan_response_data(transport, idx, handle, op, FragPref, dat
     Number_of_Sets are both set to 0x00, then all advertising sets are disabled.
 """
 def le_set_extended_advertising_enable(transport, idx, enable, SetNum, SHandle, SDuration, SMaxExtAdvEvts, to):
-    
-    if SetNum > 0:
-        cmd = struct.pack('<HHHBB' + 'BHB' * SetNum, Commands.CMD_LE_SET_EXTENDED_ADVERTISING_ENABLE_REQ, 8 + 4 * SetNum, HCICommands.BT_HCI_OP_LE_SET_EXT_ADV_ENABLE, enable, SetNum, *list(chain(*list(zip(SHandle, SDuration, SMaxExtAdvEvts)))));
-    else:
-        cmd = struct.pack('<HHHBB', Commands.CMD_LE_SET_EXTENDED_ADVERTISING_ENABLE_REQ, 8, HCICommands.BT_HCI_OP_LE_SET_EXT_ADV_ENABLE, enable, SetNum);
+    cmd = struct.pack('<HHHBB' + 'BHB' * SetNum,
+                      Commands.CMD_LE_SET_EXTENDED_ADVERTISING_ENABLE_REQ, 4 + 4 * SetNum,
+                      HCICommands.BT_HCI_OP_LE_SET_EXT_ADV_ENABLE, enable, SetNum, *list(chain(*list(zip(SHandle, SDuration, SMaxExtAdvEvts)))))
+
     transport.send(idx, cmd);
     
     packet = transport.recv(idx, 5, to);
@@ -2392,10 +2389,10 @@ def le_set_periodic_advertising_enable(transport, idx, enable, handle, to):
 """
 def le_set_extended_scan_parameters(transport, idx, OwnAddrType, FilterPolicy, phys, PType, PInterval, PWindow, to):
     
-    if phys > 0:
-        cmd = struct.pack('<HHHBBB' + 'BHH' * phys, Commands.CMD_LE_SET_EXTENDED_SCAN_PARAMETERS_REQ, 9 + 5 * phys, HCICommands.BT_HCI_OP_LE_SET_EXT_SCAN_PARAM, OwnAddrType, FilterPolicy, phys, *list(chain(*list(zip(PType, PInterval, PWindow)))));
-    else:
-        cmd = struct.pack('<HHHBBB', Commands.CMD_LE_SET_EXTENDED_SCAN_PARAMETERS_REQ, 9, HCICommands.BT_HCI_OP_LE_SET_EXT_SCAN_PARAM, OwnAddrType, FilterPolicy, phys);
+    cmd = struct.pack('<HHHBBB' + 'BHH' * phys, Commands.CMD_LE_SET_EXTENDED_SCAN_PARAMETERS_REQ, 5 + 5 * phys,
+                      HCICommands.BT_HCI_OP_LE_SET_EXT_SCAN_PARAM, OwnAddrType, FilterPolicy, phys,
+                      *list(chain(*list(zip(PType, PInterval, PWindow)))))
+
     transport.send(idx, cmd);
     
     packet = transport.recv(idx, 5, to);
@@ -2442,11 +2439,10 @@ def le_set_extended_scan_enable(transport, idx, enable, FilterDup, duration, per
 """
 def le_extended_create_connection(transport, idx, FilterPolicy, OwnAddrType, PeerAddrType, AVal, phys, PInterval, PWindow, PConnIntervalMin, PConnIntervalMax, PConnLatency, PSupervisionTimeout, PMinCeLen, PMaxCeLen, to):
     
-    cmd = struct.pack('<HHHBBB6B', Commands.CMD_LE_EXTENDED_CREATE_CONNECTION_REQ, 16 + 16 * phys, HCICommands.BT_HCI_OP_LE_EXT_CREATE_CONN, FilterPolicy, OwnAddrType, PeerAddrType, *AVal);
-    if phys > 0:
-        cmd += struct.pack('<B' + 'HHHHHHHH' * phys, phys, *list(chain(*list(zip(PInterval, PWindow, PConnIntervalMin, PConnIntervalMax, PConnLatency, PSupervisionTimeout, PMinCeLen, PMaxCeLen)))));
-    else:
-        cmd += struct.pack('<B', phys);
+    cmd = struct.pack('<HHHBBB6BB' + 'HHHHHHHH' * phys, Commands.CMD_LE_EXTENDED_CREATE_CONNECTION_REQ, 12 + 16 * phys,
+                      HCICommands.BT_HCI_OP_LE_EXT_CREATE_CONN, FilterPolicy, OwnAddrType, PeerAddrType, *AVal, phys,
+                      *list(chain(*list(zip(PInterval, PWindow, PConnIntervalMin, PConnIntervalMax, PConnLatency, PSupervisionTimeout, PMinCeLen, PMaxCeLen)))))
+
     transport.send(idx, cmd);
     
     packet = transport.recv(idx, 8, to);
