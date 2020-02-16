@@ -71,7 +71,7 @@ def hci_gev_bv_01_c(transport, idx, trace):
     PrimMinInterval = [0 for _ in range(3)];
     PrimMaxInterval = [0 for _ in range(3)];
     AVal = [0 for _ in range(6)];
-    FilterPolicy, TxPower, PrimAdvPhy, SecAdvMaxSkip, SecAdvPhy, sid, ScanReqNotifyEnable = 0, 0, 0, 0, 0, 0;
+    FilterPolicy, TxPower, PrimAdvPhy, SecAdvMaxSkip, SecAdvPhy, sid, ScanReqNotifyEnable = 0, 0, 0, 0, 0, 0, 0;
 
     status = le_set_extended_advertising_parameters(transport, idx, handle, props, PrimMinInterval, PrimMaxInterval, PrimChannelMap, \
                                                     OwnAddrType, PeerAddrType, AVal, FilterPolicy, TxPower, PrimAdvPhy, SecAdvMaxSkip, \
@@ -176,7 +176,7 @@ def hci_gev_bv_01_c(transport, idx, trace):
     status = le_add_device_to_periodic_advertiser_list(transport, idx, AddrType, AVal, sid, 100);
     success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
 
-    AddrType, sid = 0;
+    AddrType, sid = 0, 0;
     AVal = [0 for i in range(6)];
 
     status = le_remove_device_from_periodic_advertiser_list(transport, idx, AddrType, AVal, sid, 100);
