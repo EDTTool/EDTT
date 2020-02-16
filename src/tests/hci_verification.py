@@ -37,29 +37,7 @@ def hci_gev_bv_01_c(transport, idx, trace):
     status = inquire(transport, idx, lap, length, NumRsp, 100);
     success = __check_command_complete_event(transport, idx, trace) and (status == 1);
 
-    FlowEnable = 0;
-        
-    status = set_controller_to_host_flow_control(transport, idx, FlowEnable, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
-
-    AclMtu, ScoMtu, AclPkts, ScoPkts = 23, 23, 6, 6;
-
-    status = host_buffer_size(transport, idx, AclMtu, ScoMtu, AclPkts, ScoPkts, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
-
-    NumHandles = 0;
-    HHandle = [0 for i in range(NumHandles)];
-    HCount = [0 for i in range(NumHandles)];
-
-    status = host_number_of_completed_packets(transport, idx, NumHandles, HHandle, HCount, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
-
     status = read_buffer_size(transport, idx, 100)[0];
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
-
-    handle = 0;
-        
-    status = read_rssi(transport, idx, handle, 100)[0];
     success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
 
     le, simul = 0, 0;
