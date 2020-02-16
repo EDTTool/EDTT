@@ -331,6 +331,9 @@ class Event:
 
     def __checkSize(self, size):
         if self.size != size:
+            if self.size == 4:
+                  # Unknown command response
+                  return False
             self.errors.add(ErrorCodes.BT_HCI_ERR_SIZE);
         return self.size >= size;
 
