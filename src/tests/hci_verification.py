@@ -37,7 +37,7 @@ def hci_gev_bv_01_c(transport, idx, trace):
     status = inquire(transport, idx, lap, length, NumRsp, 100);
     success = __check_command_complete_event(transport, idx, trace) and (status == 1);
 
-    status = read_buffer_size(transport, idx, 100)[0];
+    status = read_buffer_size(transport, idx, 100);
     success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
 
     le, simul = 0, 0;
@@ -72,14 +72,14 @@ def hci_gev_bv_01_c(transport, idx, trace):
     SHandle = [0 for i in range(SetNum)];
     SDuration = [0 for i in range(SetNum)];
     SMaxExtAdvEvts = [0 for i in range(SetNum)];
-    
+
     status = le_set_extended_advertising_enable(transport, idx, enable, SetNum, SHandle, SDuration, SMaxExtAdvEvts, 100);
     success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
 
-    status = le_read_maximum_advertising_data_length(transport, idx, 100)[0];
+    status = le_read_maximum_advertising_data_length(transport, idx, 100);
     success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
 
-    status = le_read_number_of_supported_advertising_sets(transport, idx, 100)[0];
+    status = le_read_number_of_supported_advertising_sets(transport, idx, 100);
     success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
 
     handle = 0;
@@ -163,10 +163,10 @@ def hci_gev_bv_01_c(transport, idx, trace):
     status = le_clear_periodic_advertiser_list(transport, idx, 100);
     success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
 
-    status = le_read_periodic_advertiser_list_size(transport, idx, 100)[0];
+    status = le_read_periodic_advertiser_list_size(transport, idx, 100);
     success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
 
-    status = le_read_rf_path_compensation(transport, idx, 100)[0];
+    status = le_read_rf_path_compensation(transport, idx, 100);
     success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
         
     TxPathComp, RxPathComp = 0, 0;
@@ -257,7 +257,7 @@ def hci_cin_bv_06_c(transport, idx, trace):
         trace.trace(6, "LE Add Device to White List Command returns status: 0x%02X" % status);
         success = success and __check_command_complete_event(transport, idx, trace) and ((status == 0) if n < WlSize else (status == 7));
 
-        status = le_remove_device_from_white_list(transport, idx, AddrType, lastAVal, 100);    
+        status = le_remove_device_from_white_list(transport, idx, AddrType, lastAVal, 100);
         trace.trace(6, "LE Remove Device from White List Command returns status: 0x%02X" % status);
         success = success and __check_command_complete_event(transport, idx, trace) and (status == 0);
 

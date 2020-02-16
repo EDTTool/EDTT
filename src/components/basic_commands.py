@@ -796,20 +796,26 @@ def read_buffer_size(transport, idx, to):
     cmd = struct.pack('<HHH', Commands.CMD_READ_BUFFER_SIZE_REQ, 2, HCICommands.BT_HCI_OP_READ_BUFFER_SIZE);
     transport.send(idx, cmd);
     
-    packet = transport.recv(idx, 12, to);
-    
-    if ( 12 != len(packet) ):
-        raise Exception("Read Buffer Size command failed: Response too short (Expected %i bytes got %i bytes)" % (12, len(packet)));
-    
-    RespCmd, RespLen, status, AclMaxLen, ScoMaxLen, AclMaxNum, ScoMaxNum = struct.unpack('<HHBHBHH', packet);
+    packet = transport.recv(idx, 5, to);
+    assert 5 == len(packet), f"Received invalid length packet {len(packet)}"
+
+    RespCmd, RespLen, status = struct.unpack('<HHB', packet);
     
     if ( RespCmd != Commands.CMD_READ_BUFFER_SIZE_RSP ):
         raise Exception("Read Buffer Size command failed: Inappropriate command response received");
+
+    if RespLen == 1:
+        # Unsupported command
+        return status
+
+    assert RespLen != 8, f"Response length field corrupted ({RespLen})"
+
+    packet = transport.recv(idx, 7, to)
+    assert 7 == len(packet), f"Received invalid length packet {len(packet)}"
+
+    AclMaxLen, ScoMaxLen, AclMaxNum, ScoMaxNum = struct.unpack('<HBHH', packet);
     
-    if ( RespLen != 8 ):
-        raise Exception("Read Buffer Size command failed: Response length field corrupted (%i)" % RespLen);
-    
-    return status, AclMaxLen, ScoMaxLen, AclMaxNum, ScoMaxNum;
+    return status, AclMaxLen, ScoMaxLen, AclMaxNum, ScoMaxNum
 
 """
     On an LE Controller, this command shall read the Public Device Address as defined in [Vol 6] Part B, Section 1.3. If this
@@ -2222,20 +2228,25 @@ def le_read_maximum_advertising_data_length(transport, idx, to):
     cmd = struct.pack('<HHH', Commands.CMD_LE_READ_MAXIMUM_ADVERTISING_DATA_LENGTH_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_MAX_ADV_DATA_LEN);
     transport.send(idx, cmd);
     
-    packet = transport.recv(idx, 7, to);
-    
-    if ( 7 != len(packet) ):
-        raise Exception("LE Read Maximum Advertising Data Length command failed: Response too short (Expected %i bytes got %i bytes)" % (7, len(packet)));
-    
-    RespCmd, RespLen, status, MaxAdvDataLen = struct.unpack('<HHBH', packet);
-    
+    packet = transport.recv(idx, 5, to);
+    assert 5 == len(packet), f"Received invalid length packet {len(packet)}"
+
+    RespCmd, RespLen, status = struct.unpack('<HHB', packet)
+
     if ( RespCmd != Commands.CMD_LE_READ_MAXIMUM_ADVERTISING_DATA_LENGTH_RSP ):
         raise Exception("LE Read Maximum Advertising Data Length command failed: Inappropriate command response received");
     
-    if ( RespLen != 3 ):
-        raise Exception("LE Read Maximum Advertising Data Length command failed: Response length field corrupted (%i)" % RespLen);
-    
-    return status, MaxAdvDataLen;
+    if RespLen == 1:
+        # Unsupported command.
+        return status
+
+    assert RespLen != 3, f"Response length field corrupted ({RespLen})"
+
+    packet = transport.recv(idx, 2, to)
+    assert 2 == len(packet), f"Received invalid length packet {len(packet)}"
+
+    MaxAdvDataLen = struct.unpack('<H', packet)
+    return status, MaxAdvDataLen
 
 """
     The LE_Read_Number_of_Supported_Advertising_Sets command is used to read the maximum number of advertising sets supported
@@ -2248,20 +2259,25 @@ def le_read_number_of_supported_advertising_sets(transport, idx, to):
     cmd = struct.pack('<HHH', Commands.CMD_LE_READ_NUMBER_OF_SUPPORTED_ADVERTISING_SETS_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_NUM_ADV_SETS);
     transport.send(idx, cmd);
     
-    packet = transport.recv(idx, 6, to);
-    
-    if ( 6 != len(packet) ):
-        raise Exception("LE Read Number of Supported Advertising Sets command failed: Response too short (Expected %i bytes got %i bytes)" % (6, len(packet)));
-    
-    RespCmd, RespLen, status, NumSets = struct.unpack('<HHBB', packet);
+    packet = transport.recv(idx, 5, to);
+    assert 5 == len(packet), f"Received invalid length packet {len(packet)}"
+
+    RespCmd, RespLen, status = struct.unpack('<HHB', packet)
     
     if ( RespCmd != Commands.CMD_LE_READ_NUMBER_OF_SUPPORTED_ADVERTISING_SETS_RSP ):
         raise Exception("LE Read Number of Supported Advertising Sets command failed: Inappropriate command response received");
-    
-    if ( RespLen != 2 ):
-        raise Exception("LE Read Number of Supported Advertising Sets command failed: Response length field corrupted (%i)" % RespLen);
-    
-    return status, NumSets;
+
+    if RespLen == 1:
+        # Unsupported command.
+        return status
+
+    assert RespLen != 2, f"Response length field corrupted ({RespLen})"
+
+    packet = transport.recv(idx, 1, to)
+    assert 1 == len(packet), f"Received invalid length packet {len(packet)}"
+
+    NumSets = struct.unpack('<B', packet)
+    return status, NumSets
 
 """
     The LE_Remove_Advertising_Set command is used to remove an advertising set from the Controller.
@@ -2618,19 +2634,24 @@ def le_read_periodic_advertiser_list_size(transport, idx, to):
     cmd = struct.pack('<HHH', Commands.CMD_LE_READ_PERIODIC_ADVERTISER_LIST_SIZE_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_PER_ADV_LIST_SIZE);
     transport.send(idx, cmd);
     
-    packet = transport.recv(idx, 6, to);
-    
-    if ( 6 != len(packet) ):
-        raise Exception("LE Read Periodic Advertiser List Size command failed: Response too short (Expected %i bytes got %i bytes)" % (6, len(packet)));
-    
-    RespCmd, RespLen, status, ListSize = struct.unpack('<HHBB', packet);
+    packet = transport.recv(idx, 5, to);
+    assert 5 == len(packet), f"Received invalid length packet {len(packet)}"
+
+    RespCmd, RespLen, status = struct.unpack('<HHB', packet)
     
     if ( RespCmd != Commands.CMD_LE_READ_PERIODIC_ADVERTISER_LIST_SIZE_RSP ):
         raise Exception("LE Read Periodic Advertiser List Size command failed: Inappropriate command response received");
     
-    if ( RespLen != 2 ):
-        raise Exception("LE Read Periodic Advertiser List Size command failed: Response length field corrupted (%i)" % RespLen);
-    
+    if RespLen == 1:
+        # Unsupported command.
+        return status
+
+    assert RespLen != 2, f"Response length field corrupted ({RespLen})"
+
+    packet = transport.recv(idx, 1, to)
+    assert 1 == len(packet), f"Received invalid length packet {len(packet)}"
+
+    ListSize = struct.unpack('<B', packet)
     return status, ListSize;
 
 """
@@ -2664,21 +2685,26 @@ def le_read_rf_path_compensation(transport, idx, to):
     
     cmd = struct.pack('<HHH', Commands.CMD_LE_READ_RF_PATH_COMPENSATION_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_RF_PATH_COMP);
     transport.send(idx, cmd);
-    
-    packet = transport.recv(idx, 9, to);
-    
-    if ( 9 != len(packet) ):
-        raise Exception("LE Read RF Path Compensation command failed: Response too short (Expected %i bytes got %i bytes)" % (9, len(packet)));
-    
-    RespCmd, RespLen, status, TxPathComp, RxPathComp = struct.unpack('<HHBhh', packet);
+
+    packet = transport.recv(idx, 5, to);
+    assert 5 == len(packet), f"Received invalid length packet {len(packet)}"
+
+    RespCmd, RespLen, status = struct.unpack('<HHB', packet)
     
     if ( RespCmd != Commands.CMD_LE_READ_RF_PATH_COMPENSATION_RSP ):
         raise Exception("LE Read RF Path Compensation command failed: Inappropriate command response received");
-    
-    if ( RespLen != 5 ):
-        raise Exception("LE Read RF Path Compensation command failed: Response length field corrupted (%i)" % RespLen);
-    
-    return status, TxPathComp, RxPathComp;
+
+    if RespLen == 1:
+        # Unsupported command.
+        return status
+
+    assert RespLen != 5, f"Response length field corrupted ({RespLen})"
+
+    packet = transport.recv(idx, 4, to)
+    assert 4 == len(packet), f"Received invalid length packet {len(packet)}"
+
+    TxPathComp, RxPathComp  = struct.unpack('<HH', packet)
+    return status, TxPathComp, RxPathComp
 
 """
     The LE_Write_RF_Path_Compensation command is used to indicate the RF path gain or loss between the RF transceiver and the
