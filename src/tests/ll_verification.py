@@ -3461,7 +3461,7 @@ def ll_con_sla_bv_77_c(transport, upperTester, lowerTester, trace):
 
             success = setDataLength(transport, upperTester, initiator.handles[1], txOctets, txTime, trace) and success;
 
-            changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and (cmaxTxTime == min(txTime, 592)));
+            changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and (cmaxTxTime == min(txTime, 328)));
 
             if changed:
                 gotEvent, handle, cmaxTxOctets, cmaxTxTime, maxRxOctets, maxRxTime = hasDataLengthChangedEvent(transport, upperTester, trace);
@@ -3532,7 +3532,7 @@ def ll_con_sla_bv_78_c(transport, upperTester, lowerTester, trace):
 
             success = setDataLength(transport, upperTester, initiator.handles[0], txOctets, txTime, trace) and success;
 
-            changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and (cmaxTxTime == min(txTime, 592)));
+            changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and (cmaxTxTime == min(txTime, 328)));
 
             if changed:
                 gotEvent, handle, cmaxTxOctets, cmaxTxTime, maxRxOctets, maxRxTime = hasDataLengthChangedEvent(transport, upperTester, trace);
@@ -3620,7 +3620,7 @@ def ll_con_sla_bv_80_c(transport, upperTester, lowerTester, trace):
 
             success = setDataLength(transport, upperTester, initiator.handles[1], txOctets, txTime, trace) and success;
 
-            changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and (cmaxTxTime == min(txTime, 592)));
+            changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and (cmaxTxTime == min(txTime, 328)));
 
             if changed:
                 gotEvent, handle, cmaxTxOctets, cmaxTxTime, maxRxOctets, maxRxTime = hasDataLengthChangedEvent(transport, upperTester, trace);
@@ -3701,7 +3701,7 @@ def ll_con_sla_bv_81_c(transport, upperTester, lowerTester, trace):
 
             success = setDataLength(transport, upperTester, initiator.handles[0], txOctets, txTime, trace) and success;
 
-            changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and (cmaxTxTime == min(txTime, 592)));
+            changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and (cmaxTxTime == min(txTime, 328)));
 
             if changed:
                 gotEvent, handle, cmaxTxOctets, cmaxTxTime, maxRxOctets, maxRxTime = hasDataLengthChangedEvent(transport, upperTester, trace);
@@ -4620,7 +4620,7 @@ def ll_con_mas_bv_73_c(transport, upperTester, lowerTester, trace):
 
             success = setDataLength(transport, lowerTester, initiator.handles[1], txOctets, txTime, trace) and success;
             trace.trace(6, "Setting TX Data Length %d and TX Data Time %d" % (txOctets, txTime));
-            changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and (cmaxTxTime == min(txTime, 592)));
+            changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and (cmaxTxTime == min(txTime, 328)));
 
             if changed:
                 gotEvent, handle, cmaxTxOctets, cmaxTxTime, maxRxOctets, maxRxTime = hasDataLengthChangedEvent(transport, lowerTester, trace);
@@ -4693,7 +4693,7 @@ def ll_con_mas_bv_74_c(transport, upperTester, lowerTester, trace):
 
             success = setDataLength(transport, upperTester, initiator.handles[0], txOctets, txTime, trace) and success;
 
-            changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and (cmaxTxTime == min(txTime, 592)));
+            changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and (cmaxTxTime == min(txTime, 328)));
 
             if changed:
                 gotEvent, handle, cmaxTxOctets, cmaxTxTime, maxRxOctets, maxRxTime = hasDataLengthChangedEvent(transport, upperTester, trace);
@@ -4777,7 +4777,7 @@ def ll_con_mas_bv_76_c(transport, upperTester, lowerTester, trace):
 
             success = setDataLength(transport, lowerTester, initiator.handles[1], txOctets, txTime, trace) and success;
 
-            changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and (cmaxTxTime == min(txTime, 592)));
+            changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and (cmaxTxTime == min(txTime, 328)));
 
             if changed:
                 gotEvent, handle, cmaxTxOctets, cmaxTxTime, maxRxOctets, maxRxTime = hasDataLengthChangedEvent(transport, lowerTester, trace);
@@ -4851,7 +4851,7 @@ def ll_con_mas_bv_77_c(transport, upperTester, lowerTester, trace):
 
             success = setDataLength(transport, upperTester, initiator.handles[0], txOctets, txTime, trace) and success;
 
-            changed = not ((cmaxTxOctets == min(txOctets, 60)) and (cmaxTxTime == min(txTime, 592)));
+            changed = not ((cmaxTxOctets == min(txOctets, 60)) and (cmaxTxTime == min(txTime, 328)));
 
             if changed:
                 gotEvent, handle, cmaxTxOctets, cmaxTxTime, maxRxOctets, maxRxTime = hasDataLengthChangedEvent(transport, upperTester, trace);
