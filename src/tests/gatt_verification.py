@@ -48,17 +48,22 @@ def attRequest(transport, initiator, txData, trace):
     Receive an ATT Profile response...
 """
 def attResponse(transport, initiator, trace, timeout=100):
-    success, rxData = True, [];
+    success, rxData, cid = True, [], None;
 
     while success:
         dataReady = le_data_ready(transport, initiator.initiator, timeout);
+        timeout = 99;
         success = success and dataReady;
         if dataReady:
             rxPBFlags, rxBCFlags, rxDataPart = le_data_read(transport, initiator.initiator, 100)[2:];
             trace.trace(10, "LE Data Read Command returns PB=%d BC=%d - %2d data bytes: %s" % \
                 (rxPBFlags, rxBCFlags, len(rxDataPart), formatArray(rxDataPart)));
+            if rxPBFlags & 0x2:
+                cid = struct.unpack("<H", bytes(rxDataPart[2:4]))[0]
+            if cid != 4:
+                trace.trace(6, "Dropping data for non-ATT CID: %d" % cid);
+                continue
             rxData += rxDataPart;
-            timeout = 99;
 
     return (len(rxData) > 0), rxData;
 
