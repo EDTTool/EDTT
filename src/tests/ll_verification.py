@@ -3444,8 +3444,8 @@ def ll_con_sla_bv_77_c(transport, upperTester, lowerTester, trace):
         """
             Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
         """
-        success = readRemoteFeatures(transport, upperTester, initiator.handles[1], trace) and success;
-        hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, upperTester, trace);
+        success = readRemoteFeatures(transport, lowerTester, initiator.handles[1], trace) and success;
+        hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, lowerTester, trace);
         showLEFeatures(features, trace);
 
         """
@@ -3523,8 +3523,8 @@ def ll_con_sla_bv_78_c(transport, upperTester, lowerTester, trace):
         """
             Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
         """
-        success = readRemoteFeatures(transport, upperTester, initiator.handles[1], trace) and success;
-        hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, upperTester, trace);
+        success = readRemoteFeatures(transport, lowerTester, initiator.handles[1], trace) and success;
+        hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, lowerTester, trace);
         showLEFeatures(features, trace);
 
         for txOctets, txTime in zip([ maxPacketLength, 27, 251, maxPacketLength, 27, 251, maxPacketLength, 27, 251, maxPacketLength, 27, 251 ], \
@@ -3596,8 +3596,8 @@ def ll_con_sla_bv_80_c(transport, upperTester, lowerTester, trace):
         """
             Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
         """
-        success = readRemoteFeatures(transport, upperTester, initiator.handles[1], trace) and success;
-        hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, upperTester, trace);
+        success = readRemoteFeatures(transport, lowerTester, initiator.handles[1], trace) and success;
+        hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, lowerTester, trace);
         showLEFeatures(features, trace);
 
         """
@@ -3682,8 +3682,8 @@ def ll_con_sla_bv_81_c(transport, upperTester, lowerTester, trace):
         """
             Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
         """
-        success = readRemoteFeatures(transport, upperTester, initiator.handles[1], trace) and success;
-        hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, upperTester, trace);
+        success = readRemoteFeatures(transport, lowerTester, initiator.handles[1], trace) and success;
+        hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, lowerTester, trace);
         showLEFeatures(features, trace);
 
         initiator.switchRoles();
