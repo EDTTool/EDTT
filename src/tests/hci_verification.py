@@ -21,11 +21,16 @@ global lowerIRK, upperIRK, lowerRandomAddress, upperRandomAddress;
 class Role(IntEnum):
     MASTER = 0
     SLAVE  = 1
-    
+
 def __check_command_complete_event(transport, idx, trace):
     event = get_event(transport, idx, 100);
     trace.trace(7, str(event));
     return event.isCommandComplete();
+
+def __check_unknown_command_rsp_event(transport, idx, trace, status):
+    event = get_event(transport, idx, 100);
+    trace.trace(7, str(event));
+    return status == 1 and (event.isCommandComplete() or event.isCommandStatus())
 
 """
     HCI/GEV/BV-01-C [Status return for Unsupported Commands]
@@ -35,15 +40,15 @@ def hci_gev_bv_01_c(transport, idx, trace):
     NumRsp, length, lap = 0, 1, toArray(0x9E8B00, 3);
 
     status = inquire(transport, idx, lap, length, NumRsp, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1);
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status);
 
     status = read_buffer_size(transport, idx, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     le, simul = 0, 0;
-        
+
     status = write_le_host_support(transport, idx, le, simul, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     handle, props, PrimChannelMap, OwnAddrType, PeerAddrType = 0, 0, 0, 0, 0;
     PrimMinInterval = [0 for _ in range(3)];
@@ -54,19 +59,19 @@ def hci_gev_bv_01_c(transport, idx, trace):
     status = le_set_extended_advertising_parameters(transport, idx, handle, props, PrimMinInterval, PrimMaxInterval, PrimChannelMap, \
                                                     OwnAddrType, PeerAddrType, AVal, FilterPolicy, TxPower, PrimAdvPhy, SecAdvMaxSkip, \
                                                     SecAdvPhy, sid, ScanReqNotifyEnable, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     handle, op, FragPref, dataLength = 0, 0, 0, 0;
     data = [0 for _ in range(251)];
 
     status = le_set_extended_advertising_data(transport, idx, handle, op, FragPref, dataLength, data, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     handle, op, FragPref, dataLength = 0, 0, 0, 0;
     data = [0 for _ in range(251)];
-        
+
     status = le_set_extended_scan_response_data(transport, idx, handle, op, FragPref, dataLength, data, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     enable, SetNum = 0, 0;
     SHandle = [0 for i in range(SetNum)];
@@ -74,37 +79,37 @@ def hci_gev_bv_01_c(transport, idx, trace):
     SMaxExtAdvEvts = [0 for i in range(SetNum)];
 
     status = le_set_extended_advertising_enable(transport, idx, enable, SetNum, SHandle, SDuration, SMaxExtAdvEvts, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     status = le_read_maximum_advertising_data_length(transport, idx, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     status = le_read_number_of_supported_advertising_sets(transport, idx, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     handle = 0;
 
     status = le_remove_advertising_set(transport, idx, handle, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     status = le_clear_advertising_sets(transport, idx, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     handle, MinInterval, MaxInterval, props = 0, 0, 0, 0;
-        
+
     status = le_set_periodic_advertising_parameters(transport, idx, handle, MinInterval, MaxInterval, props, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     handle, op, dataLength = 0, 0, 251;
     data = [0 for i in range(dataLength)];
 
     status = le_set_periodic_advertising_data(transport, idx, handle, op, dataLength, data, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     handle, enable = 0, 0;
-    
+
     status = le_set_periodic_advertising_enable(transport, idx, enable, handle, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     OwnAddrType, FilterPolicy, phys = 0, 0, 0;
     PType = [0 for i in range(phys)];
@@ -112,12 +117,12 @@ def hci_gev_bv_01_c(transport, idx, trace):
     PWindow = [0 for i in range(phys)];
 
     status = le_set_extended_scan_parameters(transport, idx, OwnAddrType, FilterPolicy, phys, PType, PInterval, PWindow, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     enable, FilterDup, duration, period = 0, 0, 0, 0;
 
     status = le_set_extended_scan_enable(transport, idx, enable, FilterDup, duration, period, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     FilterPolicy, OwnAddrType, PeerAddrType, phys = 0, 0, 0, 0;
     AVal = [0 for i in range(6)];
@@ -132,48 +137,48 @@ def hci_gev_bv_01_c(transport, idx, trace):
 
     status = le_extended_create_connection(transport, idx, FilterPolicy, OwnAddrType, PeerAddrType, AVal, phys, PInterval, PWindow, \
                                            PConnIntervalMin, PConnIntervalMax, PConnLatency, PSupervisionTimeout, PMinCeLen, PMaxCeLen, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     FilterPolicy, sid, AddrType, skip, SyncTimeout, unused = 0, 0, 0, 0, 0, 0;
     AVal = [0 for i in range(6)];
 
     status = le_periodic_advertising_create_sync(transport, idx, FilterPolicy, sid, AddrType, AVal, skip, SyncTimeout, unused, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     status = le_periodic_advertising_create_sync_cancel(transport, idx, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     handle = 0;
-        
+
     status = le_periodic_advertising_terminate_sync(transport, idx, handle, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     AddrType, sid = 0, 0;
     AVal = [0 for i in range(6)];
 
     status = le_add_device_to_periodic_advertiser_list(transport, idx, AddrType, AVal, sid, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     AddrType, sid = 0, 0;
     AVal = [0 for i in range(6)];
 
     status = le_remove_device_from_periodic_advertiser_list(transport, idx, AddrType, AVal, sid, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     status = le_clear_periodic_advertiser_list(transport, idx, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     status = le_read_periodic_advertiser_list_size(transport, idx, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     status = le_read_rf_path_compensation(transport, idx, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
-        
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
+
     TxPathComp, RxPathComp = 0, 0;
-        
+
     status = le_write_rf_path_compensation(transport, idx, TxPathComp, RxPathComp, 100);
-    success = __check_command_complete_event(transport, idx, trace) and (status == 1) and success;
-        
+    success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
+
     return success;
 
 """
@@ -279,7 +284,7 @@ def hci_cin_bv_09_c(transport, idx, trace):
         showLEFeatures(features, trace);
 
     return success;
-    
+
 """
     HCI/CCO/BV-07-C [BR/EDR Commands Not Supported on LE Device]
 """
@@ -363,7 +368,7 @@ def hci_cco_bv_11_c(transport, idx, trace):
     status = le_write_suggested_default_data_length(transport, idx, maxTxOctetsIn, maxTxTimeIn, 100);
     trace.trace(6, "LE Write Suggested Default Data Length Command returns status: 0x%02X" % status);
     success = __check_command_complete_event(transport, idx, trace) and (status == 0);
-    
+
     trace.trace(6, "Maximum number of transmitted payload octets: 0x%04X (%d)" % (maxTxOctetsIn, maxTxOctetsIn));
     trace.trace(6, "Maximum packet transmission time: 0x%04X (%d) microseconds" % (maxTxTimeIn, maxTxTimeIn));
 
@@ -462,7 +467,7 @@ def hci_cco_bv_17_c(transport, idx, trace):
     status = le_remove_device_from_periodic_advertiser_list(transport, idx, peerAddress.type, peerAddress.address, 1, 100);
     trace.trace(6, "LE Remove Device from Periodic Advertiser List Command returns status: 0x%02X" % status);
     success = success and __check_command_complete_event(transport, idx, trace) and (status == 0);
-        
+
     status = le_remove_device_from_periodic_advertiser_list(transport, idx, peerAddress.type, peerAddress.address, 1, 100);
     trace.trace(6, "LE Remove Device from Periodic Advertiser List Command returns status: 0x%02X" % status);
     success = success and __check_command_complete_event(transport, idx, trace) and (status == 0x42);
@@ -557,7 +562,7 @@ def hci_ddi_bi_02_c(transport, upperTester, trace):
     advertiser.responseData = [ 0x04, 0x09 ] + [ ord(char) for char in "IUT" ];
 
     advertiser.minInterval, advertiser.maxInterval = 32-2, 32-1;
-        
+
     successA = not advertiser.enable();
     success = successA and (advertiser.status == 0x12);
 
@@ -576,17 +581,17 @@ def hci_hfc_bv_04_c(transport, upperTester, lowerTester, trace):
             0x20 00 00 00 00 00 80 10 ~ Bits 4, 15, 61 (Disconnection Complete Event, Hardware Error Event, LE Meta Event)
     """
     events = [0x10, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20];
-        
+
     status = set_event_mask(transport, upperTester, events, 100);
     trace.trace(6, "Set Event Mask Command returns status: 0x%02X" % status);
     success = __check_command_complete_event(transport, upperTester, trace) and (status == 0);
 
     """ Bit:  5  4  4  3  2  1  0  0
               6  8  0  2  4  6  8  0
-           0x00 00 00 00 00 07 FF FD ~ All except 'LE Channel Selection Algorithm Event and LE Advertising Report Event'                  
+           0x00 00 00 00 00 07 FF FD ~ All except 'LE Channel Selection Algorithm Event and LE Advertising Report Event'
     """
     events = [0xFD, 0xFF, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00];
-        
+
     status = le_set_event_mask(transport, upperTester, events, 100);
     trace.trace(6, "LE Set Event Mask Command returns status: 0x%02X" % status);
     success = success and __check_command_complete_event(transport, upperTester, trace) and (status == 0);
@@ -614,14 +619,14 @@ def hci_hfc_bv_04_c(transport, upperTester, lowerTester, trace):
     success = success and scanner.disable();
     success = success and not scanner.qualifyResponses( 5 );
     success = success and not scanner.qualifyReports( 5 );
-        
+
     transport.wait(100);
-        
+
     connected = initiator.connect();
     success = success and connected;
 
     transport.wait(500);
-        
+
     if connected:
         success = success and initiator.disconnect(0x3E);
 
@@ -651,14 +656,14 @@ def hci_cm_bv_01_c(transport, upperTester, lowerTester, trace):
     for iutRole in [ Role.MASTER, Role.SLAVE ]:
         ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC, 0x456789ABCDEF if iutRole is Role.MASTER else 0x123456789ABC);
         peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC if iutRole is Role.MASTER else 0x456789ABCDEF);
-        if iutRole == Role.MASTER:        
+        if iutRole == Role.MASTER:
             advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, ownAddress, peerAddress);
         else:
             advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, ownAddress, peerAddress);
         advertiser.responseData = [ 0x04, 0x09 ] + [ ord(char) for char in "IUT" ];
-        
+
         initiatorAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC );
-        if iutRole == Role.MASTER:        
+        if iutRole == Role.MASTER:
             initiator = Initiator(transport, upperTester, lowerTester, trace, initiatorAddress, Address( IdentityAddressType.PUBLIC_IDENTITY, toNumber(ownAddress.address) ));
         else:
             initiator = Initiator(transport, lowerTester, upperTester, trace, initiatorAddress, Address( IdentityAddressType.PUBLIC_IDENTITY, toNumber(ownAddress.address) ));
@@ -667,12 +672,12 @@ def hci_cm_bv_01_c(transport, upperTester, lowerTester, trace):
         connected = initiator.connect();
         success = success and connected;
 
-        peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );        
+        peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
         status, RPA = le_read_peer_resolvable_address(transport, upperTester, peerAddress.type, peerAddress.address, 100);
         trace.trace(6, "LE Read Peer Resolvable Address Command returns status: 0x%02X RPA: %s" % (status, formatAddress(RPA)));
         success = success and __check_command_complete_event(transport, upperTester, trace) and (status == 0);
 
-        if iutRole == Role.MASTER:        
+        if iutRole == Role.MASTER:
             success = success and (initiator.peerRPA() == RPA);
             if initiator.peerRPA() != RPA:
                 print((initiator.peerRPA()));
@@ -682,9 +687,9 @@ def hci_cm_bv_01_c(transport, upperTester, lowerTester, trace):
             success = success and (initiator.localRPA() == RPA);
             if initiator.localRPA() != RPA:
                 trace.trace(5, "Expected: %s Received: %s" % (Address(None, initiator.localRPA()), Address(None, RPA)));
-        
+
         transport.wait(200);
-      
+
         if connected:
             connected = not initiator.disconnect(0x3E);
             success = success and not connected;
@@ -715,14 +720,14 @@ def hci_cm_bv_02_c(transport, upperTester, lowerTester, trace):
     for iutRole in [ Role.MASTER, Role.SLAVE ]:
         ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC, 0x456789ABCDEF if iutRole is Role.MASTER else 0x123456789ABC);
         peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC if iutRole is Role.MASTER else 0x456789ABCDEF);
-        if iutRole == Role.MASTER:        
+        if iutRole == Role.MASTER:
             advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, ownAddress, peerAddress);
         else:
             advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, ownAddress, peerAddress);
         advertiser.responseData = [ 0x04, 0x09 ] + [ ord(char) for char in "IUT" ];
-        
+
         initiatorAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC );
-        if iutRole == Role.MASTER:        
+        if iutRole == Role.MASTER:
             initiator = Initiator(transport, upperTester, lowerTester, trace, initiatorAddress, Address( IdentityAddressType.PUBLIC_IDENTITY, toNumber(ownAddress.address) ));
         else:
             initiator = Initiator(transport, lowerTester, upperTester, trace, initiatorAddress, Address( IdentityAddressType.PUBLIC_IDENTITY, toNumber(ownAddress.address) ));
@@ -731,18 +736,18 @@ def hci_cm_bv_02_c(transport, upperTester, lowerTester, trace):
         connected = initiator.connect();
         success = success and connected;
 
-        peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );        
+        peerAddress = Address( SimpleAddressType.PUBLIC, 0x456789ABCDEF );
         status, RPA = le_read_local_resolvable_address(transport, upperTester, peerAddress.type, peerAddress.address, 100);
         trace.trace(6, "LE Read Local Resolvable Address Command returns status: 0x%02X RPA: %s" % (status, formatAddress(RPA)));
         success = success and __check_command_complete_event(transport, upperTester, trace) and (status == 0);
 
-        if iutRole == Role.MASTER:        
+        if iutRole == Role.MASTER:
             success = success and (initiator.localRPA() == RPA);
         else:
             success = success and (initiator.peerRPA() == RPA);
-        
+
         transport.wait(200);
-      
+
         if connected:
             connected = not initiator.disconnect(0x3E);
             success = success and not connected;
@@ -800,7 +805,7 @@ def hci_dsu_bv_02_c(transport, upperTester, lowerTester, trace):
     status = reset(transport, upperTester, 100);
     trace.trace(6, "Reset Command returns status: 0x%02X" % status);
     success = success and __check_command_complete_event(transport, upperTester, trace) and (status == 0);
-    
+
     """
         Verify that the IUT has stopped Advertising
     """
@@ -808,7 +813,7 @@ def hci_dsu_bv_02_c(transport, upperTester, lowerTester, trace):
     scanner.monitor();
     success = success and scanner.disable();
     success = success and not scanner.qualifyReports( 5 );
-        
+
     return success;
 
 """
@@ -828,7 +833,7 @@ def hci_dsu_bv_03_c(transport, upperTester, lowerTester, trace):
     success = success and initiator.connect();
 
     transport.wait(200);
-        
+
     status = reset(transport, upperTester, 100);
     trace.trace(6, "Reset Command returns status: 0x%02X" % status);
     success = success and __check_command_complete_event(transport, upperTester, trace) and (status == 0);
@@ -849,7 +854,7 @@ def hci_dsu_bv_03_c(transport, upperTester, lowerTester, trace):
         if event.event == Events.BT_HCI_EVT_DISCONN_COMPLETE:
             status, handle, reason = event.decode();
             success = success and (reason == 0x08); # Connection Timeout
-        
+
     return success;
 
 """
@@ -883,7 +888,7 @@ def hci_dsu_bv_04_c(transport, upperTester, lowerTester, trace):
     scanner.monitor();
     success = success and scanner.disable();
     success = success and not scanner.qualifyReports( 5 );
-        
+
     return success;
 
 """
@@ -928,11 +933,11 @@ def hci_dsu_bv_06_c(transport, upperTester, lowerTester, trace):
     success = success and initiator.connect();
 
     transport.wait(200);
-        
+
     status = reset(transport, upperTester, 100);
     trace.trace(6, "Reset Command returns status: 0x%02X" % status);
     success = success and __check_command_complete_event(transport, upperTester, trace) and (status == 0);
-        
+
     return success;
 
 __tests__ = {
@@ -989,10 +994,10 @@ def preamble(transport, trace):
     trace.trace(4, "preamble Standby " + ("PASS" if success else "FAIL"));
     success, upperIRK, upperRandomAddress = preamble_device_address_set(transport, 0, trace);
     trace.trace(4, "preamble Device Address Set " + ("PASS" if success else "FAIL"));
-    ok = ok and success;            
+    ok = ok and success;
     success, lowerIRK, lowerRandomAddress = preamble_device_address_set(transport, 1, trace);
     trace.trace(4, "preamble Device Address Set " + ("PASS" if success else "FAIL"));
-    return ok and success;          
+    return ok and success;
 
 """
     Run a test given its test_spec
@@ -1000,7 +1005,7 @@ def preamble(transport, trace):
 def run_a_test(args, transport, trace, test_spec):
     try:
         success = preamble(transport, trace);
-    except Exception as e: 
+    except Exception as e:
         trace.trace(3, "Preamble generated exception: %s" % str(e));
         success = False;
 
@@ -1011,7 +1016,7 @@ def run_a_test(args, transport, trace, test_spec):
             success = success and test_f(transport, 0, 1, trace);
         else:
             success = success and test_f(transport, 0, trace);
-    except Exception as e: 
+    except Exception as e:
         import traceback
         traceback.print_exc()
         trace.trace(3, "Test generated exception: %s" % str(e));
