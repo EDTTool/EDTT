@@ -4019,7 +4019,12 @@ def ll_con_mas_bv_13_c(transport, upperTester, lowerTester, trace):
         hasFeatures, expectedFeatures = readLocalFeatures(transport, lowerTester, trace)
         hasFeatures, upperFeatures    = readLocalFeatures(transport, upperTester, trace)
         upperLocalFeatures = toNumber(upperFeatures)
-        expectedMaskedFeatures = toNumber(expectedFeatures) & (upperLocalFeatures | ~LL_FEAT_BIT_MASK_VALID)
+        """
+            Keep octets 1-7, and do the logical and on octet 0; also ignore the non-valid bits
+            See BT Core spec V5.2, Vol 6. Part B chapter 4.6
+        """
+        expectedMaskedFeatures = toNumber([upperFeatures[0] & expectedFeatures[0]] + list(expectedFeatures[1:7]))
+        expectedMaskedFeatures = expectedMaskedFeatures & LL_FEAT_BIT_MASK_VALID
         """
             Issue the LE Read Remote Features Command, verify the reception of a Command Status Event
         """
@@ -4031,7 +4036,8 @@ def ll_con_mas_bv_13_c(transport, upperTester, lowerTester, trace):
         success = success and hasFeatures;
         if hasFeatures:
             showLEFeatures(features, trace)
-            success = (toNumber(features) == expectedMaskedFeatures) and success
+            receivedMaskedFeatures = toNumber(features) & LL_FEAT_BIT_MASK_VALID
+            success = (receivedMaskedFeatures == expectedMaskedFeatures) and success
 
         success = initiator.disconnect(0x3E) and success;
     else:
