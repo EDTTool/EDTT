@@ -593,7 +593,7 @@ def ll_ddi_adv_bv_06_c(transport, upperTester, lowerTester, trace):
             success = scanner.disable() and success;
             success = success and not scanner.qualifyReports( 1 );
 
-            success = initiator.disconnect(0x3E) and success;
+            success = initiator.disconnect(0x13) and success;
         else:
             success = advertiser.disable() and success;
 
@@ -635,7 +635,7 @@ def ll_ddi_adv_bv_07_c(transport, upperTester, lowerTester, trace):
         success = scanner.disable() and success;
         success = success and not scanner.qualifyReports( 1 );
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -799,7 +799,7 @@ def ll_ddi_adv_bv_09_c(transport, upperTester, lowerTester, trace):
                         """
                             If a connection was established - disconnect...
                         """
-                        success = initiator.disconnect(0x3E) and success;
+                        success = initiator.disconnect(0x13) and success;
                         break;
 
                 if not connected:
@@ -837,7 +837,7 @@ def ll_ddi_adv_bv_11_c(transport, upperTester, lowerTester, trace):
     connected = initiator.connect();
     success = success and connected;
     if connected:
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -993,7 +993,7 @@ def ll_ddi_adv_bv_19_c(transport, upperTester, lowerTester, trace):
     success = success and connected;
 
     if connected:
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -1790,7 +1790,7 @@ def ll_con_adv_bv_01_c(transport, upperTester, lowerTester, trace):
 
         transport.wait(24820);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -1815,7 +1815,7 @@ def ll_con_adv_bv_04_c(transport, upperTester, lowerTester, trace):
     connected = initiator.connect();
     success = success and not connected;
     if connected:
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         """
             Need to stop connection attempt - otherwise following commands will fail with not allowed...
@@ -1844,7 +1844,7 @@ def ll_con_adv_bv_04_c(transport, upperTester, lowerTester, trace):
     if connected:
         transport.wait(26630);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -1879,7 +1879,7 @@ def ll_con_adv_bv_09_c(transport, upperTester, lowerTester, trace):
 
         transport.wait(2600);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -1914,7 +1914,7 @@ def ll_con_adv_bv_10_c(transport, upperTester, lowerTester, trace):
 
         transport.wait(2600);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -1956,7 +1956,7 @@ def ll_con_ini_bv_01_c(transport, upperTester, lowerTester, trace):
 
             if connected:
                 transport.wait(2660);
-                success = initiator.disconnect(0x3E) and success;
+                success = initiator.disconnect(0x13) and success;
             else:
                 success = advertiser.disable() and success;
 
@@ -1978,7 +1978,7 @@ def ll_con_ini_bv_02_c(transport, upperTester, lowerTester, trace):
 
     if connected:
         transport.wait(2660);
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2028,7 +2028,7 @@ def ll_con_ini_bv_06_c(transport, upperTester, lowerTester, trace):
             success = (connected if i == 2 else not connected) and success;
 
             if connected:
-                success = initiator.disconnect(0x3E) and success;
+                success = initiator.disconnect(0x13) and success;
             else:
                 """
                     Need to stop connection attempt - otherwise following commands will fail with not allowed...
@@ -2082,7 +2082,7 @@ def ll_con_ini_bv_07_c(transport, upperTester, lowerTester, trace):
             success = (connected if i == 2 else not connected) and success;
 
             if connected:
-                success = initiator.disconnect(0x3E) and success;
+                success = initiator.disconnect(0x13) and success;
             else:
                 """
                     Need to stop connection attempt - otherwise following commands will fail with not allowed...
@@ -2121,7 +2121,7 @@ def ll_con_ini_bv_08_c(transport, upperTester, lowerTester, trace):
 
     if connected:
         transport.wait(2660);
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2158,7 +2158,7 @@ def ll_con_ini_bv_09_c(transport, upperTester, lowerTester, trace):
     connected = initiator.postConnect();
     success = success and not connected;
     if connected:
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2172,7 +2172,7 @@ def ll_con_ini_bv_09_c(transport, upperTester, lowerTester, trace):
 
     if connected:
         transport.wait(2660);
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2209,7 +2209,7 @@ def ll_con_ini_bv_10_c(transport, upperTester, lowerTester, trace):
     connected = initiator.postConnect();
     success = success and not connected;
     if connected:
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2223,7 +2223,7 @@ def ll_con_ini_bv_10_c(transport, upperTester, lowerTester, trace):
 
     if connected:
         transport.wait(2660);
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2260,7 +2260,7 @@ def ll_con_ini_bv_11_c(transport, upperTester, lowerTester, trace):
     connected = initiator.postConnect();
     success = success and not connected;
     if connected:
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2274,7 +2274,7 @@ def ll_con_ini_bv_11_c(transport, upperTester, lowerTester, trace):
 
     if connected:
         transport.wait(2660);
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2323,7 +2323,7 @@ def ll_con_ini_bv_12_c(transport, upperTester, lowerTester, trace):
         localRPAs = [ initiator.localRPA()[ : ], [ 0 for _ in range(6) ] ];
 
         transport.wait(2660);
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
         success = advertiser.enable() and success;
         connected = initiator.connect();
@@ -2334,7 +2334,7 @@ def ll_con_ini_bv_12_c(transport, upperTester, lowerTester, trace):
 
             localRPAs[1] = initiator.localRPA()[ : ];
 
-            success = initiator.disconnect(0x3E) and success;
+            success = initiator.disconnect(0x13) and success;
             """
                 Verify that the Initiator Address (RPA) used in the CONNECT_IND has changed due to RPA timeout...
             """
@@ -2377,7 +2377,7 @@ def ll_con_ini_bv_16_c(transport, upperTester, lowerTester, trace):
 
         transport.wait(2840);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2412,7 +2412,7 @@ def ll_con_ini_bv_17_c(transport, upperTester, lowerTester, trace):
 
         transport.wait(2840);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2444,7 +2444,7 @@ def ll_con_ini_bv_18_c(transport, upperTester, lowerTester, trace):
     success = success and not connected;
 
     if connected:
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = initiator.cancelConnect();
         success = advertiser.disable() and success;
@@ -2479,7 +2479,7 @@ def ll_con_ini_bv_19_c(transport, upperTester, lowerTester, trace):
     success = success and not connected;
 
     if connected:
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = initiator.cancelConnect();
         success = advertiser.disable() and success;
@@ -2521,7 +2521,7 @@ def ll_con_ini_bv_20_c(transport, upperTester, lowerTester, trace):
     if connected:
         transport.wait(2660);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2561,7 +2561,7 @@ def ll_con_ini_bv_21_c(transport, upperTester, lowerTester, trace):
     if connected:
         transport.wait(2660);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2616,7 +2616,7 @@ def ll_con_ini_bv_23_c(transport, upperTester, lowerTester, trace):
             Check that the InitA from the connect indication is a RPA
         """
         success = Address( None, initiator.localRPA() ).isResolvablePrivate() and success;
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2650,7 +2650,7 @@ def ll_con_ini_bv_24_c(transport, upperTester, lowerTester, trace):
     success = success and not connected;
 
     if connected:
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = initiator.cancelConnect();
         success = advertiser.disable() and success;
@@ -2708,7 +2708,7 @@ def ll_con_sla_bv_04_c(transport, upperTester, lowerTester, trace):
 
                 count += len(txData);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2745,7 +2745,7 @@ def ll_con_sla_bv_05_c(transport, upperTester, lowerTester, trace):
                     success = success and dataReceived and (len(rxData) == len(txData)) and (rxData == txData);
         trace.trace(7, '-'*77);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2793,7 +2793,7 @@ def ll_con_sla_bv_06_c(transport, upperTester, lowerTester, trace):
                 success = success and dataReceived and (len(rxData) == len(txData)) and (rxData == txData);
         trace.trace(7, '-'*77);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2832,7 +2832,7 @@ def ll_con_sla_bv_10_c(transport, upperTester, lowerTester, trace):
 
             transport.wait(int(4 * interval * 1.25));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2902,7 +2902,7 @@ def ll_con_sla_bv_13_c(transport, upperTester, lowerTester, trace):
             event = get_event(transport, upperTester, 100);
             trace.trace(7, str(event));
         else:
-            success = initiator.disconnect(0x3E) and success;
+            success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2935,7 +2935,7 @@ def ll_con_sla_bv_14_c(transport, upperTester, lowerTester, trace):
         if hasFeatures:
             showFeatures(features, trace);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2965,7 +2965,7 @@ def ll_con_sla_bv_19_c(transport, upperTester, lowerTester, trace):
             trace.trace(8, " sub-version: 0x%04x" % subVersion);
             trace.trace(8, "manufacturer: 0x%04x" % manufacturer);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -2995,7 +2995,7 @@ def ll_con_sla_bv_20_c(transport, upperTester, lowerTester, trace):
             trace.trace(8, " sub-version: 0x%04x" % subVersion);
             trace.trace(8, "manufacturer: 0x%04x" % manufacturer);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -3032,7 +3032,7 @@ def ll_con_sla_bv_22_c(transport, upperTester, lowerTester, trace):
         if hasFeatures:
             showFeatures(features, trace);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -3074,7 +3074,7 @@ def ll_con_sla_bv_24_c(transport, upperTester, lowerTester, trace):
             transport.wait(int(4 * interval * 1.25));
 
         initiator.resetRoles();
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -3114,7 +3114,7 @@ def ll_con_sla_bv_25_c(transport, upperTester, lowerTester, trace):
         transport.wait(int(4 * interval * 1.25));
 
         initiator.resetRoles();
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -3177,7 +3177,7 @@ def ll_con_sla_bv_26_c(transport, upperTester, lowerTester, trace):
 
         transport.wait(int(4 * interval * 1.25));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -3222,7 +3222,7 @@ def ll_con_sla_bv_27_c(transport, upperTester, lowerTester, trace):
 
         transport.wait(int(4 * interval * 1.25));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -3259,7 +3259,7 @@ def ll_con_sla_bv_29_c(transport, upperTester, lowerTester, trace):
 
             transport.wait(int(4 * interval * 1.25));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -3297,7 +3297,7 @@ def ll_con_sla_bv_33_c(transport, upperTester, lowerTester, trace):
 
         transport.wait(int(4 * interval * 1.25))
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -3332,7 +3332,7 @@ def ll_con_sla_bv_34_c(transport, upperTester, lowerTester, trace):
         """
         success = not initiator.updated() and (initiator.status == errCode) and success;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -3380,7 +3380,7 @@ def ll_con_sla_bv_40_c(transport, upperTester, lowerTester, trace):
 
         initiator.resetRoles()
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -3415,7 +3415,7 @@ def ll_con_sla_bv_42_c(transport, upperTester, lowerTester, trace):
                 success = success and (initiator.txPhys == expTxPhys) and (initiator.rxPhys == expRxPhys);
             random.shuffle(tabel)
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -3492,7 +3492,7 @@ def ll_con_sla_bv_77_c(transport, upperTester, lowerTester, trace):
         """
             Note: Disconnect can generate another LE Data Length Change event...
         """
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -3567,7 +3567,7 @@ def ll_con_sla_bv_78_c(transport, upperTester, lowerTester, trace):
         """
             Note: Disconnect can generate another LE Data Length Change event...
         """
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -3651,7 +3651,7 @@ def ll_con_sla_bv_80_c(transport, upperTester, lowerTester, trace):
         """
             Note: Disconnect can generate another LE Data Length Change event...
         """
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -3732,7 +3732,7 @@ def ll_con_sla_bv_81_c(transport, upperTester, lowerTester, trace):
         """
             Note: Disconnect can generate another LE Data Length Change event...
         """
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -3763,7 +3763,7 @@ def ll_con_sla_bi_08_c(transport, upperTester, lowerTester, trace):
         """
         success = not initiator.updated() and (initiator.status == errCode) and success;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -3820,7 +3820,7 @@ def ll_con_mas_bv_03_c(transport, upperTester, lowerTester, trace):
                 else:
                     break;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -3857,7 +3857,7 @@ def ll_con_mas_bv_04_c(transport, upperTester, lowerTester, trace):
                     success = success and dataReceived and (len(rxData) == len(txData)) and (rxData == txData);
         trace.trace(7, '-'*77);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -3907,7 +3907,7 @@ def ll_con_mas_bv_05_c(transport, upperTester, lowerTester, trace):
                 pbFlags = 1;
         trace.trace(7, '-'*77);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -3946,7 +3946,7 @@ def ll_con_mas_bv_07_c(transport, upperTester, lowerTester, trace):
         """
         transport.wait(int(4 * interval * 1.25));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -4033,7 +4033,7 @@ def ll_con_mas_bv_13_c(transport, upperTester, lowerTester, trace):
             showLEFeatures(features, trace)
             success = (toNumber(features) == expectedMaskedFeatures) and success
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -4068,7 +4068,7 @@ def ll_con_mas_bv_20_c(transport, upperTester, lowerTester, trace):
             trace.trace(8, " sub-version: 0x%04x" % subVersion);
             trace.trace(8, "manufacturer: 0x%04x" % manufacturer);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -4103,7 +4103,7 @@ def ll_con_mas_bv_21_c(transport, upperTester, lowerTester, trace):
             trace.trace(8, " sub-version: 0x%04x" % subVersion);
             trace.trace(8, "manufacturer: 0x%04x" % manufacturer);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -4138,7 +4138,7 @@ def ll_con_mas_bv_23_c(transport, upperTester, lowerTester, trace):
             # Bit 27 is "Masked to Peer" an must be cleared
             success = ((toNumber(features) & (1 << 27)) == 0) and success;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -4177,7 +4177,7 @@ def ll_con_mas_bv_24_c(transport, upperTester, lowerTester, trace):
             """
             transport.wait(int(4 * interval * 1.25));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -4220,7 +4220,7 @@ def ll_con_mas_bv_25_c(transport, upperTester, lowerTester, trace):
             """
             transport.wait(int(4 * interval * 1.25));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -4279,7 +4279,7 @@ def ll_con_mas_bv_26_c(transport, upperTester, lowerTester, trace):
         """
         transport.wait(int(4 * interval * 1.25));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -4333,7 +4333,7 @@ def ll_con_mas_bv_27_c(transport, upperTester, lowerTester, trace):
         """
         transport.wait(int(8 * interval * 1.25));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -4372,7 +4372,7 @@ def ll_con_mas_bv_29_c(transport, upperTester, lowerTester, trace):
         """
         transport.wait(int(8 * interval * 1.25));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -4416,7 +4416,7 @@ def ll_con_mas_bv_30_c(transport, upperTester, lowerTester, trace):
 
             initiator.resetRoles();
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -4457,7 +4457,7 @@ def ll_con_mas_bv_34_c(transport, upperTester, lowerTester, trace):
 
         initiator.resetRoles();
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -4497,7 +4497,7 @@ def ll_con_mas_bv_35_c(transport, upperTester, lowerTester, trace):
 
         initiator.resetRoles();
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -4532,7 +4532,7 @@ def ll_con_mas_bv_41_c(transport, upperTester, lowerTester, trace):
                 success = success and (initiator.txPhys == expTxPhys) and (initiator.rxPhys == expRxPhys);
             random.shuffle(table);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -4574,7 +4574,7 @@ def ll_con_mas_bv_43_c(transport, upperTester, lowerTester, trace):
 
         initiator.resetRoles();
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -4655,7 +4655,7 @@ def ll_con_mas_bv_73_c(transport, upperTester, lowerTester, trace):
         """
             Note: Disconnect can generate another LE Data Length Change event...
         """
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -4724,7 +4724,7 @@ def ll_con_mas_bv_74_c(transport, upperTester, lowerTester, trace):
         """
             Note: Disconnect can generate another LE Data Length Change event...
         """
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -4808,7 +4808,7 @@ def ll_con_mas_bv_76_c(transport, upperTester, lowerTester, trace):
         """
             Note: Disconnect can generate another LE Data Length Change event...
         """
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -4886,7 +4886,7 @@ def ll_con_mas_bv_77_c(transport, upperTester, lowerTester, trace):
         """
             Note: Disconnect can generate another LE Data Length Change event...
         """
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
@@ -4922,7 +4922,7 @@ def ll_con_mas_bi_06_c(transport, upperTester, lowerTester, trace):
 
         initiator.resetRoles();
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
     else:
         success = advertiser.disable() and success;
 
