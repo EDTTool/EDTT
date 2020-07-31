@@ -2685,7 +2685,7 @@ def ll_con_sla_bv_04_c(transport, upperTester, lowerTester, trace):
             pbFlags ^= 1;
             for j in range(count):
 
-                dataSent = writeData(transport, upperTester, initiator.handles[1], pbFlags, txData, trace);
+                dataSent = writeData(transport, upperTester, initiator.handles[0], pbFlags, txData, trace);
                 success = success and dataSent;
                 if dataSent:
                     dataReceived, rxData = readData(transport, lowerTester, trace);
@@ -2700,7 +2700,7 @@ def ll_con_sla_bv_04_c(transport, upperTester, lowerTester, trace):
             while count < 1000:
                 txData = [0 for _ in range(random.randint(28, maxPacketLength))];
 
-                dataSent = writeData(transport, upperTester, initiator.handles[1], pbFlags, txData, trace);
+                dataSent = writeData(transport, upperTester, initiator.handles[0], pbFlags, txData, trace);
                 success = success and dataSent;
                 if dataSent:
                     dataReceived, rxData = readDataFragments(transport, lowerTester, trace);
@@ -2738,7 +2738,7 @@ def ll_con_sla_bv_05_c(transport, upperTester, lowerTester, trace):
             pbFlags ^= 1;
             trace.trace(7, '-'*77);
             for j in range(count):
-                dataSent = writeData(transport, lowerTester, initiator.handles[0], pbFlags, txData, trace);
+                dataSent = writeData(transport, lowerTester, initiator.handles[1], pbFlags, txData, trace);
                 success = success and dataSent;
                 if dataSent:
                     dataReceived, rxData = readData(transport, upperTester, trace);
@@ -2777,7 +2777,7 @@ def ll_con_sla_bv_06_c(transport, upperTester, lowerTester, trace):
             """
             pbFlags ^= 1;
             trace.trace(7, '-'*77);
-            dataSent = writeData(transport, upperTester, initiator.handles[1], pbFlags, txData, trace);
+            dataSent = writeData(transport, upperTester, initiator.handles[0], pbFlags, txData, trace);
             success = success and dataSent;
             if dataSent:
                 dataReceived, rxData = readData(transport, lowerTester, trace);
@@ -2786,7 +2786,7 @@ def ll_con_sla_bv_06_c(transport, upperTester, lowerTester, trace):
                 Lower Tester is sending Data...
             """
             pbFlags ^= 1;
-            dataSent = writeData(transport, lowerTester, initiator.handles[0], pbFlags, txData, trace);
+            dataSent = writeData(transport, lowerTester, initiator.handles[1], pbFlags, txData, trace);
             success = success and dataSent;
             if dataSent:
                 dataReceived, rxData = readData(transport, upperTester, trace);
@@ -2986,7 +2986,7 @@ def ll_con_sla_bv_20_c(transport, upperTester, lowerTester, trace):
     success = success and connected;
 
     if connected:
-        success = readRemoteVersionInformation(transport, lowerTester, initiator.handles[1], trace) and success;
+        success = readRemoteVersionInformation(transport, lowerTester, initiator.handles[0], trace) and success;
 
         hasVersion, handle, version, manufacturer, subVersion = hasReadRemoteVersionInformationCompleteEvent(transport, lowerTester, trace);
         success = success and hasVersion;
@@ -3023,7 +3023,7 @@ def ll_con_sla_bv_22_c(transport, upperTester, lowerTester, trace):
         """
             Upper Tester sends an HCI_LE_Read_Remote_Features command...
         """
-        success = readRemoteFeatures(transport, upperTester, initiator.handles[1], trace) and success;
+        success = readRemoteFeatures(transport, upperTester, initiator.handles[0], trace) and success;
         """
             Upper tester expects LE Read Remote Features Complete event...
         """
@@ -3444,7 +3444,7 @@ def ll_con_sla_bv_77_c(transport, upperTester, lowerTester, trace):
         """
             Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
         """
-        success = readRemoteFeatures(transport, lowerTester, initiator.handles[1], trace) and success;
+        success = readRemoteFeatures(transport, lowerTester, initiator.handles[0], trace) and success;
         hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, lowerTester, trace);
         showLEFeatures(features, trace);
 
@@ -3523,14 +3523,14 @@ def ll_con_sla_bv_78_c(transport, upperTester, lowerTester, trace):
         """
             Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
         """
-        success = readRemoteFeatures(transport, lowerTester, initiator.handles[1], trace) and success;
+        success = readRemoteFeatures(transport, lowerTester, initiator.handles[0], trace) and success;
         hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, lowerTester, trace);
         showLEFeatures(features, trace);
 
         for txOctets, txTime in zip([ maxPacketLength, 27, 251, maxPacketLength, 27, 251, maxPacketLength, 27, 251, maxPacketLength, 27, 251 ], \
                                     [ maxPacketTime, maxPacketTime, maxPacketTime, 328, 328, 328, 2120, 2120, 2120, 2120, 2120, 2120 ]):
 
-            success = setDataLength(transport, upperTester, initiator.handles[0], txOctets, txTime, trace) and success;
+            success = setDataLength(transport, upperTester, initiator.handles[1], txOctets, txTime, trace) and success;
 
             changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and (cmaxTxTime == min(txTime, 328)));
 
@@ -3549,7 +3549,7 @@ def ll_con_sla_bv_78_c(transport, upperTester, lowerTester, trace):
                 Upper Tester is sending Data...
             """
             txData = [_ for _ in range(maxPacketLength)];
-            dataSent = writeData(transport, upperTester, initiator.handles[0], pbFlags, txData, trace);
+            dataSent = writeData(transport, upperTester, initiator.handles[1], pbFlags, txData, trace);
             success = success and dataSent;
             if dataSent:
                 dataReceived, rxData = readDataFragments(transport, lowerTester, trace);
@@ -3559,7 +3559,7 @@ def ll_con_sla_bv_78_c(transport, upperTester, lowerTester, trace):
             """
             txData = [_ for _ in range(27)];
             for i in range(20):
-                dataSent = writeData(transport, lowerTester, initiator.handles[1], pbFlags, txData, trace);
+                dataSent = writeData(transport, lowerTester, initiator.handles[0], pbFlags, txData, trace);
                 success = success and dataSent;
                 if dataSent:
                     dataReceived, rxData = readData(transport, upperTester, trace);
@@ -3596,7 +3596,7 @@ def ll_con_sla_bv_80_c(transport, upperTester, lowerTester, trace):
         """
             Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
         """
-        success = readRemoteFeatures(transport, lowerTester, initiator.handles[1], trace) and success;
+        success = readRemoteFeatures(transport, lowerTester, initiator.handles[0], trace) and success;
         hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, lowerTester, trace);
         showLEFeatures(features, trace);
 
@@ -3682,7 +3682,7 @@ def ll_con_sla_bv_81_c(transport, upperTester, lowerTester, trace):
         """
             Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
         """
-        success = readRemoteFeatures(transport, lowerTester, initiator.handles[1], trace) and success;
+        success = readRemoteFeatures(transport, lowerTester, initiator.handles[0], trace) and success;
         hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, lowerTester, trace);
         showLEFeatures(features, trace);
 
@@ -3699,7 +3699,7 @@ def ll_con_sla_bv_81_c(transport, upperTester, lowerTester, trace):
         for txOctets, txTime in zip([ maxPacketLength, 27, 251, maxPacketLength, 27, 251, maxPacketLength, 27, 251, maxPacketLength, 27, 251 ], \
                                     [ maxPacketTime, maxPacketTime, maxPacketTime, 328, 328, 328, 2120, 2120, 2120, 2120, 2120, 2120 ]):
 
-            success = setDataLength(transport, upperTester, initiator.handles[0], txOctets, txTime, trace) and success;
+            success = setDataLength(transport, upperTester, initiator.handles[1], txOctets, txTime, trace) and success;
 
             changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and (cmaxTxTime == min(txTime, 328)));
 
@@ -3714,7 +3714,7 @@ def ll_con_sla_bv_81_c(transport, upperTester, lowerTester, trace):
                 Upper Tester is sending Data...
             """
             txData = [_ for _ in range(maxPacketLength)];
-            dataSent = writeData(transport, upperTester, initiator.handles[0], pbFlags, txData, trace);
+            dataSent = writeData(transport, upperTester, initiator.handles[1], pbFlags, txData, trace);
             success = success and dataSent;
             if dataSent:
                 dataReceived, rxData = readDataFragments(transport, lowerTester, trace);
@@ -3724,7 +3724,7 @@ def ll_con_sla_bv_81_c(transport, upperTester, lowerTester, trace):
             """
             txData = [_ for _ in range(27)];
             for i in range(20):
-                dataSent = writeData(transport, lowerTester, initiator.handles[1], pbFlags, txData, trace);
+                dataSent = writeData(transport, lowerTester, initiator.handles[0], pbFlags, txData, trace);
                 success = success and dataSent;
                 if dataSent:
                     dataReceived, rxData = readData(transport, upperTester, trace);
@@ -4023,7 +4023,7 @@ def ll_con_mas_bv_13_c(transport, upperTester, lowerTester, trace):
         """
             Issue the LE Read Remote Features Command, verify the reception of a Command Status Event
         """
-        success = readRemoteFeatures(transport, upperTester, initiator.handles[1], trace) and success;
+        success = readRemoteFeatures(transport, upperTester, initiator.handles[0], trace) and success;
         """
             Await the reception of a LE Read Remote Features Command Complete Event
         """
@@ -4057,7 +4057,7 @@ def ll_con_mas_bv_20_c(transport, upperTester, lowerTester, trace):
         """
             Issue the Read Remote Version Information Command, verify the reception of a Command Status Event
         """
-        success = readRemoteVersionInformation(transport, upperTester, initiator.handles[1], trace) and success;
+        success = readRemoteVersionInformation(transport, upperTester, initiator.handles[0], trace) and success;
         """
             Await the reception of a Read Remote Version Information Complete Event
         """
@@ -4603,7 +4603,7 @@ def ll_con_mas_bv_73_c(transport, upperTester, lowerTester, trace):
         """
             Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
         """
-        success = readRemoteFeatures(transport, upperTester, initiator.handles[1], trace) and success;
+        success = readRemoteFeatures(transport, upperTester, initiator.handles[0], trace) and success;
         hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, upperTester, trace);
         showLEFeatures(features, trace);
 
@@ -4684,7 +4684,7 @@ def ll_con_mas_bv_74_c(transport, upperTester, lowerTester, trace):
         """
             Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
         """
-        success = readRemoteFeatures(transport, upperTester, initiator.handles[1], trace) and success;
+        success = readRemoteFeatures(transport, upperTester, initiator.handles[0], trace) and success;
         hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, upperTester, trace);
         showLEFeatures(features, trace);
 
@@ -4753,7 +4753,7 @@ def ll_con_mas_bv_76_c(transport, upperTester, lowerTester, trace):
         """
             Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
         """
-        success = readRemoteFeatures(transport, upperTester, initiator.handles[1], trace) and success;
+        success = readRemoteFeatures(transport, upperTester, initiator.handles[0], trace) and success;
         hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, upperTester, trace);
         showLEFeatures(features, trace);
 
@@ -4837,7 +4837,7 @@ def ll_con_mas_bv_77_c(transport, upperTester, lowerTester, trace):
         """
             Feature exchange as specified in LL.TS.5.1.1, chapter 4.1.5
         """
-        success = readRemoteFeatures(transport, upperTester, initiator.handles[1], trace) and success;
+        success = readRemoteFeatures(transport, upperTester, initiator.handles[0], trace) and success;
         hasFeatures, handle, features = hasReadRemoteFeaturesCompleteEvent(transport, upperTester, trace);
         showLEFeatures(features, trace);
 
