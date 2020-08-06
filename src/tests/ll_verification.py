@@ -5143,8 +5143,8 @@ def ll_sec_adv_bv_06_c(transport, upperTester, lowerTester, trace):
                                                 ExtendedAddressType.RESOLVABLE_OR_RANDOM, ExtendedAddressType.PUBLIC);
 
     lowerAddresses = [ publicIdentityAddress(lowerTester), \
-                       Address( ExtendedAddressType.RESOLVABLE_OR_RANDOM, toNumber(lowerRandomAddress) | 0xC00000000000 ), \
-                       Address( ExtendedAddressType.RESOLVABLE_OR_RANDOM, toNumber(lowerRandomAddress) & 0x3FFFFFFFFFFF ) ];
+                       Address( ExtendedAddressType.PUBLIC, toNumber(lowerRandomAddress) | 0xC00000000000 ), \
+                       Address( ExtendedAddressType.PUBLIC, toNumber(lowerRandomAddress) & 0x3FFFFFFFFFFF ) ];
 
     success = True;
     for lowerAddress in lowerAddresses:
