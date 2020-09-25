@@ -3039,7 +3039,7 @@ def ll_con_sla_bv_22_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-24-C [Slave requests Connection Parameters – Master Accepts]
+    LL/CON/SLA/BV-24-C [Slave requests Connection Parameters - Master Accepts]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen (NOTE: Timing not verified - see Air trace)
@@ -3081,7 +3081,7 @@ def ll_con_sla_bv_24_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-25-C [Slave requests Connection Parameters – Master Rejects]
+    LL/CON/SLA/BV-25-C [Slave requests Connection Parameters - Master Rejects]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen (NOTE: Timing not verified - see Air trace)
@@ -3121,7 +3121,7 @@ def ll_con_sla_bv_25_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-26-C [Slave requests Connection Parameters – same procedure collision]
+    LL/CON/SLA/BV-26-C [Slave requests Connection Parameters - same procedure collision]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen (NOTE: Timing not verified - see Air trace)
@@ -3184,7 +3184,7 @@ def ll_con_sla_bv_26_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-27-C [Slave requests Connection Parameters – channel map update procedure collision]
+    LL/CON/SLA/BV-27-C [Slave requests Connection Parameters - channel map update procedure collision]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen (NOTE: Timing not verified - see Air trace)
@@ -3229,7 +3229,7 @@ def ll_con_sla_bv_27_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-29-C [Slave responds to Connection Parameters – Master no Preferred Periodicity]
+    LL/CON/SLA/BV-29-C [Slave responds to Connection Parameters - Master no Preferred Periodicity]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen (NOTE: Timing not verified - see Air trace)
@@ -3266,7 +3266,7 @@ def ll_con_sla_bv_29_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-33-C [Slave responds to Connection Parameters request – event masked]
+    LL/CON/SLA/BV-33-C [Slave responds to Connection Parameters request - event masked]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen
@@ -3304,7 +3304,7 @@ def ll_con_sla_bv_33_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-34-C [Slave responds to Connection Parameters request – Host rejects]
+    LL/CON/SLA/BV-34-C [Slave responds to Connection Parameters request - Host rejects]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen
@@ -3422,7 +3422,7 @@ def ll_con_sla_bv_42_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-77-C [Slave Packet Data Length Update – Pesponding to Packet Data Length Update Procedure; LE 1M PHY]
+    LL/CON/SLA/BV-77-C [Slave Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 1M PHY]
 
     Last modified: 09-08-2019
     Reviewed and verified: 09-08-2019 Henrik Eriksen (Note: Requires that CONFIG_BT_CTLR_DATA_LENGTH_MAX=60 is set in the prj.conf file for the ptt_app.)
@@ -3574,7 +3574,7 @@ def ll_con_sla_bv_78_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-80-C [Slave Packet Data Length Update – Pesponding to Packet Data Length Update Procedure; LE 2M PHY]
+    LL/CON/SLA/BV-80-C [Slave Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 2M PHY]
 
     Last modified: 09-08-2019
     Reviewed and verified: 09-08-2019 Henrik Eriksen (Note: Requires that CONFIG_BT_CTLR_DATA_LENGTH_MAX=60 is set in the prj.conf file for the ptt_app.)
@@ -3739,7 +3739,7 @@ def ll_con_sla_bv_81_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BI-08-C [Slave responds to Connection Parameters request – Illegal Parameters]
+    LL/CON/SLA/BI-08-C [Slave responds to Connection Parameters request - Illegal Parameters]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen
@@ -4151,7 +4151,7 @@ def ll_con_mas_bv_23_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-24-C [Master requests Connection Parameters – Slave Accepts]
+    LL/CON/MAS/BV-24-C [Master requests Connection Parameters - Slave Accepts]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (NOTE: Actual effect of change cannot be verified - see Air trace)
@@ -4190,7 +4190,7 @@ def ll_con_mas_bv_24_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-25-C [Master requests Connection Parameters – Slave Rejects]
+    LL/CON/MAS/BV-25-C [Master requests Connection Parameters - Slave Rejects]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (NOTE: Actual effect of change cannot be verified - see Air trace)
@@ -4233,7 +4233,7 @@ def ll_con_mas_bv_25_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-26-C [Master requests Connection Parameters – same procedure collision]
+    LL/CON/MAS/BV-26-C [Master requests Connection Parameters - same procedure collision]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (NOTE: Test not according to specs - not possible!)
@@ -4346,7 +4346,7 @@ def ll_con_mas_bv_27_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-29-C [Master requests Connection Parameters – Slave unsupported]
+    LL/CON/MAS/BV-29-C [Master requests Connection Parameters - Slave unsupported]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (NOTE: Change to connection interval cannot be verified - see Air trace)
@@ -4385,7 +4385,7 @@ def ll_con_mas_bv_29_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-30-C [Master responds to Connection Parameters request – no Preferred_Periodicity]
+    LL/CON/MAS/BV-30-C [Master responds to Connection Parameters request - no Preferred_Periodicity]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (NOTE: Change to connection interval cannot be verified - see Air trace)
@@ -4429,7 +4429,7 @@ def ll_con_mas_bv_30_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-34-C [Master responds to Connection Parameters request – event masked]
+    LL/CON/MAS/BV-34-C [Master responds to Connection Parameters request - event masked]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen
@@ -4470,7 +4470,7 @@ def ll_con_mas_bv_34_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-35-C [Master responds to Connection Parameters request – Host rejects]
+    LL/CON/MAS/BV-35-C [Master responds to Connection Parameters request - Host rejects]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen
@@ -4587,7 +4587,7 @@ def ll_con_mas_bv_43_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-73-C [Master Packet Data Length Update – Pesponding to Packet Data Length Update Procedure; LE 1M PHY]
+    LL/CON/MAS/BV-73-C [Master Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 1M PHY]
 
     Last modified: 08-08-2019
     Reviewed and verified: 08-08-2019 Henrik Eriksen (Note: Requires that CONFIG_BT_CTLR_DATA_LENGTH_MAX=60 is set in the prj.conf file for the ptt_app.)
@@ -4668,7 +4668,7 @@ def ll_con_mas_bv_73_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-74-C [Master Packet Data Length Update – Initiating Packet Data Length Update Procedure; LE 1M PHY]
+    LL/CON/MAS/BV-74-C [Master Packet Data Length Update - Initiating Packet Data Length Update Procedure; LE 1M PHY]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (Note: Requires that CONFIG_BT_CTLR_DATA_LENGTH_MAX=60 is set in the prj.conf file for the ptt_app.)
@@ -4737,7 +4737,7 @@ def ll_con_mas_bv_74_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-76-C [Master Packet Data Length Update – Pesponding to Packet Data Length Update Procedure; LE 2M PHY]
+    LL/CON/MAS/BV-76-C [Master Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 2M PHY]
 
     Last modified: 08-08-2019
     Reviewed and verified: 08-08-2019 Henrik Eriksen (Note: Requires that CONFIG_BT_CTLR_DATA_LENGTH_MAX=60 is set in the prj.conf file for the ptt_app.)
@@ -4821,7 +4821,7 @@ def ll_con_mas_bv_76_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-77-C [Master Packet Data Length Update – Initiating Packet Data Length Update Procedure; LE 2M PHY]
+    LL/CON/MAS/BV-77-C [Master Packet Data Length Update - Initiating Packet Data Length Update Procedure; LE 2M PHY]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (Note: Requires that CONFIG_BT_CTLR_DATA_LENGTH_MAX=60 is set in the prj.conf file for the ptt_app.)
@@ -4899,7 +4899,7 @@ def ll_con_mas_bv_77_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BI-06-C [Master responds to Connection Parameter Request – illegal parameters]
+    LL/CON/MAS/BI-06-C [Master responds to Connection Parameter Request - illegal parameters]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen
@@ -5927,7 +5927,7 @@ __tests__ = {
     "LL/CON/INI/BV-21-C": [ ll_con_ini_bv_21_c, "Connect to Directed Advertiser using Identity address with Device Privacy thru Resolving List" ],
     "LL/CON/INI/BV-23-C": [ ll_con_ini_bv_23_c, "Network Privacy - Connection Establishment using whitelist and resolving list with address resolution disabled" ],
     "LL/CON/INI/BV-24-C": [ ll_con_ini_bv_24_c, "Network Privacy - Connection Establishment using resolving list with address resolution disabled" ],
-    "LL/CON/MAS/BI-06-C": [ ll_con_mas_bi_06_c, "Master responds to Connection Parameter Request – illegal parameters" ],
+    "LL/CON/MAS/BI-06-C": [ ll_con_mas_bi_06_c, "Master responds to Connection Parameter Request - illegal parameters" ],
     "LL/CON/MAS/BV-03-C": [ ll_con_mas_bv_03_c, "Master sending Data packets to Slave" ],
     "LL/CON/MAS/BV-04-C": [ ll_con_mas_bv_04_c, "Master receiving Data packets from Slave" ],
     "LL/CON/MAS/BV-05-C": [ ll_con_mas_bv_05_c, "Master sending and receiving Data packets to and form Slave" ],
@@ -5938,21 +5938,21 @@ __tests__ = {
     "LL/CON/MAS/BV-20-C": [ ll_con_mas_bv_20_c, "Master requests Version Exchange procedure" ],
     "LL/CON/MAS/BV-21-C": [ ll_con_mas_bv_21_c, "Master responds to Version Exchange procedure" ],
     "LL/CON/MAS/BV-23-C": [ ll_con_mas_bv_23_c, "Master responds to Feature Exchange procedure" ],
-    "LL/CON/MAS/BV-24-C": [ ll_con_mas_bv_24_c, "Master requests Connection Parameters – Slave Accepts" ],
-    "LL/CON/MAS/BV-25-C": [ ll_con_mas_bv_25_c, "Master requests Connection Parameters – Slave Rejects" ],
-    "LL/CON/MAS/BV-26-C": [ ll_con_mas_bv_26_c, "Master requests Connection Parameters – same procedure collision" ],
+    "LL/CON/MAS/BV-24-C": [ ll_con_mas_bv_24_c, "Master requests Connection Parameters - Slave Accepts" ],
+    "LL/CON/MAS/BV-25-C": [ ll_con_mas_bv_25_c, "Master requests Connection Parameters - Slave Rejects" ],
+    "LL/CON/MAS/BV-26-C": [ ll_con_mas_bv_26_c, "Master requests Connection Parameters - same procedure collision" ],
     "LL/CON/MAS/BV-27-C": [ ll_con_mas_bv_27_c, "Master requests Connection Parameters - Channel Map Update procedure collision" ],
-    "LL/CON/MAS/BV-29-C": [ ll_con_mas_bv_29_c, "Master requests Connection Parameters – Slave unsupported" ],
-    "LL/CON/MAS/BV-30-C": [ ll_con_mas_bv_30_c, "Master responds to Connection Parameters request – no Preferred_Periodicity" ],
-    "LL/CON/MAS/BV-34-C": [ ll_con_mas_bv_34_c, "Master responds to Connection Parameters request – event masked" ],
-    "LL/CON/MAS/BV-35-C": [ ll_con_mas_bv_35_c, "Master responds to Connection Parameters request – Host rejects" ],
+    "LL/CON/MAS/BV-29-C": [ ll_con_mas_bv_29_c, "Master requests Connection Parameters - Slave unsupported" ],
+    "LL/CON/MAS/BV-30-C": [ ll_con_mas_bv_30_c, "Master responds to Connection Parameters request - no Preferred_Periodicity" ],
+    "LL/CON/MAS/BV-34-C": [ ll_con_mas_bv_34_c, "Master responds to Connection Parameters request - event masked" ],
+    "LL/CON/MAS/BV-35-C": [ ll_con_mas_bv_35_c, "Master responds to Connection Parameters request - Host rejects" ],
     "LL/CON/MAS/BV-41-C": [ ll_con_mas_bv_41_c, "Master requests PHY Update procedure" ],
     "LL/CON/MAS/BV-43-C": [ ll_con_mas_bv_43_c, "Master responds to PHY Update procedure" ],
-    "LL/CON/MAS/BV-73-C": [ ll_con_mas_bv_73_c, "Master Packet Data Length Update – Pesponding to Packet Data Length Update Procedure; LE 1M PHY" ],
-    "LL/CON/MAS/BV-74-C": [ ll_con_mas_bv_74_c, "Master Packet Data Length Update – Initiating Packet Data Length Update Procedure; LE 1M PHY" ],
-    "LL/CON/MAS/BV-76-C": [ ll_con_mas_bv_76_c, "Master Packet Data Length Update – Pesponding to Packet Data Length Update Procedure; LE 2M PHY" ],
-    "LL/CON/MAS/BV-77-C": [ ll_con_mas_bv_77_c, "Master Packet Data Length Update – Initiating Packet Data Length Update Procedure; LE 2M PHY" ],
-    "LL/CON/SLA/BI-08-C": [ ll_con_sla_bi_08_c, "Slave responds to Connection Parameters request – Illegal Parameters" ],
+    "LL/CON/MAS/BV-73-C": [ ll_con_mas_bv_73_c, "Master Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 1M PHY" ],
+    "LL/CON/MAS/BV-74-C": [ ll_con_mas_bv_74_c, "Master Packet Data Length Update - Initiating Packet Data Length Update Procedure; LE 1M PHY" ],
+    "LL/CON/MAS/BV-76-C": [ ll_con_mas_bv_76_c, "Master Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 2M PHY" ],
+    "LL/CON/MAS/BV-77-C": [ ll_con_mas_bv_77_c, "Master Packet Data Length Update - Initiating Packet Data Length Update Procedure; LE 2M PHY" ],
+    "LL/CON/SLA/BI-08-C": [ ll_con_sla_bi_08_c, "Slave responds to Connection Parameters request - Illegal Parameters" ],
     "LL/CON/SLA/BV-04-C": [ ll_con_sla_bv_04_c, "Connection where Slave sends data to Master" ],
     "LL/CON/SLA/BV-05-C": [ ll_con_sla_bv_05_c, "Connection where Slave receives data from Master" ],
     "LL/CON/SLA/BV-06-C": [ ll_con_sla_bv_06_c, "Connection where Slave sends and receives data to and from Master" ],
@@ -5964,18 +5964,18 @@ __tests__ = {
     "LL/CON/SLA/BV-19-C": [ ll_con_sla_bv_19_c, "Slave requests Version Exchange procedure" ],
     "LL/CON/SLA/BV-20-C": [ ll_con_sla_bv_20_c, "Slave responds to Version Exchange procedure" ],
     "LL/CON/SLA/BV-22-C": [ ll_con_sla_bv_22_c, "Slave requests Feature Exchange procedure" ],
-    "LL/CON/SLA/BV-24-C": [ ll_con_sla_bv_24_c, "Slave requests Connection Parameters – Master Accepts" ],
-    "LL/CON/SLA/BV-25-C": [ ll_con_sla_bv_25_c, "Slave requests Connection Parameters – Master Rejects" ],
-    "LL/CON/SLA/BV-26-C": [ ll_con_sla_bv_26_c, "Slave requests Connection Parameters – same procedure collision" ],
-    "LL/CON/SLA/BV-27-C": [ ll_con_sla_bv_27_c, "Slave requests Connection Parameters – channel map update procedure collision" ],
-    "LL/CON/SLA/BV-29-C": [ ll_con_sla_bv_29_c, "Slave responds to Connection Parameters – Master no Preferred Periodicity" ],
-    "LL/CON/SLA/BV-33-C": [ ll_con_sla_bv_33_c, "Slave responds to Connection Parameters request – event masked" ],
-    "LL/CON/SLA/BV-34-C": [ ll_con_sla_bv_34_c, "Slave responds to Connection Parameters request – Host rejects" ],
+    "LL/CON/SLA/BV-24-C": [ ll_con_sla_bv_24_c, "Slave requests Connection Parameters - Master Accepts" ],
+    "LL/CON/SLA/BV-25-C": [ ll_con_sla_bv_25_c, "Slave requests Connection Parameters - Master Rejects" ],
+    "LL/CON/SLA/BV-26-C": [ ll_con_sla_bv_26_c, "Slave requests Connection Parameters - same procedure collision" ],
+    "LL/CON/SLA/BV-27-C": [ ll_con_sla_bv_27_c, "Slave requests Connection Parameters - channel map update procedure collision" ],
+    "LL/CON/SLA/BV-29-C": [ ll_con_sla_bv_29_c, "Slave responds to Connection Parameters - Master no Preferred Periodicity" ],
+    "LL/CON/SLA/BV-33-C": [ ll_con_sla_bv_33_c, "Slave responds to Connection Parameters request - event masked" ],
+    "LL/CON/SLA/BV-34-C": [ ll_con_sla_bv_34_c, "Slave responds to Connection Parameters request - Host rejects" ],
     "LL/CON/SLA/BV-40-C": [ ll_con_sla_bv_40_c, "Slave requests PHY Update procedure" ],
     "LL/CON/SLA/BV-42-C": [ ll_con_sla_bv_42_c, "Slave responds to PHY Update procedure" ],
-    "LL/CON/SLA/BV-77-C": [ ll_con_sla_bv_77_c, "Slave Packet Data Length Update – Pesponding to Packet Data Length Update Procedure; LE 1M PHY" ],
+    "LL/CON/SLA/BV-77-C": [ ll_con_sla_bv_77_c, "Slave Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 1M PHY" ],
     "LL/CON/SLA/BV-78-C": [ ll_con_sla_bv_78_c, "Slave requests Packet Data Length Update procedure; LE 1M PHY" ],
-    "LL/CON/SLA/BV-80-C": [ ll_con_sla_bv_80_c, "Slave Packet Data Length Update – Pesponding to Packet Data Length Update Procedure; LE 2M PHY" ],
+    "LL/CON/SLA/BV-80-C": [ ll_con_sla_bv_80_c, "Slave Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 2M PHY" ],
     "LL/CON/SLA/BV-81-C": [ ll_con_sla_bv_81_c, "Slave requests Packet Data Length Update procedure; LE 2M PHY" ],
     "LL/DDI/ADV/BV-01-C": [ ll_ddi_adv_bv_01_c, "Non-Connectable Advertising Packets on one channel" ],
     "LL/DDI/ADV/BV-02-C": [ ll_ddi_adv_bv_02_c, "Undirected Advertising Packets on one channel" ],
