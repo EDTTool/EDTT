@@ -716,7 +716,7 @@ def gap_conn_dcon_bv_01_c(transport, upperTester, lowerTester, trace):
             advertising = not connected;
 
             if connected:
-                connected = not initiator.disconnect(0x3E);
+                connected = not initiator.disconnect(0x13);
                 success = success and not connected;
 
     if advertising:             
@@ -759,7 +759,7 @@ def gap_conn_ucon_bv_01_c(transport, upperTester, lowerTester, trace):
             success = success and connected;
             advertising = not connected;
 
-            connected = not initiator.disconnect(0x3E);
+            connected = not initiator.disconnect(0x13);
             success = success and not connected;
 
     if advertising:             
@@ -802,7 +802,7 @@ def gap_conn_ucon_bv_02_c(transport, upperTester, lowerTester, trace):
             success = success and connected;
             advertising = not connected;
 
-            connected = not initiator.disconnect(0x3E);
+            connected = not initiator.disconnect(0x13);
             success = success and not connected;
 
     if advertising:             
@@ -845,7 +845,7 @@ def gap_conn_ucon_bv_03_c(transport, upperTester, lowerTester, trace):
             success = success and connected;
             advertising = not connected;
 
-            connected = not initiator.disconnect(0x3E);
+            connected = not initiator.disconnect(0x13);
             success = success and not connected;
 
     if advertising:
@@ -879,7 +879,7 @@ def gap_conn_acep_bv_01_c(transport, upperTester, lowerTester, trace):
         success = success and connected;
         advertising = not connected;
 
-        connected = not initiator.disconnect(0x3E);
+        connected = not initiator.disconnect(0x13);
         success = success and not connected;
 
     if advertising:             
@@ -926,7 +926,7 @@ def gap_conn_acep_bv_03_c(transport, upperTester, lowerTester, trace):
         success = success and connected;
         advertising = not connected;
 
-        connected = not initiator.disconnect(0x3E);
+        connected = not initiator.disconnect(0x13);
         success = success and not connected;
 
     if advertising:             
@@ -975,7 +975,7 @@ def gap_conn_acep_bv_04_c(transport, upperTester, lowerTester, trace):
         success = success and connected;
         advertising = not connected;
 
-        connected = not initiator.disconnect(0x3E);
+        connected = not initiator.disconnect(0x13);
         success = success and not connected;
 
     if advertising:             
@@ -1002,7 +1002,7 @@ def gap_conn_gcep_bv_01_c(transport, upperTester, lowerTester, trace):
     advertising = not connected;
 
     if connected: 
-        connected = not initiator.disconnect(0x3E);
+        connected = not initiator.disconnect(0x13);
         success = success and not connected;
 
     if advertising:             
@@ -1027,7 +1027,7 @@ def gap_conn_gcep_bv_02_c(transport, upperTester, lowerTester, trace):
     advertising = not connected;
 
     if connected: 
-        connected = not initiator.disconnect(0x3E);
+        connected = not initiator.disconnect(0x13);
         success = success and not connected;
 
     if advertising:             
@@ -1066,7 +1066,7 @@ def gap_conn_gcep_bv_05_c(transport, upperTester, lowerTester, trace):
     advertising = not connected;
 
     if connected: 
-        connected = not initiator.disconnect(0x3E);
+        connected = not initiator.disconnect(0x13);
         success = success and not connected;
 
     if advertising:             
@@ -1107,7 +1107,7 @@ def gap_conn_gcep_bv_06_c(transport, upperTester, lowerTester, trace):
     advertising = not connected;
 
     if connected: 
-        connected = not initiator.disconnect(0x3E);
+        connected = not initiator.disconnect(0x13);
         success = success and not connected;
 
     if advertising:             
@@ -1155,7 +1155,7 @@ def gap_conn_cpup_bv_01_c(transport, upperTester, lowerTester, trace):
 
         transport.wait(100)
         initiator.resetRoles()
-        disconnected = initiator.disconnect(0x3E)
+        disconnected = initiator.disconnect(0x13)
         success = success and disconnected
     else:
         advertiser.disable()
@@ -1198,7 +1198,7 @@ def gap_conn_cpup_bv_02_c(transport, upperTester, lowerTester, trace):
             IUT ignores error case and continues normal operation
         """
         initiator.resetRoles()
-        disconnected = initiator.disconnect(0x3E)
+        disconnected = initiator.disconnect(0x13)
         success = success and disconnected
     else:
         advertiser.disable()
@@ -1241,7 +1241,7 @@ def gap_conn_cpup_bv_03_c(transport, upperTester, lowerTester, trace):
             Close connection
         """
         initiator.resetRoles()
-        disconnected = initiator.disconnect(0x3E)
+        disconnected = initiator.disconnect(0x13)
         success = success and disconnected
     else:
         advertiser.disable()
@@ -1284,7 +1284,7 @@ def gap_conn_cpup_bv_04_c(transport, upperTester, lowerTester, trace):
             Close connection
         """
         initiator.resetRoles()
-        disconnected = initiator.disconnect(0x3E)
+        disconnected = initiator.disconnect(0x13)
         success = success and disconnected
     else:
         advertiser.disable()
@@ -1327,7 +1327,7 @@ def gap_conn_cpup_bv_05_c(transport, upperTester, lowerTester, trace):
             Close connection
         """
         initiator.resetRoles()
-        disconnected = initiator.disconnect(0x3E)
+        disconnected = initiator.disconnect(0x13)
         success = success and disconnected
     else:
         advertiser.disable()
@@ -1368,7 +1368,7 @@ def gap_conn_cpup_bv_06_c(transport, upperTester, lowerTester, trace):
         """
             Close connection
         """
-        disconnected = initiator.disconnect(0x3E)
+        disconnected = initiator.disconnect(0x13)
         success = success and disconnected
     else:
         advertiser.disable()
@@ -1824,7 +1824,7 @@ def gap_conn_enc(transport, upperTester, lowerTester, trace):
         trace.trace(6, "Failed to encrypt link using LE Legacy Pairing!");
 
     if connected: 
-        connected = not initiator.disconnect(0x3E);
+        connected = not initiator.disconnect(0x13);
         success = success and not connected;
 
     if advertising:             

@@ -338,7 +338,7 @@ def hci_cco_bv_09_c(transport, upperTester, lowerTester, trace):
         """
             Note: Disconnect can generate another LE Data Length Change event...
         """
-        success = success and initiator.disconnect(0x3E);
+        success = success and initiator.disconnect(0x13);
 
     else:
         advertiser.disable();
@@ -628,7 +628,7 @@ def hci_hfc_bv_04_c(transport, upperTester, lowerTester, trace):
     transport.wait(500);
 
     if connected:
-        success = success and initiator.disconnect(0x3E);
+        success = success and initiator.disconnect(0x13);
 
     return success;
 
@@ -691,7 +691,7 @@ def hci_cm_bv_01_c(transport, upperTester, lowerTester, trace):
         transport.wait(200);
 
         if connected:
-            connected = not initiator.disconnect(0x3E);
+            connected = not initiator.disconnect(0x13);
             success = success and not connected;
 
     return success;
@@ -749,7 +749,7 @@ def hci_cm_bv_02_c(transport, upperTester, lowerTester, trace):
         transport.wait(200);
 
         if connected:
-            connected = not initiator.disconnect(0x3E);
+            connected = not initiator.disconnect(0x13);
             success = success and not connected;
 
     return success;
@@ -777,7 +777,7 @@ def hci_cm_bv_03_c(transport, upperTester, lowerTester, trace):
         success = success and __check_command_complete_event(transport, upperTester, trace) and (status == 0);
 
     if connected:
-        connected = not initiator.disconnect(0x3E);
+        connected = not initiator.disconnect(0x13);
         success = success and not connected;
 
     return success;

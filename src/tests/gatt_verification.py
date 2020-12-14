@@ -704,7 +704,7 @@ def pairing_bv_01_c(transport, upperTester, trace):
 
         success = success and paired;
 
-        connected = not initiator.disconnect(0x3E)
+        connected = not initiator.disconnect(0x13)
         success = success and not connected;
 
     return success;
@@ -759,7 +759,7 @@ def gap_gat_bv_01_c(transport, upperTester, trace):
         else:
             trace.trace(6, "Failed to locate GAP Service!");
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -783,7 +783,7 @@ def gap_gat_bv_02_c(transport, upperTester, trace):
         else:
             trace.trace(6,"Peripheral Privacy Flag: Not present!");
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -807,7 +807,7 @@ def gap_gat_bv_03_c(transport, upperTester, trace):
         else:
             trace.trace(6,"Reconnection Address: Not present!");
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -835,7 +835,7 @@ def gap_gat_bv_04_c(transport, upperTester, trace):
         else:
             trace.trace(6,"Peripheral Preferred Connection Parameters: Not present!");
 
-        connected = not initiator.disconnect(0x3E)
+        connected = not initiator.disconnect(0x13)
         success = success and not connected;
         if not connected:
             """
@@ -850,7 +850,7 @@ def gap_gat_bv_04_c(transport, upperTester, trace):
             success = success and connected;
             if connected:
                 transport.wait(200);
-                success = initiator.disconnect(0x3E) and success;
+                success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -890,7 +890,7 @@ def gap_gat_bv_05_c(transport, upperTester, trace):
         else:
             trace.trace(6,"Device Name: Not present!");
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -915,7 +915,7 @@ def gap_gat_bx_01_c(transport, upperTester, trace):
                     trace.trace(6, "    Characteristic %s handle %02X value-handle %02X properties %s" % \
                                    (attData.uuid(c_uuid), c_handle, c_vhandle, attData.property(c_property)));
 
-            success = initiator.disconnect(0x3E) and success;
+            success = initiator.disconnect(0x13) and success;
 
     except Exception as e: 
         trace.trace(3, "Discover All Services test failed: %s" % str(e));
@@ -944,7 +944,7 @@ def gap_idle_namp_bv_01_c(transport, upperTester, trace):
         else:
             trace.trace(6,"Device Name: Not present!");
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -974,7 +974,7 @@ def gatt_sr_gac_bv_01_c(transport, upperTester, lowerTester, trace):
                     ok, reply = readCharacteristic(transport, initiator, _value_handle, trace);
                     success = success and ok and reply == _value[:mtuSize-1];
         
-            success = initiator.disconnect(0x3E) and success;
+            success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1004,7 +1004,7 @@ def gatt_sr_gad_bv_01_c(transport, upperTester, lowerTester, trace):
             else:
                 trace.trace(6, "Unable to discover Primary Services!");
         
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1038,7 +1038,7 @@ def gatt_sr_gad_bv_02_c(transport, upperTester, lowerTester, trace):
                 success = success and (services == gattData.primaryServices(sset, uuid));
                 trace.trace(6, "Verified Services: %s" % success);
         
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1071,7 +1071,7 @@ def gatt_sr_gad_bv_03_c(transport, upperTester, lowerTester, trace):
                 success = success and (services == gattData.includedServices(sset))
             trace.trace(6, "Verified Included Services: %s" % success);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1111,7 +1111,7 @@ def gatt_sr_gad_bv_04_c(transport, upperTester, lowerTester, trace):
                     success = success and len(_characteristics["uuid"]) == 0; 
                 trace.trace(6, "Characteristics for Service %s Verified: %s" % (attData.uuid(uuid), success));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1151,7 +1151,7 @@ def gatt_sr_gad_bv_05_c(transport, upperTester, lowerTester, trace):
                     success = success and len(_characteristics["uuid"]) == 0; 
                 trace.trace(6, "Characteristics for Service %s Verified: %s" % (attData.uuid(uuid), success));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1188,7 +1188,7 @@ def gatt_sr_gad_bv_06_c(transport, upperTester, lowerTester, trace):
                     success = success and len(_descriptors["uuid"]) == 0;
                 trace.trace(6, "Descriptors for Service %s Verified: %s" % (attData.uuid(uuid), success));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1218,7 +1218,7 @@ def gatt_sr_gar_bv_01_c(transport, upperTester, lowerTester, trace):
             success = success and match;                        
             trace.trace(6, "   Characteristic Value Verified: %s" % success);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1247,7 +1247,7 @@ def gatt_sr_gar_bi_01_c(transport, upperTester, lowerTester, trace):
                 trace.trace(6, "Attempted to read Characteristic @ handle %02d - %s" % ((handles[0] + prevLast)//2, attData.error(data)));
             prevLast = handles[1];
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1275,7 +1275,7 @@ def gatt_sr_gar_bi_02_c(transport, upperTester, lowerTester, trace):
             success = success and not ok and data == ATTError.ATT_ERROR_READ_NOT_PERMITTED;
             trace.trace(6, "Attempted to read Characteristic @ handle %02d - %s" % (c_vhandle, attData.error(data)));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1304,7 +1304,7 @@ def gatt_sr_gar_bi_03_c(transport, upperTester, lowerTester, trace):
             success = success and not ok and data == ATTError.ATT_ERROR_INSUFFICIENT_AUTHORIZATION;
             trace.trace(6, "Attempted to read Characteristic @ handle 0x%02X - %s" % (c_vhandle, attData.error(data)));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1338,7 +1338,7 @@ def gatt_sr_gar_bi_04_c(transport, upperTester, lowerTester, trace):
             trace.trace(6, "Didn't find any characteristics that require Authentication for reading...");
         success = success and found;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1374,7 +1374,7 @@ def gatt_sr_gar_bv_03_c(transport, upperTester, lowerTester, trace):
                     success = success and match;                        
                     trace.trace(6, "    Characteristic Value Verified: %s" % success);
        
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1403,7 +1403,7 @@ def gatt_sr_gar_bi_06_c(transport, upperTester, lowerTester, trace):
             success = success and not found and reply['error'] == ATTError.ATT_ERROR_READ_NOT_PERMITTED;
             trace.trace(6, "Reply: %s" % attData.error(reply['error']));
        
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1426,7 +1426,7 @@ def gatt_sr_gar_bi_07_c(transport, upperTester, lowerTester, trace):
             success = success and not found and reply['error'] == ATTError.ATT_ERROR_ATTRIBUTE_NOT_FOUND;
             trace.trace(6, "Reply: %s" % attData.error(reply['error']));
        
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1452,7 +1452,7 @@ def gatt_sr_gar_bi_09_c(transport, upperTester, lowerTester, trace):
             success = success and not found and reply['error'] == ATTError.ATT_ERROR_INSUFFICIENT_AUTHORIZATION;
             trace.trace(6, "Reply: %s" % attData.error(reply['error']));
        
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1478,7 +1478,7 @@ def gatt_sr_gar_bi_10_c(transport, upperTester, lowerTester, trace):
             success = success and not found and reply['error'] == ATTError.ATT_ERROR_INSUFFICIENT_AUTHENTICATION;
             trace.trace(6, "Reply: %s" % attData.error(reply['error']));
        
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1504,7 +1504,7 @@ def gatt_sr_gar_bi_11_c(transport, upperTester, lowerTester, trace):
             success = success and not found and reply['error'] == ATTError.ATT_ERROR_INSUFFICIENT_ENCRYPTION;
             trace.trace(6, "Reply: %s" % attData.error(reply['error']));
        
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1547,7 +1547,7 @@ def gatt_sr_gar_bv_04_c(transport, upperTester, lowerTester, trace):
                 if found:
                     trace.trace(6, "Data: %s" % formatArray(reply));
        
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1574,7 +1574,7 @@ def gatt_sr_gar_bi_12_c(transport, upperTester, lowerTester, trace):
             if not found:
                 trace.trace(6, "Reply: %s" % attData.error(reply));
        
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1601,7 +1601,7 @@ def gatt_sr_gar_bi_13_c(transport, upperTester, lowerTester, trace):
             if not found:
                 trace.trace(6, "Reply: %s" % attData.error(reply['error']));
        
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1632,7 +1632,7 @@ def gatt_sr_gar_bi_14_c(transport, upperTester, lowerTester, trace):
                     trace.trace(6, "Reply: %s" % attData.error(reply['error']));
             prevLast = handles[1];
       
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1658,7 +1658,7 @@ def gatt_sr_gar_bi_15_c(transport, upperTester, lowerTester, trace):
             success = success and not found and (reply == ATTError.ATT_ERROR_INSUFFICIENT_AUTHORIZATION);
             trace.trace(6, "Reply: %s" % attData.error(reply));
       
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1684,7 +1684,7 @@ def gatt_sr_gar_bi_16_c(transport, upperTester, lowerTester, trace):
             success = success and not found and (reply == ATTError.ATT_ERROR_INSUFFICIENT_AUTHENTICATION);
             trace.trace(6, "Reply: %s" % attData.error(reply));
       
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1710,7 +1710,7 @@ def gatt_sr_gar_bi_17_c(transport, upperTester, lowerTester, trace):
             success = success and not found and (reply == ATTError.ATT_ERROR_INSUFFICIENT_ENCRYPTION);
             trace.trace(6, "Reply: %s" % attData.error(reply));
       
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1744,7 +1744,7 @@ def gatt_sr_gar_bv_05_c(transport, upperTester, lowerTester, trace):
         found, values = readMultipleCharacteristics(transport, initiator, _handles, trace);
         success = success and found and values == _values;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1778,7 +1778,7 @@ def gatt_sr_gar_bi_18_c(transport, upperTester, lowerTester, trace):
         if not found:
             trace.trace(6, "Reply: %s" % attData.error(values));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1810,7 +1810,7 @@ def gatt_sr_gar_bi_19_c(transport, upperTester, lowerTester, trace):
         if not found:
             trace.trace(6, "Reply: %s" % attData.error(values));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1840,7 +1840,7 @@ def gatt_sr_gar_bi_20_c(transport, upperTester, lowerTester, trace):
         if not found:
             trace.trace(6, "Reply: %s" % attData.error(values));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1870,7 +1870,7 @@ def gatt_sr_gar_bi_21_c(transport, upperTester, lowerTester, trace):
         if not found:
             trace.trace(6, "Reply: %s" % attData.error(values));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1900,7 +1900,7 @@ def gatt_sr_gar_bi_22_c(transport, upperTester, lowerTester, trace):
         if not found:
             trace.trace(6, "Reply: %s" % attData.error(values));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1929,7 +1929,7 @@ def gatt_sr_gar_bv_06_c(transport, upperTester, lowerTester, trace):
                 trace.trace(6, "    GATT Database  Value: %s" % formatArray(gattData.descriptorValue(sset, _handle)));
             success = success and match;                        
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -1970,7 +1970,7 @@ def gatt_sr_gar_bv_07_c(transport, upperTester, lowerTester, trace):
                 if found:
                     trace.trace(6, "Data: %s" % formatArray(reply));
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2008,7 +2008,7 @@ def gatt_sr_gaw_bv_01_c(transport, upperTester, lowerTester, trace):
                         ok, reply = writeNoResponse(transport, initiator, _value_handle, _value, trace);
                         success = success and ok;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2046,7 +2046,7 @@ def gatt_sr_gaw_bv_03_c(transport, upperTester, lowerTester, trace):
                         ok, reply = writeCharacteristic(transport, initiator, _value_handle, _value, trace);
                         success = success and ok;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2077,7 +2077,7 @@ def gatt_sr_gaw_bi_02_c(transport, upperTester, lowerTester, trace):
                     trace.trace(6, "Write failed: %s" % attData.error(reply['error'])); 
             prevLast = handles[1];
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2106,7 +2106,7 @@ def gatt_sr_gaw_bi_03_c(transport, upperTester, lowerTester, trace):
                 if not ok:
                     trace.trace(6, "Write failed: %s" % attData.error(reply['error'])); 
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2137,7 +2137,7 @@ def gatt_sr_gaw_bi_04_c(transport, upperTester, lowerTester, trace):
                 else: 
                     ok, reply = writeCharacteristic(transport, initiator, _value_handle, _value, trace);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2168,7 +2168,7 @@ def gatt_sr_gaw_bi_05_c(transport, upperTester, lowerTester, trace):
                 else:
                     ok, reply = writeCharacteristic(transport, initiator, _value_handle, _value, trace);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2199,7 +2199,7 @@ def gatt_sr_gaw_bi_06_c(transport, upperTester, lowerTester, trace):
                 else:
                     ok, reply = writeCharacteristic(transport, initiator, _value_handle, _value, trace);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2239,7 +2239,7 @@ def gatt_sr_gaw_bv_05_c(transport, upperTester, lowerTester, trace):
                         ok, reply = writeLong(transport, initiator, _value_handle, _value, mtuSize, trace);
                         success = success and ok;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2270,7 +2270,7 @@ def gatt_sr_gaw_bi_07_c(transport, upperTester, lowerTester, trace):
                     trace.trace(6, "Write failed: %s" % attData.error(reply['error'])); 
             prevLast = handles[1];
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2301,7 +2301,7 @@ def gatt_sr_gaw_bi_08_c(transport, upperTester, lowerTester, trace):
                 else:
                     ok, reply = writeLong(transport, initiator, _value_handle, _value, mtuSize, trace);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2335,7 +2335,7 @@ def gatt_sr_gaw_bi_09_c(transport, upperTester, lowerTester, trace):
                     if not ok:
                         trace.trace(6, "Reply: %s" % attData.error(reply['error']));
        
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2365,7 +2365,7 @@ def gatt_sr_gaw_bi_11_c(transport, upperTester, lowerTester, trace):
             else:
                 ok, reply = writeLong(transport, initiator, _value_handle, _value, mtuSize, trace);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2395,7 +2395,7 @@ def gatt_sr_gaw_bi_12_c(transport, upperTester, lowerTester, trace):
             else: 
                 ok, reply = writeLong(transport, initiator, _value_handle, _value, mtuSize, trace);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2425,7 +2425,7 @@ def gatt_sr_gaw_bi_13_c(transport, upperTester, lowerTester, trace):
             else: 
                 ok, reply = writeLong(transport, initiator, _value_handle, _value, mtuSize, trace);
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2457,7 +2457,7 @@ def gatt_sr_gaw_bv_08_c(transport, upperTester, lowerTester, trace):
                     ok, reply = writeCharacteristic(transport, initiator, _handle, _value, trace);
                     success = success and ok;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2489,7 +2489,7 @@ def gatt_sr_gaw_bv_09_c(transport, upperTester, lowerTester, trace):
                     ok, reply = writeLong(transport, initiator, _handle, _value, mtuSize, trace);
                     success = success and ok;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2511,7 +2511,7 @@ def gatt_sr_gaw_bv_11_c(transport, upperTester, lowerTester, trace):
         ok, reply = __writeExecute(transport, initiator, trace);
         success = success and ok;            
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2541,7 +2541,7 @@ def gatt_sr_gaw_bi_32_c(transport, upperTester, lowerTester, trace):
                 if not ok:
                     trace.trace(6, "Write failed: %s" % attData.error(reply['error'])); 
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2571,7 +2571,7 @@ def gatt_sr_gaw_bi_33_c(transport, upperTester, lowerTester, trace):
                 if not ok:
                     trace.trace(6, "Write failed: %s" % attData.error(reply['error'])); 
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2605,7 +2605,7 @@ def gatt_sr_gan_bv_01_c(transport, upperTester, lowerTester, trace):
                     ok, reply = writeCharacteristic(transport, initiator, _handle, [ 0x00, 0x00 ], trace);
                     success = success and ok;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2639,7 +2639,7 @@ def gatt_sr_gai_bv_01_c(transport, upperTester, lowerTester, trace):
                     ok, reply = writeCharacteristic(transport, initiator, _handle, [ 0x00, 0x00 ], trace);
                     success = success and ok;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2678,7 +2678,7 @@ def gatt_sr_gas_bv_01_c(transport, upperTester, lowerTester, trace):
 	                ok, reply = writeCharacteristic(transport, initiator, _handle, [ 0x00, 0x00 ], trace);
 	                success = success and ok;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2704,7 +2704,7 @@ def gatt_sr_uns_bi_01_c(transport, upperTester, lowerTester, trace):
                 if success:
                     success = reply['error'] == ATTError.ATT_ERROR_REQUEST_NOT_SUPPORTED;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2728,7 +2728,7 @@ def gatt_sr_uns_bi_02_c(transport, upperTester, lowerTester, trace):
                 trace.trace(7, str(attData));
             success = not success;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2759,7 +2759,7 @@ def gatt_sr_gpa_bv_01_c(transport, upperTester, lowerTester, trace):
                 trace.trace(6, "Unable to discover Primary Services!");
             success = success and ok;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2793,7 +2793,7 @@ def gatt_sr_gpa_bv_02_c(transport, upperTester, lowerTester, trace):
                 trace.trace(6, "Unable to discover Secondary Services!");
             success = success and ok;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2827,7 +2827,7 @@ def gatt_sr_gpa_bv_03_c(transport, upperTester, lowerTester, trace):
                 trace.trace(6, "Unable to discover Included Services!");
             success = success and ok;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2865,7 +2865,7 @@ def gatt_sr_gpa_bv_04_c(transport, upperTester, lowerTester, trace):
                 trace.trace(6, "Unable to discover Characteristic Declarations!");
             success = success and ok;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2911,7 +2911,7 @@ def gatt_sr_gpa_bv_05_c(transport, upperTester, lowerTester, trace):
                 trace.trace(6, "Unable to discover Extended Properties Descriptors!");
             success = success and ok;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -2957,7 +2957,7 @@ def gatt_sr_gpa_bv_06_c(transport, upperTester, lowerTester, trace):
                 trace.trace(6, "Unable to discover User Description Descriptors!");
             success = success and ok;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -3003,7 +3003,7 @@ def gatt_sr_gpa_bv_07_c(transport, upperTester, lowerTester, trace):
                 trace.trace(6, "Unable to discover Client Characteristic Configuration Descriptors!");
             success = success and ok;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -3049,7 +3049,7 @@ def gatt_sr_gpa_bv_08_c(transport, upperTester, lowerTester, trace):
                 trace.trace(6, "Unable to discover Server Characteristic Configuration Descriptors!");
             success = success and ok;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
@@ -3100,7 +3100,7 @@ def gatt_sr_gpa_bv_12_c(transport, upperTester, lowerTester, trace):
                 trace.trace(6, "Unable to discover Characteristic Presentation Format Descriptors!");
             success = success and ok;
 
-        success = initiator.disconnect(0x3E) and success;
+        success = initiator.disconnect(0x13) and success;
 
     return success;
 
