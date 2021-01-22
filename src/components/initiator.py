@@ -383,9 +383,13 @@ class Initiator:
         self.updInitiatorRequest = self.__update(minInterval, maxInterval, latency, timeout) if not self.handles[0] == -1 else False;
         if self.updInitiatorRequest:
             if not self.peer is None:
-		# NOTE: Wait upto 3 intervals for Connection Parameter Response to be dispatched on air
+                # NOTE: Wait upto 3 intervals for Connection Parameter Response to be dispatched on air
+                # FIXME: Using 10 intervals to pass incorrect LL/CON/MAS/BV-27-C implementation, where TST is generating the LL_REJECT_EXT_IND
+                #        instead of controller detecting the Different Transaction Collision.
+                #        Zephyr controller as tester will not generate Connection Parameter Request if it is in Channel Map procedure
+                #        and waiting for instant to pass.
                 self.updPeerRequest, self.cpr_handle, self.cpr_minInterval, self.cpr_maxInterval, self.cpr_latency, self.cpr_timeout = \
-                    self.__hasConnectionParamRequestEvent(self.peer, 100 * int((99 + 3 * self.prevInterval) / 100));
+                    self.__hasConnectionParamRequestEvent(self.peer, 100 * int((99 + 10 * self.prevInterval) / 100));
             else:
                 self.updPeerRequest = False;
         return self.updInitiatorRequest;
