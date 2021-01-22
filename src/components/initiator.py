@@ -383,8 +383,9 @@ class Initiator:
         self.updInitiatorRequest = self.__update(minInterval, maxInterval, latency, timeout) if not self.handles[0] == -1 else False;
         if self.updInitiatorRequest:
             if not self.peer is None:
+		# NOTE: Wait upto 3 intervals for Connection Parameter Response to be dispatched on air
                 self.updPeerRequest, self.cpr_handle, self.cpr_minInterval, self.cpr_maxInterval, self.cpr_latency, self.cpr_timeout = \
-                    self.__hasConnectionParamRequestEvent(self.peer, 3200);
+                    self.__hasConnectionParamRequestEvent(self.peer, 100 * int((99 + 3 * self.prevInterval) / 100));
             else:
                 self.updPeerRequest = False;
         return self.updInitiatorRequest;
@@ -432,10 +433,13 @@ class Initiator:
         if success:
             """
                 Check for LE Connection Update Complete Event in initiator...
-                NOTE: Timing depends on the connect interval in effect - update is usually 6 events after previous reponse event
+                NOTE: Timing depends on the connect interval in effect - update is usually 12 events after previous reponse event
+                      wait upto 3 intervals each for Connection Parameter Response and Connection Update Indication to be dispatched on air
+                      then wait another 6 intervals to pass the Connection Update instant
+                      Hence wait for 12 intervals before response timeout
             """
             initiatorUpdated, self.status, handle, interval, latency, timeout = \
-                self.__hasConnectionUpdateCompleteEvent(self.initiator, 100 * int((99 + 10 * self.prevInterval) / 100));
+                self.__hasConnectionUpdateCompleteEvent(self.initiator, 100 * int((99 + 12 * self.prevInterval) / 100));
             initiatorUpdated = initiatorUpdated and (self.handles[0] == handle);
             if initiatorUpdated:
                 self.intervalMin = self.intervalMax = self.prevInterval = interval;
