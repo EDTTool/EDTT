@@ -2665,7 +2665,7 @@ def ll_con_ini_bv_24_c(transport, upperTester, lowerTester, trace):
 """
 def ll_con_sla_bv_04_c(transport, upperTester, lowerTester, trace):
 
-    advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
+    advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
     """
         Obtain maximum Data Packet size and maximum number of Data Packets
     """
@@ -2722,7 +2722,7 @@ def ll_con_sla_bv_04_c(transport, upperTester, lowerTester, trace):
 """
 def ll_con_sla_bv_05_c(transport, upperTester, lowerTester, trace):
 
-    advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
+    advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
     success = advertiser.enable();
     connected = initiator.connect();
@@ -2759,7 +2759,7 @@ def ll_con_sla_bv_05_c(transport, upperTester, lowerTester, trace):
 """
 def ll_con_sla_bv_06_c(transport, upperTester, lowerTester, trace):
 
-    advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
+    advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
     success = advertiser.enable();
     connected = initiator.connect();
