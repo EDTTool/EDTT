@@ -150,10 +150,20 @@ def run_tests(args, xtra_args, transport, trace):
 class Trace():
     def __init__(self, level):
         self.level = level;
+        self.transport = None
 
     def trace(self, level, msg):
         if ( level <= self.level ):
-            print(msg);
+            if self.transport:
+                from datetime import timedelta
+                td = timedelta(microseconds=self.transport.get_last_t())
+                mm, ss = divmod(td.seconds, 60)
+                hh, mm = divmod(mm, 60)
+                ts = "%02d:%02d:%02d.%06d" % (hh, mm, ss, td.microseconds)
+            else:
+                ts = '--:--:--.------'
+            for line in str(msg).split('\n'):
+                print('edtt: @{}  {}'.format(ts, line), flush=True);
 
 def main():
     transport = None;
@@ -165,6 +175,7 @@ def main():
         trace = Trace(args.verbose);
 
         transport = init_transport(args.transport, xtra_args, trace);
+        trace.transport = transport;
 
         result = run_tests(args, xtra_args, transport, trace);
 

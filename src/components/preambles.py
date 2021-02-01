@@ -446,19 +446,19 @@ def preamble_device_address_set(transport, idx, trace):
     Scramble the company_id part of the Bluetooth address.
 """
 def address_scramble_OUI(address):
-    return (address & 0x00ff00ffffff) | ((address << 16) & 0xff0000000000) | ((address >> 16) & 0x0000ff000000);
+    return (address ^ 0xff00ff000000);
 
 """
     Scramble the company_assigned part of the Bluetooth address.
 """
 def address_scramble_LAP(address):
-    return (address & 0xffffff00ff00) | ((address << 16) & 0x000000ff0000) | ((address >> 16) & 0x0000000000ff);
+    return (address ^ 0x000000ff00ff);
 
 """
     Scramble both the company_id part and the company_assigned part of the Bluetooth address.
 """
 def address_exchange_OUI_LAP(address):
-    return (address & 0x00ffffffff00) | ((address << 40) & 0xff0000000000) | ((address >> 40) & 0x0000000000ff);
+    return (address ^ 0xff00000000ff);
 
 def preamble_specific_white_listed(transport, idx, addresses, trace):
     trace.trace(5, "Specific White Listed preamble steps...");

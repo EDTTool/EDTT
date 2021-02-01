@@ -96,7 +96,7 @@ class Scanner:
         self.pivot = 0;
         
     def __verifyAndShowEvent(self, expectedEvent):
-        event = get_event(self.transport, self.idx, 100);
+        event = get_event(self.transport, self.idx, 200);
         self.trace.trace(7, str(event));
         return event.event == expectedEvent;
 
@@ -104,7 +104,7 @@ class Scanner:
         return self.__verifyAndShowEvent(Events.BT_HCI_EVT_CMD_COMPLETE);
     
     def __scan_parameters(self):
-        status = le_set_scan_parameters(self.transport, self.idx, self.scanType, self.scanInterval, self.scanWindow, self.ownAddress.type, self.filterPolicy, 100);
+        status = le_set_scan_parameters(self.transport, self.idx, self.scanType, self.scanInterval, self.scanWindow, self.ownAddress.type, self.filterPolicy, 200);
         self.trace.trace(6, "LE Set Scan Parameters Command returns status: 0x%02X" % status);
         return self.__commandCompleteEvent() and (status == 0);
 
@@ -116,7 +116,7 @@ class Scanner:
         return status == 0;
 
     def clear(self):
-        flush_events(self.transport, self.idx, 100);
+        flush_events(self.transport, self.idx, 200);
 
     """
         Enable scanning...
@@ -140,7 +140,7 @@ class Scanner:
 
     def __handleReport(self, prevTime):
 
-        for event in get_event(self.transport, self.idx, 100, True):
+        for event in get_event(self.transport, self.idx, 200, True):
 
             if event.subEvent == MetaEvents.BT_HCI_EVT_LE_ADVERTISING_REPORT:
 
@@ -174,7 +174,7 @@ class Scanner:
         prevTime = 0;
         while max(self.reports, self.directReports, self.counts/2) < self.expectedReports:
 
-            if has_event(self.transport, self.idx, 100)[0]:
+            if has_event(self.transport, self.idx, 200)[0]:
                 prevTime = self.__handleReport(prevTime);
             else:
                 if self.lastTime == 0:
@@ -187,7 +187,7 @@ class Scanner:
         while (max(self.reports, self.directReports, self.counts/2) < self.expectedReports) or \
               (max(self.responses, self.reports/5, self.counts) < self.expectedResponses):
 
-            if has_event(self.transport, self.idx, 100)[0]:
+            if has_event(self.transport, self.idx, 200)[0]:
                 prevTime = self.__handleReport(prevTime);
             else:
                 if self.lastTime == 0:
@@ -204,7 +204,7 @@ class Scanner:
         prevTime = 0;
         while self.lastTime == 0:
 
-            if has_event(self.transport, self.idx, 99)[0]:
+            if has_event(self.transport, self.idx, 200)[0]:
                 prevTime = self.__handleReport(prevTime);
             else:
                 self.lastTime = prevTime;
@@ -316,8 +316,8 @@ class Scanner:
         if success:
             prevTime = deltaTime = 0;
             while deltaTime < time:
-                if has_event(self.transport, self.idx, 100)[0]:
-                    event = get_event(self.transport, self.idx, 100);
+                if has_event(self.transport, self.idx, 200)[0]:
+                    event = get_event(self.transport, self.idx, 200);
 
                     if event.subEvent == MetaEvents.BT_HCI_EVT_LE_ADVERTISING_REPORT:
                         eventType, address, data, rssi = event.decode();

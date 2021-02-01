@@ -2810,6 +2810,8 @@ def flush_events(transport, idx, to):
 def has_event(transport, idx, to):
     
     while to >= 0:
+        start_t = transport.last_t
+
         cmd = struct.pack('<HH', Commands.CMD_HAS_EVENT_REQ, 0);
         transport.send(idx, cmd);
         
@@ -2828,11 +2830,12 @@ def has_event(transport, idx, to):
         
         if count > 0:
             break;
-        
+
+        to_tmp = 100 - int((transport.last_t - start_t) / 1000);
         to -= 100;
-        if to >= 0:
-            transport.wait(100);
-        
+        if to >= 0 and to_tmp > 0:
+            transport.wait(to_tmp);
+
     return count > 0, count;
 
 """

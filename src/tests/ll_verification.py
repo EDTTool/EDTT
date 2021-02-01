@@ -597,6 +597,9 @@ def ll_ddi_adv_bv_06_c(transport, upperTester, lowerTester, trace):
         else:
             success = advertiser.disable() and success;
 
+        if not success:
+            break;
+
     return success;
 
 """
@@ -829,7 +832,7 @@ def ll_ddi_adv_bv_11_c(transport, upperTester, lowerTester, trace):
     success = advertiser.timeout() and success;
     success = scanner.disable() and success;
 
-    success = success and scanner.qualifyReportTime( 30, 1280 );
+    success = success and scanner.qualifyReportTime( 30, 1300 );
 
     success = advertiser.enable() and success;
 
@@ -1842,7 +1845,7 @@ def ll_con_adv_bv_04_c(transport, upperTester, lowerTester, trace):
     success = success and connected;
 
     if connected:
-        transport.wait(26630);
+        transport.wait(2660);
 
         success = initiator.disconnect(0x13) and success;
     else:
@@ -1930,6 +1933,7 @@ def ll_con_ini_bv_01_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
+    success = True;
     for channel in [ AdvertiseChannel.CHANNEL_37, AdvertiseChannel.CHANNEL_38, AdvertiseChannel.CHANNEL_39 ]:
 
         advertiser.channels = channel;
@@ -1938,7 +1942,7 @@ def ll_con_ini_bv_01_c(transport, upperTester, lowerTester, trace):
 
             trace.trace(7, "\nUsing channel %s and Lower Tester address %s\n" % (str(channel), formatAddress(toArray(address, 6))));
 
-            success = preamble_set_public_address(transport, lowerTester, address, trace);
+            success = preamble_set_public_address(transport, lowerTester, address, trace) and success;
             initiator.peerAddress = Address( ExtendedAddressType.PUBLIC, address );
 
             success = initiator.preConnect() and success;
@@ -1959,6 +1963,9 @@ def ll_con_ini_bv_01_c(transport, upperTester, lowerTester, trace):
                 success = initiator.disconnect(0x13) and success;
             else:
                 success = advertiser.disable() and success;
+
+            if not success:
+                break;
 
     return success;
 
@@ -2008,7 +2015,6 @@ def ll_con_ini_bv_06_c(transport, upperTester, lowerTester, trace):
         whiteListAddress = publicIdentityAddress(lowerTester) if j == 0 else randomIdentityAddress(lowerTester);
 
         success = addAddressesToWhiteList(transport, upperTester, [ whiteListAddress ], trace) and success;
-
         addresses = [ Address( ExtendedAddressType.RANDOM if whiteListAddress.type == SimpleAddressType.PUBLIC \
                                                           else ExtendedAddressType.PUBLIC, whiteListAddress.address ),
                       Address( ExtendedAddressType.PUBLIC if whiteListAddress.type == SimpleAddressType.PUBLIC \
@@ -2035,6 +2041,9 @@ def ll_con_ini_bv_06_c(transport, upperTester, lowerTester, trace):
                 """
                 success = initiator.cancelConnect() and success;
                 success = advertiser.disable() and success;
+
+            if not success:
+                break
 
     return success;
 
@@ -4316,6 +4325,7 @@ def ll_con_mas_bv_27_c(transport, upperTester, lowerTester, trace):
             NOTE: We use a little nasty trick here. Swap the roles of initiator and peer and swap assigned handles...
         """
         initiator.switchRoles();
+        transport.wait(20); # FIXME: Avoid test failure due to Zephyr controller occasionally generating Different Transaction Collision
         """
             Lower tester requests an update of the connection parameters - sends an LL_CONNECTION_PARAM_REQ...
         """
