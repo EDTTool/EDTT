@@ -102,7 +102,7 @@ class Advertiser:
         self.status = 0;
     
     def __verifyAndShowEvent(self, expectedEvent):
-        event = get_event(self.transport, self.idx, 100);
+        event = get_event(self.transport, self.idx, 200);
         self.trace.trace(7, str(event));
         return event.event == expectedEvent;
 
@@ -121,7 +121,7 @@ class Advertiser:
     def __set_advertise_parameters(self):
 
         self.status = le_set_advertising_parameters(self.transport, self.idx, self.minInterval, self.maxInterval, self.advertiseType, self.ownAddress.type, \
-                                                    self.peerAddress.type, self.peerAddress.address, self.channels, self.filterPolicy, 100);
+                                                    self.peerAddress.type, self.peerAddress.address, self.channels, self.filterPolicy, 200);
         self.trace.trace(6, "LE Set Advertising Parameters Command returns status: 0x%02X" % self.status);
         return self.__getCommandCompleteEvent() and (self.status == 0);
 
@@ -129,7 +129,7 @@ class Advertiser:
 
         dataSize, advertiseData = self.__confined_array(self.advertiseData, 31);
 
-        self.status = le_set_advertising_data(self.transport, self.idx, dataSize, advertiseData, 100);
+        self.status = le_set_advertising_data(self.transport, self.idx, dataSize, advertiseData, 200);
         self.trace.trace(6, "LE Set Advertising Data Command returns status: 0x%02X" % self.status);
         return self.__getCommandCompleteEvent() and (self.status == 0);
 
@@ -137,13 +137,13 @@ class Advertiser:
 
         dataSize, responseData = self.__confined_array(self.responseData, 31);
                 
-        self.status = le_set_scan_response_data(self.transport, self.idx, dataSize, responseData, 100);
+        self.status = le_set_scan_response_data(self.transport, self.idx, dataSize, responseData, 200);
         self.trace.trace(6, "LE Set Scan Response Data Command returns status: 0x%02X" % self.status);
         return self.__getCommandCompleteEvent() and (self.status == 0);
 
     def __advertise_enable(self, enable):
         
-        self.status = le_set_advertising_enable(self.transport, self.idx, enable, 100);
+        self.status = le_set_advertising_enable(self.transport, self.idx, enable, 200);
         self.trace.trace(6, "LE Set Advertising Enable Command (%s) returns status: 0x%02X" % ("Enabling" if enable else "Disabling", self.status));
         return self.__getCommandCompleteEvent() and (self.status == 0);
 
@@ -169,10 +169,10 @@ class Advertiser:
     """
         Check for a advertise timeout - when using connectable high duty cycle directed advertising
     """
-    def timeout(self, timeout=100):
+    def timeout(self, timeout=200):
         self.status = 0;
         if has_event(self.transport, self.idx, timeout)[0]:
-            event = get_event(self.transport, self.idx, 100);
+            event = get_event(self.transport, self.idx, 200);
             self.trace.trace(7, str(event));
             if (event.subEvent == MetaEvents.BT_HCI_EVT_LE_CONN_COMPLETE) or (event.subEvent == MetaEvents.BT_HCI_EVT_LE_ENH_CONN_COMPLETE):
                 self.status = event.decode()[0];

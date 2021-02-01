@@ -81,7 +81,7 @@ class Initiator:
 
         success = has_event(self.transport, idx, timeout)[0];
         if success:
-            event = get_event(self.transport, idx, 100);
+            event = get_event(self.transport, idx, 200);
             self.trace.trace(7, str(event));
             if event.subEvent == MetaEvents.BT_HCI_EVT_LE_CONN_COMPLETE:
                 self.status, handle, role, address, interval, latency, timeout, accuracy = event.decode();
@@ -102,7 +102,7 @@ class Initiator:
 
         success = has_event(self.transport, idx, timeout)[0];
         if success:
-            event = get_event(self.transport, idx, 100);
+            event = get_event(self.transport, idx, 200);
             self.trace.trace(7, str(event));
             if event.event == Events.BT_HCI_EVT_DISCONN_COMPLETE:
                 self.status, handle, reason = event.decode();
@@ -120,7 +120,7 @@ class Initiator:
 
         success = has_event(self.transport, idx, timeout)[0];
         if success:
-            event = get_event(self.transport, idx, 100);
+            event = get_event(self.transport, idx, 200);
             self.trace.trace(7, str(event));
             if event.subEvent == MetaEvents.BT_HCI_EVT_LE_PHY_UPDATE_COMPLETE:
                 self.status, handle, txPhys, rxPhys = event.decode();
@@ -138,7 +138,7 @@ class Initiator:
 
         success = has_event(self.transport, idx, timeout)[0]; 
         while success:
-            event = get_event(self.transport, idx, 100);
+            event = get_event(self.transport, idx, 200);
             self.trace.trace(7, str(event));
             if event.subEvent == MetaEvents.BT_HCI_EVT_LE_CONN_PARAM_REQ:
                 handle, minInterval, maxInterval, latency, supervisionTimeout = event.decode();
@@ -166,7 +166,7 @@ class Initiator:
         else:
             success = has_event(self.transport, idx, timeout)[0];
             if success:
-                event = get_event(self.transport, idx, 100);
+                event = get_event(self.transport, idx, 200);
 
         if success:
             self.trace.trace(7, str(event));
@@ -184,9 +184,9 @@ class Initiator:
         try:
             le_create_connection(self.transport, self.initiator, self.scanInterval, self.scanWindow, self.filterPolicy, self.peerAddress.type, \
                                  self.peerAddress.address, self.initiatorAddress.type, self.intervalMin, self.intervalMax, self.latency, \
-                                 self.supervisionTimeout, self.minCeLen, self.maxCeLen, 100);
+                                 self.supervisionTimeout, self.minCeLen, self.maxCeLen, 200);
 
-            event = get_event(self.transport, self.initiator, 100);
+            event = get_event(self.transport, self.initiator, 200);
             self.trace.trace(7, str(event));
             success = event.isCommandStatus();
             if success:
@@ -205,9 +205,9 @@ class Initiator:
 
         try:
             success = False;
-            disconnect(self.transport, self.initiator, self.handles[0], reason, 100);
-            while has_event(self.transport, self.initiator, 100)[0]:
-                event = get_event(self.transport, self.initiator, 100);
+            disconnect(self.transport, self.initiator, self.handles[0], reason, 200);
+            while has_event(self.transport, self.initiator, 200)[0]:
+                event = get_event(self.transport, self.initiator, 200);
                 self.trace.trace(7, str(event));
                 if event.isCommandStatus():
                     opcode, status = event.decode()[1:];
@@ -227,8 +227,8 @@ class Initiator:
     """
     def __cancel(self):
 
-        status = le_create_connection_cancel(self.transport, self.initiator, 100);
-        event = get_event(self.transport, self.initiator, 100);
+        status = le_create_connection_cancel(self.transport, self.initiator, 200);
+        event = get_event(self.transport, self.initiator, 200);
         self.trace.trace(7, str(event));
         return event.isCommandComplete() and (status == 0);
 
@@ -241,9 +241,9 @@ class Initiator:
             if 4 * timeout <= (1+latency) * maxInterval:
                 timeout = (((1+latency) * maxInterval) + 7) / 4;
 
-            self.status = le_connection_update(self.transport, self.initiator, self.handles[0], minInterval, maxInterval, latency, timeout, self.minCeLen, self.maxCeLen, 100);
+            self.status = le_connection_update(self.transport, self.initiator, self.handles[0], minInterval, maxInterval, latency, timeout, self.minCeLen, self.maxCeLen, 200);
 
-            event = get_event(self.transport, self.initiator, 100);
+            event = get_event(self.transport, self.initiator, 200);
             self.trace.trace(7, str(event));
             success = event.isCommandStatus() and (self.status == 0);
         except Exception as e:
@@ -258,9 +258,9 @@ class Initiator:
     def __updatePhys(self, allPhys, txPhys, rxPhys, optionPhys):
 
         try:
-            self.status = le_set_phy(self.transport, self.initiator, self.handles[0], allPhys, txPhys, rxPhys, optionPhys, 100);
+            self.status = le_set_phy(self.transport, self.initiator, self.handles[0], allPhys, txPhys, rxPhys, optionPhys, 200);
 
-            event = get_event(self.transport, self.initiator, 100);
+            event = get_event(self.transport, self.initiator, 200);
             self.trace.trace(7, str(event));
             success = event.isCommandStatus() and (self.status == 0);
         except Exception as e:
@@ -281,7 +281,7 @@ class Initiator:
                 If Phys has changed - Peer should also receive a LE_PHY_Update_Complete event to signal that the command has been effectuated...
             """
             if not self.peer is None:
-                success, txPhys, rxPhys = self.__hasPhysUpdateCompleteEvent(self.peer, 100);
+                success, txPhys, rxPhys = self.__hasPhysUpdateCompleteEvent(self.peer, 200);
 
         return success;
 
@@ -297,7 +297,7 @@ class Initiator:
         Carry out last part of the connect procedure...
         Wait for (connection complete | enhanced connection complete) events
     """
-    def postConnect(self, timeout=300):
+    def postConnect(self, timeout=600):
         success = self.pre_connected;
         """
             Both initiator and peer can receive a LE Connection Complete Event if connection succeeds...
@@ -336,7 +336,7 @@ class Initiator:
     """
         Carry out the connect procedure...
     """
-    def connect(self, timeout=300):
+    def connect(self, timeout=600):
         success = self.preConnect();
         success = success and self.postConnect(timeout);
         if success:
@@ -353,7 +353,7 @@ class Initiator:
             Both initiator and peer can receive a Disconnection Complete Events...
         """
         if success:
-            initiatorDisconnected, handle, reason = self.__hasDisconnectCompleteEvent(self.initiator, 100 * int((99 + 10 * self.prevInterval) / 100));
+            initiatorDisconnected, handle, reason = self.__hasDisconnectCompleteEvent(self.initiator, 100 * int((99 + 10 * self.prevInterval * 1.25) / 100));
             if initiatorDisconnected:
                 self.handles[0] = -1; self.reasons[0] = reason;
             
@@ -372,7 +372,7 @@ class Initiator:
         if success:
             success = self.__cancel();
             if success:
-                self.__hasConnectionCompleteEvent(self.initiator, 100)[0];
+                self.__hasConnectionCompleteEvent(self.initiator, 200)[0];
 
         return success;
 
@@ -389,7 +389,7 @@ class Initiator:
                 #        Zephyr controller as tester will not generate Connection Parameter Request if it is in Channel Map procedure
                 #        and waiting for instant to pass.
                 self.updPeerRequest, self.cpr_handle, self.cpr_minInterval, self.cpr_maxInterval, self.cpr_latency, self.cpr_timeout = \
-                    self.__hasConnectionParamRequestEvent(self.peer, 100 * int((99 + 10 * self.prevInterval) / 100));
+                    self.__hasConnectionParamRequestEvent(self.peer, 100 * int((99 + 10 * self.prevInterval * 1.25) / 100));
             else:
                 self.updPeerRequest = False;
         return self.updInitiatorRequest;
@@ -407,7 +407,7 @@ class Initiator:
             status, handle = le_remote_connection_parameter_request_reply(self.transport, self.peer, self.cpr_handle, self.cpr_minInterval, self.cpr_maxInterval, \
                                                                           self.cpr_latency, self.cpr_timeout, self.minCeLen, self.maxCeLen, 100);
             success = status == 0;
-            event = get_event(self.transport, self.peer, 100);
+            event = get_event(self.transport, self.peer, 200);
             self.trace.trace(7, str(event));
             success = success and (event.event == Events.BT_HCI_EVT_CMD_COMPLETE);
 
@@ -423,9 +423,9 @@ class Initiator:
             """
                 Send a LL_REJECT_EXT_IND as a reaction to the LE Remote Connection Parameter Request Event...
             """
-            status, handle = le_remote_connection_parameter_request_negative_reply(self.transport, self.peer, self.cpr_handle, reason, 100);
+            status, handle = le_remote_connection_parameter_request_negative_reply(self.transport, self.peer, self.cpr_handle, reason, 200);
             success = status == 0;
-            event = get_event(self.transport, self.peer, 100);
+            event = get_event(self.transport, self.peer, 200);
             self.trace.trace(7, str(event));
             success = success and (event.event == Events.BT_HCI_EVT_CMD_COMPLETE);
 
@@ -443,7 +443,7 @@ class Initiator:
                       Hence wait for 12 intervals before response timeout
             """
             initiatorUpdated, self.status, handle, interval, latency, timeout = \
-                self.__hasConnectionUpdateCompleteEvent(self.initiator, 100 * int((99 + 12 * self.prevInterval) / 100));
+                self.__hasConnectionUpdateCompleteEvent(self.initiator, 100 * int((99 + 12 * self.prevInterval * 1.25) / 100));
             initiatorUpdated = initiatorUpdated and (self.handles[0] == handle);
             if initiatorUpdated:
                 self.intervalMin = self.intervalMax = self.prevInterval = interval;
