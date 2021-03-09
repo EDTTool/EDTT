@@ -223,6 +223,28 @@ class Commands(IntEnum):
     CMD_GATT_SERVICE_NOTIFY_RSP                                   = 212
     CMD_GATT_SERVICE_INDICATE_REQ                                 = 213
     CMD_GATT_SERVICE_INDICATE_RSP                                 = 214
+    CMD_GAP_ADVERTISING_MODE_REQ                                  = 215
+    CMD_GAP_ADVERTISING_MODE_RSP                                  = 216
+    CMD_GAP_ADVERTISING_DATA_REQ                                  = 217
+    CMD_GAP_ADVERTISING_DATA_RSP                                  = 218
+    CMD_GAP_SCANNING_MODE_REQ                                     = 219
+    CMD_GAP_SCANNING_MODE_RSP                                     = 220
+    CMD_READ_STATIC_ADDRESSES_REQ                                 = 221
+    CMD_READ_STATIC_ADDRESSES_RSP                                 = 222
+    CMD_READ_KEY_HIERARCHY_ROOTS_REQ                              = 223
+    CMD_READ_KEY_HIERARCHY_ROOTS_RSP                              = 224
+    CMD_GAP_READ_IRK_REQ                                          = 225
+    CMD_GAP_READ_IRK_RSP                                          = 226
+    CMD_GAP_ROLE_REQ                                              = 227
+    CMD_GAP_ROLE_RSP                                              = 228
+    CMD_LE_ISO_DATA_FLUSH_REQ                                     = 229
+    CMD_LE_ISO_DATA_FLUSH_RSP                                     = 230
+    CMD_LE_ISO_DATA_READY_REQ                                     = 231
+    CMD_LE_ISO_DATA_READY_RSP                                     = 232
+    CMD_LE_ISO_DATA_WRITE_REQ                                     = 233
+    CMD_LE_ISO_DATA_WRITE_RSP                                     = 234
+    CMD_LE_ISO_DATA_READ_REQ                                      = 235
+    CMD_LE_ISO_DATA_READ_RSP                                      = 236
 
 class HCICommands(IntEnum):
     BT_HCI_OP_INQUIRY                       = 0x401
@@ -3055,3 +3077,114 @@ def gatt_service_indicate(transport, idx, to):
     
     if ( RespLen != 0 ):
         raise Exception("Invoke GATT Service Set Indications command failed: Response length field corrupted (%i)" % RespLen);
+
+"""
+    Flush the ISO Data queue
+"""
+def le_iso_data_flush(transport, idx, to):
+
+    cmd = struct.pack('<HH', Commands.CMD_LE_ISO_DATA_FLUSH_REQ, 0)
+    transport.send(idx, cmd)
+
+    packet = transport.recv(idx, 4, to)
+
+    if ( 4 != len(packet) ):
+        raise Exception("LE ISO Data Flush command failed: Response too short (Expected %i bytes got %i bytes)" % (4, len(packet)))
+
+    RespCmd, RespLen = struct.unpack('<HH', packet)
+
+    if ( RespCmd != Commands.CMD_LE_ISO_DATA_FLUSH_RSP ):
+        raise Exception("LE ISO Data Flush command failed: Inappropriate command response received")
+
+    if ( RespLen != 0 ):
+        raise Exception("LE ISO Data Flush command failed: Response length field corrupted (%i)" % RespLen)
+
+"""
+    Check whether ISO data is available in the data queue
+"""
+def le_iso_data_ready(transport, idx, to):
+
+    while to >= 0:
+        cmd = struct.pack('<HH', Commands.CMD_LE_ISO_DATA_READY_REQ, 0)
+        transport.send(idx, cmd)
+
+        packet = transport.recv(idx, 5, 100);
+
+        if ( 5 != len(packet) ):
+            raise Exception("LE ISO Data Ready command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)))
+
+        RespCmd, RespLen, empty = struct.unpack('<HHB', packet)
+
+        if ( RespCmd != Commands.CMD_LE_ISO_DATA_READY_RSP ):
+            raise Exception("LE ISO Data Ready command failed: Inappropriate command response received")
+
+        if ( RespLen != 1 ):
+            raise Exception("LE ISO Data Ready command failed: Response length field corrupted (%i)" % RespLen)
+
+        if empty != 1:
+            break
+
+        to -= 100;
+        if to >= 0:
+            transport.wait(100)
+
+    return empty != 1
+
+"""
+    Write ISO Data packet
+"""
+def le_iso_data_write(transport, idx, handle, PbFlags, TsFlag, data, to):
+    
+    handle &= 0x0fff
+    handle |= ((PbFlags | (TsFlag << 2)) << 12) & 0x7fff
+
+    cmd = struct.pack('<HHHH' + str(len(data)) + 'B', Commands.CMD_LE_ISO_DATA_WRITE_REQ, 4 + len(data), handle, len(data), *data)
+    transport.send(idx, cmd)
+
+    packet = transport.recv(idx, 5, to)
+
+    if ( 5 != len(packet) ):
+        raise Exception("LE ISO Data Write command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)))
+
+    RespCmd, RespLen, status = struct.unpack('<HHB', packet)
+
+    if ( RespCmd != Commands.CMD_LE_ISO_DATA_WRITE_RSP ):
+        raise Exception("LE ISO Data Write command failed: Inappropriate command response received")
+
+    if ( RespLen != 1 ):
+        raise Exception("LE ISO Data Write command failed: Response length field corrupted (%i)" % RespLen)
+
+    return status
+
+"""
+    Read ISO Data packet
+"""
+def le_iso_data_read(transport, idx, to):
+
+    cmd = struct.pack('<HH', Commands.CMD_LE_ISO_DATA_READ_REQ, 0)
+    transport.send(idx, cmd)
+
+    packet = transport.recv(idx, 12, to)
+
+    if ( 12 != len(packet) ):
+        raise Exception("LE ISO Data Read command failed: Response too short (Expected %i bytes got %i bytes)" % (12, len(packet)))
+
+    RespCmd, RespLen, time, handle, dataLen = struct.unpack('<HHIHH', packet[:12])
+    if RespLen > 8:
+        packet = transport.recv(idx, RespLen - 8, to)
+    if dataLen > 0:
+        data = struct.unpack('<' + str(dataLen) + 'B', packet)
+    else:
+        data = [];
+
+    if ( RespCmd != Commands.CMD_LE_ISO_DATA_READ_RSP ):
+        raise Exception("LE ISO Data Read command failed: Inappropriate command response received")
+
+    if ( RespLen != 8 + dataLen ):
+        raise Exception("LE ISO Data Read command failed: Response length field corrupted (%i)" % RespLen)
+
+    PbFlags = (handle >> 12) & 0x03
+    TsFlag  = (handle >> 14) & 0x01
+    handle &= 0x0fff
+
+    return time, handle, PbFlags, TsFlag, data
