@@ -135,6 +135,15 @@ class CmdOpcodes(IntEnum):
     BT_HCI_OP_LE_READ_RF_PATH_COMP          = 0x204C
     BT_HCI_OP_LE_WRITE_RF_PATH_COMP         = 0x204D
     BT_HCI_OP_LE_SET_PRIVACY_MODE           = 0x204E
+    BT_HCI_OP_LE_SET_CIG_PARAMETERS         = 0x2062
+    BT_HCI_OP_LE_SET_CIG_PARAMETERS_TEST    = 0x2063
+    BT_HCI_OP_LE_CREATE_CIS                 = 0x2064
+    BT_HCI_OP_LE_REMOVE_CIG                 = 0x2065
+    BT_HCI_OP_LE_ACCEPT_CIS_REQUEST         = 0x2066
+    BT_HCI_OP_LE_REJECT_CIS_REQUEST         = 0x2067
+    BT_HCI_OP_LE_SETUP_ISO_DATA_PATH        = 0x206E
+    BT_HCI_OP_LE_REMOVE_ISO_DATA_PATH       = 0x206F
+    BT_HCI_OP_LE_SET_HOST_FEATURE           = 0x2074
     BT_HCI_OP_VS_WRITE_BD_ADDR              = 0xFC06
 
 class ErrorCodes(IntEnum):
@@ -297,6 +306,13 @@ class Event:
                        CmdOpcodes.BT_HCI_OP_LE_READ_RF_PATH_COMP:          'Command Complete Event for LE Read RF Path Compensation status 0x{2:02X} TX path compensation {3:+d} x 0.1 dB. RX path compensation {4:+d} x 0.1 dB.',
                        CmdOpcodes.BT_HCI_OP_LE_WRITE_RF_PATH_COMP:         'Command Complete Event for LE Write RF Path Compensation status 0x{2:02X}',
                        CmdOpcodes.BT_HCI_OP_LE_SET_PRIVACY_MODE:           'Command Complete Event for LE Set Privacy Mode status 0x{2:02X}',
+                       CmdOpcodes.BT_HCI_OP_LE_SET_CIG_PARAMETERS:         'Command Complete Event for LE Set CIG Parameters status 0x{2:02X} CIG id {3:d} CIS count {4:d}',
+                       CmdOpcodes.BT_HCI_OP_LE_SET_CIG_PARAMETERS_TEST:    'Command Complete Event for LE Set CIG Parameters Test status 0x{2:02X} CIG id {3:d} CIS count {4:d}',
+                       CmdOpcodes.BT_HCI_OP_LE_REMOVE_CIG:                 'Command Complete Event for LE Remove CIG status 0x{2:02X} CIG id {3:d}',
+                       CmdOpcodes.BT_HCI_OP_LE_REJECT_CIS_REQUEST:         'Command Complete Event for LE reject CIS Request status 0x{2:02X} handle {3:d}',
+                       CmdOpcodes.BT_HCI_OP_LE_SETUP_ISO_DATA_PATH:        'Command Complete Event for LE Setup ISO Data Path status 0x{2:02X} handle {3:d}',
+                       CmdOpcodes.BT_HCI_OP_LE_REMOVE_ISO_DATA_PATH:       'Command Complete Event for LE Remove ISO Data Path status 0x{2:02X} handle {3:d}',
+                       CmdOpcodes.BT_HCI_OP_LE_SET_HOST_FEATURE:           'Command Complete Event for LE Set Host Feature status 0x{2:02X}',
                        CmdOpcodes.BT_HCI_OP_VS_WRITE_BD_ADDR:              'Command Complete Event for Write BD_ADDR status 0x{2:02X}' };
 
     __cseFormats__ = { CmdOpcodes.BT_HCI_OP_INQUIRY:                       'Command Status Event for Inquire status 0x{2:02X}',
@@ -310,7 +326,9 @@ class Event:
                        CmdOpcodes.BT_HCI_OP_LE_GENERATE_DHKEY:             'Command Status Event for LE Generate DHKey Command status 0x{2:02X}',
                        CmdOpcodes.BT_HCI_OP_LE_SET_PHY:                    'Command Status Event for LE Set PHY status 0x{2:02X}',
                        CmdOpcodes.BT_HCI_OP_LE_EXT_CREATE_CONN:            'Command Status Event for LE Extended Create Connection status 0x{2:02X}',
-                       CmdOpcodes.BT_HCI_OP_LE_PER_ADV_CREATE_SYNC:        'Command Status Event for LE Periodic Advertising Create Sync status 0x{2:02X}' };
+                       CmdOpcodes.BT_HCI_OP_LE_PER_ADV_CREATE_SYNC:        'Command Status Event for LE Periodic Advertising Create Sync status 0x{2:02X}',
+                       CmdOpcodes.BT_HCI_OP_LE_ACCEPT_CIS_REQUEST:         'Command Status Event for LE Accept CIS Request status 0x{2:02X}',
+                       CmdOpcodes.BT_HCI_OP_LE_CREATE_CIS:                 'Command Status Event for LE Create CIS status 0x{2:02X}' };
 
 
     def __init__(self, event, data, time=None):
@@ -766,6 +784,52 @@ class Event:
             txPCValue = rxPCValue = 0;
         return txPCValue, rxPCValue;
 
+    def __leSetCigParameters(self):
+        if self.__checkMinSize(6):
+            cigId, cisCount = struct.unpack('<BB', self.data[4:6])
+        else:
+            cigId = cisCount = 0
+
+        if self.__checkSize(6+cisCount*2):
+            connectionHandle = struct.unpack('<' + str(cisCount) + 'H', self.data[6:6+cisCount*2])
+        else:
+            connectionHandle = None
+        return cigId, cisCount, connectionHandle
+
+    def __leSetCigParametersTest(self):
+        return self.__leSetCigParameters()
+
+    def __leRemoveCig(self):
+        if self.__checkSize(5):
+            cigId = struct.unpack('<B', self.data[4:5])[0]
+        else:
+            cigId = 0
+        return (cigId,)
+
+    def __leRejectCisRequest(self):
+        if self.__checkSize(6):
+            connectionHandle = struct.unpack('<H', self.data[4:6])[0]
+            self.__checkConnectionHandle(connectionHandle)
+        else:
+            connectionHandle = 0
+        return (connectionHandle,)
+
+    def __leSetupIsoPath(self):
+        if self.__checkSize(6):
+            connectionHandle = struct.unpack('<H', self.data[4:6])[0]
+            self.__checkConnectionHandle(connectionHandle)
+        else:
+            connectionHandle = 0
+        return (connectionHandle,)
+
+    def __leRemoveIsoPath(self):
+        if self.__checkSize(6):
+            connectionHandle = struct.unpack('<H', self.data[4:6])[0]
+            self.__checkConnectionHandle(connectionHandle)
+        else:
+            connectionHandle = 0
+        return (connectionHandle,)
+
     """ ================================================================================
 
            The above private methods were all sub-sets of the Command Complete Event
@@ -1215,4 +1279,10 @@ class Event:
                        CmdOpcodes.BT_HCI_OP_LE_READ_NUM_ADV_SETS:         __leReadNoOfSupportedAdvSets,
                        CmdOpcodes.BT_HCI_OP_LE_READ_PER_ADV_LIST_SIZE:    __leReadListSize,
                        CmdOpcodes.BT_HCI_OP_LE_READ_TX_POWER:             __leReadTransmitPower,
-                       CmdOpcodes.BT_HCI_OP_LE_READ_RF_PATH_COMP:         __leReadRFPathCompensation };
+                       CmdOpcodes.BT_HCI_OP_LE_READ_RF_PATH_COMP:         __leReadRFPathCompensation,
+                       CmdOpcodes.BT_HCI_OP_LE_SET_CIG_PARAMETERS:        __leSetCigParameters,
+                       CmdOpcodes.BT_HCI_OP_LE_SET_CIG_PARAMETERS_TEST:   __leSetCigParametersTest,
+                       CmdOpcodes.BT_HCI_OP_LE_REMOVE_CIG:                __leRemoveCig,
+                       CmdOpcodes.BT_HCI_OP_LE_REJECT_CIS_REQUEST:        __leRejectCisRequest,
+                       CmdOpcodes.BT_HCI_OP_LE_SETUP_ISO_DATA_PATH:       __leSetupIsoPath,
+                       CmdOpcodes.BT_HCI_OP_LE_REMOVE_ISO_DATA_PATH:      __leRemoveIsoPath };
