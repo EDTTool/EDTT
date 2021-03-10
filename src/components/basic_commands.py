@@ -245,6 +245,24 @@ class Commands(IntEnum):
     CMD_LE_ISO_DATA_WRITE_RSP                                     = 234
     CMD_LE_ISO_DATA_READ_REQ                                      = 235
     CMD_LE_ISO_DATA_READ_RSP                                      = 236
+    CMD_LE_SET_CIG_PARAMETERS_REQ                                 = 237
+    CMD_LE_SET_CIG_PARAMETERS_RSP                                 = 238
+    CMD_LE_SET_CIG_PARAMETERS_TEST_REQ                            = 239
+    CMD_LE_SET_CIG_PARAMETERS_TEST_RSP                            = 240
+    CMD_LE_CREATE_CIS_REQ                                         = 241
+    CMD_LE_CREATE_CIS_RSP                                         = 242
+    CMD_LE_REMOVE_CIG_REQ                                         = 243
+    CMD_LE_REMOVE_CIG_RSP                                         = 244
+    CMD_LE_ACCEPT_CIS_REQUEST_REQ                                 = 245
+    CMD_LE_ACCEPT_CIS_REQUEST_RSP                                 = 246
+    CMD_LE_REJECT_CIS_REQUEST_REQ                                 = 247
+    CMD_LE_REJECT_CIS_REQUEST_RSP                                 = 248
+    CMD_LE_SETUP_ISO_DATA_PATH_REQ                                = 249
+    CMD_LE_SETUP_ISO_DATA_PATH_RSP                                = 250
+    CMD_LE_REMOVE_ISO_DATA_PATH_REQ                               = 251
+    CMD_LE_REMOVE_ISO_DATA_PATH_RSP                               = 252
+    CMD_LE_SET_HOST_FEATURE_REQ                                   = 253
+    CMD_LE_SET_HOST_FEATURE_RSP                                   = 254
 
 class HCICommands(IntEnum):
     BT_HCI_OP_INQUIRY                       = 0x401
@@ -342,6 +360,15 @@ class HCICommands(IntEnum):
     BT_HCI_OP_LE_READ_RF_PATH_COMP          = 0x204C
     BT_HCI_OP_LE_WRITE_RF_PATH_COMP         = 0x204D
     BT_HCI_OP_LE_SET_PRIVACY_MODE           = 0x204E
+    BT_HCI_OP_LE_SET_CIG_PARAMETERS         = 0x2062
+    BT_HCI_OP_LE_SET_CIG_PARAMETERS_TEST    = 0x2063
+    BT_HCI_OP_LE_CREATE_CIS                 = 0x2064
+    BT_HCI_OP_LE_REMOVE_CIG                 = 0x2065
+    BT_HCI_OP_LE_ACCEPT_CIS_REQUEST         = 0x2066
+    BT_HCI_OP_LE_REJECT_CIS_REQUEST         = 0x2067
+    BT_HCI_OP_LE_SETUP_ISO_DATA_PATH        = 0x206E
+    BT_HCI_OP_LE_REMOVE_ISO_DATA_PATH       = 0x206F
+    BT_HCI_OP_LE_SET_HOST_FEATURE           = 0x2074
     BT_HCI_OP_VS_WRITE_BD_ADDR              = 0xFC06
 
 class Events(IntEnum):
@@ -3175,7 +3202,7 @@ def le_iso_data_read(transport, idx, to):
     if dataLen > 0:
         data = struct.unpack('<' + str(dataLen) + 'B', packet)
     else:
-        data = [];
+        data = []
 
     if ( RespCmd != Commands.CMD_LE_ISO_DATA_READ_RSP ):
         raise Exception("LE ISO Data Read command failed: Inappropriate command response received")
@@ -3188,3 +3215,263 @@ def le_iso_data_read(transport, idx, to):
     handle &= 0x0fff
 
     return time, handle, PbFlags, TsFlag, data
+
+"""
+    The HCI_LE_Set_CIG_Parameters command is used by a master's Host to
+    set the parameters of one or more CISes that are associated with a CIG in the
+    Controller.
+"""
+def le_set_cig_parameters(transport, idx, CigId, SduIntervalMToS, SduIntervalSToM, SlavesClockAccuracy, Packing,
+                          Framing, MaxTransportLatencyMToS, MaxTransportLatencySToM, CisCount, CisId, MaxSduMToS, MaxSduSToM,
+                          PhyMToS, PhySToM, RtnMToS, RtnSToM, to):
+
+    cCB = str(CisCount) + 'B'
+    cCH = str(CisCount) + 'H'
+
+    cmd = struct.pack('<HHHB3B3BBBBHHB' + cCB + cCH + cCH + cCB + cCB + cCB + cCB,
+                      Commands.CMD_LE_SET_CIG_PARAMETERS_REQ, 17 + (5 * CisCount * 1) + (2 * CisCount * 2), HCICommands.BT_HCI_OP_LE_SET_CIG_PARAMETERS,
+                      CigId, *toArray(SduIntervalMToS, 3), *toArray(SduIntervalSToM, 3), SlavesClockAccuracy, Packing,
+                      Framing, MaxTransportLatencyMToS, MaxTransportLatencySToM, CisCount, *CisId, *MaxSduMToS, *MaxSduSToM,
+                      *PhyMToS, *PhySToM, *RtnMToS, *RtnSToM)
+    transport.send(idx, cmd)
+
+    rcvLen = 7 + (CisCount * 2)
+    packet = transport.recv(idx, rcvLen, to)
+
+    if ( rcvLen != len(packet) ):
+        raise Exception("LE Set CIG Parameters command failed: Response too short (Expected %i bytes got %i bytes)" % (rcvLen, len(packet)))
+
+    RespCmd, RespLen, status, cigId, cisCount, connectionHandle = struct.unpack('<HHBBB' + cCH, packet)
+
+    if ( RespCmd != Commands.CMD_LE_SET_CIG_PARAMETERS_RSP ):
+        raise Exception("LE Set CIG Parameters command failed: Inappropriate command response received")
+
+    if ( RespLen != 3 + (CisCount * 2) ):
+        raise Exception("LE Set CIG Parameters command failed: Response length field corrupted (%i)" % RespLen)
+
+    return status, cigId, cisCount, connectionHandle
+
+"""
+    The command is used by a master's Host to set the parameters of one or more
+    CISes that are associated with a CIG in the Controller. Should only be used for
+    testing purposes.
+"""
+def le_set_cig_parameters_test(transport, idx, CigId, SduIntervalMToS, SduIntervalSToM, FtMToS, FtSToM, IsoInterval, SlavesClockAccuracy,
+                               Packing, Framing, CisCount, CisId, Nse, MaxSduMToS, MaxSduSToM, MaxPduMToS, MaxPduSToM,
+                               PhyMToS, PhySToM, BnMToS, BnSToM, to):
+
+    cCB = str(CisCount) + 'B'
+    cCH = str(CisCount) + 'H'
+
+    cmd = struct.pack('<HHHB3B3BBBHBBBB' + cCB + cCB + cCH + cCH + cCH + cCH + cCB + cCB + cCB + cCB,
+                      Commands.CMD_LE_SET_CIG_PARAMETERS_TEST_REQ, 17 + (6 * CisCount * 1) + (4 * CisCount * 2), HCICommands.BT_HCI_OP_LE_SET_CIG_PARAMETERS_TEST,
+                      CigId, *toArray(SduIntervalMToS, 3), *toArray(SduIntervalSToM, 3), FtMToS, FtSToM, IsoInterval, SlavesClockAccuracy,
+                      Packing, Framing, CisCount, *CisId, *Nse, *MaxSduMToS, *MaxSduSToM, *MaxPduMToS, *MaxPduSToM,
+                      *PhyMToS, *PhySToM, *BnMToS, *BnSToM)
+    transport.send(idx, cmd)
+
+    rcvLen = 7 + (CisCount * 2)
+    packet = transport.recv(idx, rcvLen, to)
+
+    if ( rcvLen != len(packet) ):
+        raise Exception("LE Set CIG Parameters Test command failed: Response too short (Expected %i bytes got %i bytes)" % (rcvLen, len(packet)))
+
+    RespCmd, RespLen, status, cigId, cisCount, connectionHandle = struct.unpack('<HHBBB' + cCH, packet)
+
+    if ( RespCmd != Commands.CMD_LE_SET_CIG_PARAMETERS_TEST_RSP ):
+        raise Exception("LE Set CIG Parameters Test command failed: Inappropriate command response received")
+
+    if ( RespLen != 3 + (CisCount * 2) ):
+        raise Exception("LE Set CIG Parameters Test command failed: Response length field corrupted (%i)" % RespLen)
+
+    return status, cigId, cisCount, connectionHandle
+
+"""
+    The HCI_LE_Create_CIS command is used by the master's Host to create one
+    or more CISes using the connections identified by the ACL_Connection_Handle[i]
+    parameter array.
+"""
+def le_create_cis(transport, idx, CisCount, CisConnectionHandle, AclConnectionHandle, to):
+
+    cmd = struct.pack('<HHHB' + str(CisCount) + 'H' + str(CisCount) + 'H',
+                      Commands.CMD_LE_CREATE_CIS_REQ, 3 + (2 * CisCount * 2), HCICommands.BT_HCI_OP_LE_CREATE_CIS,
+                      CisCount, *CisConnectionHandle, *AclConnectionHandle)
+    transport.send(idx, cmd)
+
+    packet = transport.recv(idx, 5, to)
+
+    if ( 5 != len(packet) ):
+        raise Exception("LE Create CIS command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)))
+
+    RespCmd, RespLen, status = struct.unpack('<HHB', packet)
+
+    if ( RespCmd != Commands.CMD_LE_CREATE_CIS_RSP ):
+        raise Exception("LE Create CIS command failed: Inappropriate command response received")
+
+    if ( RespLen != 1 ):
+        raise Exception("LE Create CIS command failed: Response length field corrupted (%i)" % RespLen)
+
+    return status
+
+"""
+    The HCI_LE_Remove_CIG command is used by the master's Host to remove
+    all the CISes associated with the CIG identified by CIG_ID.
+"""
+def le_remove_cig(transport, idx, CigId, to):
+
+    cmd = struct.pack('<HHHB', Commands.CMD_LE_REMOVE_CIG_REQ, 3, HCICommands.BT_HCI_OP_LE_REMOVE_CIG, CigId)
+    transport.send(idx, cmd)
+
+    packet = transport.recv(idx, 5, to)
+
+    if ( 5 != len(packet) ):
+        raise Exception("LE Remove CIG command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)))
+
+    RespCmd, RespLen, status, cigId = struct.unpack('<HHBB', packet)
+
+    if ( RespCmd != Commands.CMD_LE_REMOVE_CIG_RSP ):
+        raise Exception("LE Remove CIG command failed: Inappropriate command response received")
+
+    if ( RespLen != 2 ):
+        raise Exception("LE Remove CIG command failed: Response length field corrupted (%i)" % RespLen)
+
+    return status, cigId
+
+"""
+    The HCI_LE_Accept_CIS_Request command is used by the slave's Host to
+    inform the Controller to accept the request for the CIS that is identified by the
+    Connection_Handle.
+"""
+def le_accept_cis_request(transport, idx, ConnectionHandle, to):
+
+    ConnectionHandle &= 0x0fff
+
+    cmd = struct.pack('<HHHH', Commands.CMD_LE_ACCEPT_CIS_REQUEST_REQ, 4, HCICommands.BT_HCI_OP_LE_ACCEPT_CIS_REQUEST,
+                      ConnectionHandle)
+    transport.send(idx, cmd)
+
+    packet = transport.recv(idx, 5, to)
+
+    if ( 5 != len(packet) ):
+        raise Exception("LE Accept CIS Request command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)))
+
+    RespCmd, RespLen, status = struct.unpack('<HHB', packet)
+
+    if ( RespCmd != Commands.CMD_LE_ACCEPT_CIS_REQUEST_RSP ):
+        raise Exception("LE Accept CIS Request command failed: Inappropriate command response received")
+
+    if ( RespLen != 1 ):
+        raise Exception("LE Accept CIS Request command failed: Response length field corrupted (%i)" % RespLen)
+
+    return status
+
+"""
+    The HCI_LE_Reject_CIS_Request command is used by the slave's Host to
+    inform the Controller to reject the request for the CIS that is identified by the
+    Connection_Handle.
+"""
+def le_reject_cis_request(transport, idx, ConnectionHandle, Reason, to):
+    
+    ConnectionHandle &= 0x0fff
+
+    cmd = struct.pack('<HHHHB', Commands.CMD_LE_REJECT_CIS_REQUEST_REQ, 5, HCICommands.BT_HCI_OP_LE_REJECT_CIS_REQUEST,
+                      ConnectionHandle, Reason)
+    transport.send(idx, cmd)
+
+    packet = transport.recv(idx, 7, to)
+
+    if ( 7 != len(packet) ):
+        raise Exception("LE Reject CIS Request command failed: Response too short (Expected %i bytes got %i bytes)" % (7, len(packet)))
+
+    RespCmd, RespLen, status, connectionHandle = struct.unpack('<HHBH', packet)
+
+    if ( RespCmd != Commands.CMD_LE_REJECT_CIS_REQUEST_RSP ):
+        raise Exception("LE Reject CIS Request command failed: Inappropriate command response received")
+
+    if ( RespLen != 3 ):
+        raise Exception("LE Reject CIS Request command failed: Response length field corrupted (%i)" % RespLen)
+
+    return status, connectionHandle
+
+"""
+    The HCI_LE_Setup_ISO_Data_Path command is used to identify and create
+    the isochronous data path between the Host and the Controller for an
+    established CIS or BIS identified by the Connection_Handle parameter.
+"""
+def le_setup_iso_data_path(transport, idx, ConnectionHandle, DataPathDirection, DataPathId, CodecId, ControllerDelay,
+                           CodecConfigurationLength, CodecConfiguration, to):
+
+    ConnectionHandle &= 0x0fff
+
+    cmd = struct.pack('<HHHHBB5B3BB' + str(CodecConfigurationLength) + 'B',
+                      Commands.CMD_LE_SETUP_ISO_DATA_PATH_REQ, 15 + (CodecConfigurationLength * 1), HCICommands.BT_HCI_OP_LE_SETUP_ISO_DATA_PATH,
+                      ConnectionHandle, DataPathDirection, DataPathId, *CodecId, *toArray(ControllerDelay, 3), CodecConfigurationLength, *CodecConfiguration)
+    transport.send(idx, cmd)
+
+    packet = transport.recv(idx, 7, to)
+
+    if ( 7 != len(packet) ):
+        raise Exception("LE Setup ISO Data Path command failed: Response too short (Expected %i bytes got %i bytes)" % (7, len(packet)))
+
+    RespCmd, RespLen, status, connectionHandle = struct.unpack('<HHBH', packet)
+
+    if ( RespCmd != Commands.CMD_LE_SETUP_ISO_DATA_PATH_RSP ):
+        raise Exception("LE Setup ISO Data Path command failed: Inappropriate command response received")
+
+    if ( RespLen != 3 ):
+        raise Exception("LE Setup ISO Data Path command failed: Response length field corrupted (%i)" % RespLen)
+
+    return status, connectionHandle
+
+"""
+    The HCI_LE_Remove_ISO_Data_Path command is used to remove the input
+    and/or output data path(s) associated with a CIS or BIS identified by the
+    Connection_Handle parameter.
+"""
+def le_remove_iso_data_path(transport, idx, ConnectionHandle, DataPathDirection, to):
+    
+    ConnectionHandle &= 0x0fff
+
+    cmd = struct.pack('<HHHHB',
+                      Commands.CMD_LE_REMOVE_ISO_DATA_PATH_REQ, 5, HCICommands.BT_HCI_OP_LE_REMOVE_ISO_DATA_PATH,
+                      ConnectionHandle, DataPathDirection)
+    transport.send(idx, cmd)
+
+    packet = transport.recv(idx, 7, to)
+
+    if ( 7 != len(packet) ):
+        raise Exception("LE Remove ISO Data Path command failed: Response too short (Expected %i bytes got %i bytes)" % (7, len(packet)))
+
+    RespCmd, RespLen, status, connectionHandle = struct.unpack('<HHBH', packet)
+
+    if ( RespCmd != Commands.CMD_LE_REMOVE_ISO_DATA_PATH_RSP ):
+        raise Exception("LE Remove ISO Data Path command failed: Inappropriate command response received")
+
+    if ( RespLen != 3 ):
+        raise Exception("LE Remove ISO Data Path command failed: Response length field corrupted (%i)" % RespLen)
+
+    return status, connectionHandle
+
+"""
+    The HCI_LE_Set_Host_Feature command is used by the Host to set or clear a bit
+    controlled by the Host in the Link Layer FeatureSet stored in the Controller.
+"""
+def le_set_host_feature(transport, idx, BitNumber, BitValue, to):
+
+    cmd = struct.pack('<HHHBB', Commands.CMD_LE_SET_HOST_FEATURE_REQ, 4, HCICommands.BT_HCI_OP_LE_SET_HOST_FEATURE, BitNumber, BitValue)
+    transport.send(idx, cmd)
+
+    packet = transport.recv(idx, 5, to)
+
+    if ( 5 != len(packet) ):
+        raise Exception("LE Set Host Feature command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)))
+
+    RespCmd, RespLen, status = struct.unpack('<HHB', packet)
+
+    if ( RespCmd != Commands.CMD_LE_SET_HOST_FEATURE_RSP ):
+        raise Exception("LE Set Host Feature command failed: Inappropriate command response received")
+
+    if ( RespLen != 1 ):
+        raise Exception("LE Set Host Feature command failed: Response length field corrupted (%i)" % RespLen)
+
+    return status
