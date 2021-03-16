@@ -405,6 +405,8 @@ class MetaEvents(IntEnum):
     BT_HCI_EVT_LE_ADV_SET_TERMINATED        = 18
     BT_HCI_EVT_LE_SCAN_REQ_RECEIVED         = 19
     BT_HCI_EVT_LE_CHAN_SEL_ALGO             = 20
+    BT_HCI_EVT_LE_CIS_ESTABLISHED           = 25
+    BT_HCI_EVT_LE_CIS_REQUEST               = 26
 
 def echo(transport, idx, message, to):
     

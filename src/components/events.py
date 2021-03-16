@@ -37,6 +37,8 @@ class MetaEvents(IntEnum):
     BT_HCI_EVT_LE_ADV_SET_TERMINATED        = 18
     BT_HCI_EVT_LE_SCAN_REQ_RECEIVED         = 19
     BT_HCI_EVT_LE_CHAN_SEL_ALGO             = 20
+    BT_HCI_EVT_LE_CIS_ESTABLISHED           = 25
+    BT_HCI_EVT_LE_CIS_REQUEST               = 26
 
 class CmdOpcodes(IntEnum):
     BT_HCI_OP_INQUIRY                       = 0x0401
@@ -207,7 +209,10 @@ class Event:
                        MetaEvents.BT_HCI_EVT_LE_SCAN_TIMEOUT:              'LE Scan Timeout Event',
                        MetaEvents.BT_HCI_EVT_LE_ADV_SET_TERMINATED:        'LE Advertising Set Terminated Event for Advertise handle {1:d} Connection handle {2:d} status 0x{0:02X} events {3:d}',
                        MetaEvents.BT_HCI_EVT_LE_SCAN_REQ_RECEIVED:         'LE Scan Request Received Event for handle {0:d} address {1!s}',
-                       MetaEvents.BT_HCI_EVT_LE_CHAN_SEL_ALGO:             'LE Channel Selection Algorithm Event for handle {0:d} algorithm {1:d}' };
+                       MetaEvents.BT_HCI_EVT_LE_CHAN_SEL_ALGO:             'LE Channel Selection Algorithm Event for handle {0:d} algorithm {1:d}',
+                       MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED:           'LE CIS Established Event for handle {1:d} status 0x{0:02X} sync delay (CIG) {2!s} sync delay (CIS) {3!s} TL (MToS) {4!s} TL (SToM) {5!s} PHY (MToS) {6:d} PHY (SToM) {7:d} NSE {8:d}' \
+                                                                           'BN (MToS) {9:d} BN (SToM) {10:d} FT (MToS) {11:d} FT (SToM) {12:d} Max PDU (MToS) {13:d} Max PDU (SToM) {14:d} ISO interval {15:d}',
+                       MetaEvents.BT_HCI_EVT_LE_CIS_REQUEST:               'LE CIS Request Event for handle {1:d} acl handle {0:d} CIG id {2:d} CIS id {3:d}' };
 
     __eventFormats__ = { Events.BT_HCI_EVT_DISCONN_COMPLETE:               'Disconnect Complete Event for handle {1:d} status 0x{0:02X} reason 0x{2:02X}',
                        Events.BT_HCI_EVT_ENCRYPT_CHANGE:                   'Encryption Change Event for handle {1:d} status 0x{0:02X} encryption enabled {2:d}',
@@ -1167,6 +1172,39 @@ class Event:
             handle = algorithm = 0;
         return handle, algorithm;
 
+    def __cisEstablished(self):
+        if self.__checkSize(29):
+            status, connectionHandle = struct.unpack('<BH', self.data[1:4])
+            cigSyncDelay = struct.unpack('<3B', self.data[4:7])
+            cisSyncDelay = struct.unpack('<3B', self.data[7:10])
+            transportLatencyMToS = struct.unpack('<3B', self.data[10:13])
+            transportLatencySToM = struct.unpack('<3B', self.data[13:16])
+            phyMToS, phySToM, nse = struct.unpack('<BBB', self.data[16:19])
+            bNMToS, bNSToM, fTMToS, fTSToM = struct.unpack('<BBBB', self.data[19:23])
+            maxPduMToS, maxPduSToM, isoInterval = struct.unpack('<HHH', self.data[23:29])
+
+            if status == 0:
+                self.__checkConnectionHandle(connectionHandle)
+                self.__checkPhy(phyMToS)
+                self.__checkPhy(phySToM)
+        else:
+            status = connectionHandle = phyMToS = phySToM = nse = bNMToS = bNSToM = fTMToS = fTSToM = maxPduMToS = maxPduSToM = isoInterval = 0
+            cigSyncDelay = cisSyncDelay = transportLatencyMToS = transportLatencySToM = None
+
+        return status, connectionHandle, toNumber(cigSyncDelay), toNumber(cisSyncDelay), toNumber(transportLatencyMToS), toNumber(transportLatencySToM), \
+               phyMToS, phySToM, nse, bNMToS, bNSToM, fTMToS, fTSToM, maxPduMToS, maxPduSToM, isoInterval
+
+    def __cisRequest(self):
+        if self.__checkSize(7):
+            aclConnectionHandle, cisConnectionHandle, cigId, cisId = struct.unpack('<HHBB', self.data[1:7])
+
+            self.__checkConnectionHandle(aclConnectionHandle)
+            self.__checkConnectionHandle(cisConnectionHandle)
+        else:
+            aclConnectionHandle = cisConnectionHandle = cigId = cisId = 0
+
+        return aclConnectionHandle, cisConnectionHandle, cigId, cisId
+
     def __metaEvent(self):
         if self.subEvent in self.__metaFuncs__:
             return self.__metaFuncs__[self.subEvent](self);
@@ -1230,7 +1268,9 @@ class Event:
                        MetaEvents.BT_HCI_EVT_LE_SCAN_TIMEOUT:             __scanTimeout,
                        MetaEvents.BT_HCI_EVT_LE_ADV_SET_TERMINATED:       __advertiseSetTerminated,
                        MetaEvents.BT_HCI_EVT_LE_SCAN_REQ_RECEIVED:        __scanRequestReceived,
-                       MetaEvents.BT_HCI_EVT_LE_CHAN_SEL_ALGO:            __channnelSelectionAlgorithm };
+                       MetaEvents.BT_HCI_EVT_LE_CHAN_SEL_ALGO:            __channnelSelectionAlgorithm,
+                       MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED:          __cisEstablished,
+                       MetaEvents.BT_HCI_EVT_LE_CIS_REQUEST:              __cisRequest };
 
     __eventFuncs__ = { Events.BT_HCI_EVT_DISCONN_COMPLETE:                __disconnectComplete,
                        Events.BT_HCI_EVT_ENCRYPT_CHANGE:                  __encryptionChange,
