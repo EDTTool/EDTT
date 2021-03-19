@@ -7,7 +7,7 @@ import statistics;
 import os;
 import numpy;
 import csv
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from enum import IntEnum;
 from components.utils import *;
 from components.basic_commands import *;
@@ -49,9 +49,9 @@ class PreferredPhysicalChannel(IntEnum):
     BEGIN                                      U T I L I T Y   P R O C E D U R E S
     ========================================================================================================================
 """
-def verifyAndShowEvent(transport, idx, expectedEvent, trace):
+def verifyAndShowEvent(transport, idx, expectedEvent, trace, to=100):
 
-    event = get_event(transport, idx, 100);
+    event = get_event(transport, idx, to);
     trace.trace(7, str(event));
     return event.event == expectedEvent;
 
@@ -67,9 +67,9 @@ def verifyAndFetchEvent(transport, idx, expectedEvent, trace):
     trace.trace(7, str(event));
     return event.event == expectedEvent, event;
 
-def verifyAndFetchMetaEvent(transport, idx, expectedEvent, trace):
+def verifyAndFetchMetaEvent(transport, idx, expectedEvent, trace, to=100):
 
-    event = get_event(transport, idx, 100);
+    event = get_event(transport, idx, to);
     trace.trace(7, str(event));
     return event.subEvent == expectedEvent, event;
 
@@ -253,6 +253,29 @@ def hasReadRemoteVersionInformationCompleteEvent(transport, idx, trace):
 def calcMaxPacketTime(packetLength):
     #      (preamble + AA + header + packetLength + MIC + CRC) * us/byte
     return (1        + 4  + 2      + packetLength + 4   + 3  ) * 8
+
+def calcMaxIsoSdu(Framing, BN, Max_PDU, ISO_Interval, SDU_Interval):
+    if Framing == 0:
+        return calcUnframedMaxIsoSdu(BN, Max_PDU, ISO_Interval, SDU_Interval, 247) # TODO: Should be something configurable
+    elif Framing == 1:
+        raise RuntimeError("Framed Max SDU not supported")
+    else:
+        raise ValueError("Framing must be 0 or 1")
+
+def calcUnframedMaxIsoSdu(BN, Max_PDU, ISO_Interval, SDU_Interval, Max_SDU_Supported):
+    # BLUETOOTH CORE SPECIFICATION Version 5.2 | Vol 6, Part G, 2.1 UNFRAMED PDU:
+    #
+    # BN = ceil(Max_SDU / Max_PDU) * (ISO_Interval / SDU_Interval).
+    # (BN / (ISO_Interval / SDU_Interval)) = ceil(Max_SDU / Max_PDU)
+    # (BN / (ISO_Interval / SDU_Interval)) - 1 < Max_SDU / Max_PDU <= (BN / (ISO_Interval / SDU_Interval))
+    # ((BN / (ISO_Interval / SDU_Interval)) - 1) * Max_PDU < Max_SDU <= (BN / (ISO_Interval / SDU_Interval)) * Max_PDU
+    #
+    # Max_SDU = Max_PDU * BN * (SDU_Interval / ISO_Interval)
+
+    Max_SDU = int(Max_PDU * BN * (SDU_Interval // ISO_Interval))
+
+    # Clamp
+    return min(Max_SDU, Max_SDU_Supported)
 
 """
     ========================================================================================================================
@@ -5919,6 +5942,544 @@ def ll_sec_scn_bv_01_c(transport, upperTester, lowerTester, trace):
 
     return success;
 
+"""
+LL.TS.p17
+4.10.1.3     Default Values for Set CIG Parameters Commands
+When using either the HCI_LE_Set_CIG_Parameters or HCI_LE_Set_CIG_Parameters_Test commands,
+the following table defines common default parameters for this section. The test case may specify
+different values.
+"""
+class SetCIGParameters:
+    # Known parameter fields
+    data = [
+        # Name,                      Alias,         Per CIS, Default Value
+        ('SDU_Interval_M_To_S',      'sdu_int_m2s', False,   20000), # 20 ms
+        ('SDU_Interval_S_To_M',      'sdu_int_s2m', False,   20000), # 20 ms
+        ('ISO_Interval',             'iso_int',     False,   int(20 // 1.25)), # 20 ms
+        ('CIS_Count',                'cis_cnt',     False,   1), # NOTE: Needs to be located before the first "Per CIS" field
+        ('Slaves_Clock_Accuracy',    None,          False,   0),
+        ('Packing',                  'packing',     False,   0), # Sequential
+        ('Framing',                  'framing',     False,   0), # Unframed
+        ('NSE',                      'nse',         True,    3),
+        ('Max_SDU_M_To_S',           'mx_sdu_m2s',  True,    None), # NOTE: Calculated in __init__
+        ('Max_SDU_S_To_M',           'mx_sdu_s2m',  True,    None), # NOTE: Calculated in __init__
+        ('Max_PDU_M_To_S',           'mx_pdu_m2s',  True,    251),
+        ('Max_PDU_S_To_M',           'mx_pdu_s2m',  True,    251),
+        ('PHY_M_To_S',               'phy_m2s',     True,    1), # LE 1M PHY
+        ('PHY_S_To_M',               'phy_s2m',     True,    1), # LE 1M PHY
+        ('FT_M_To_S',                'ft_m2s',      False,   1),
+        ('FT_S_To_M',                'ft_s2m',      False,   1),
+        ('BN_M_To_S',                'bn_m2s',      True,    1),
+        ('BN_S_To_M',                'bn_s2m',      True,    1),
+        ('Transport_Latency_M_To_S', None,          True,    40000), # 40 ms
+        ('Transport_Latency_S_To_M', None,          True,    40000), # 40 ms
+        ('RTN_M_To_S',               None,          True,    3),
+        ('RTN_S_To_M',               None,          True,    3),
+    ]
+
+    def __init__(self, **kwargs):
+        # Make a list of the known fields
+        fields = [t[0] for t in self.data] + [t[1] for t in self.data]
+
+        # Check for unknown fields
+        for key in kwargs.keys():
+            if key not in fields:
+                raise ValueError('Unknown field {}'.format(key))
+
+        # Dynamically set the attributes of the class instance
+        for (field, alias, per_cis, default) in self.data:
+            # Get supplied value or default
+            value = kwargs.get(field, default)
+
+            # Per CIS field?
+            if per_cis:
+                value = self.per_cis_value(value)
+
+            # Create field attribute
+            setattr(self, field, value)
+
+            # Create alias attribute
+            if alias:
+                setattr(self, alias, value)
+
+        # Calculate the Max_SDU_M_To_S and Max_SDU_S_To_M unless given
+        Max_SDU_M_To_S = [None] * self.CIS_Count
+        Max_SDU_S_To_M = [None] * self.CIS_Count
+        for n in range(self.CIS_Count):
+            # Calculate default values
+            Max_SDU_M_To_S[n] = calcMaxIsoSdu(self.Framing, self.BN_M_To_S[n], self.Max_PDU_M_To_S[n], self.ISO_Interval * 1.25 * 1000, self.SDU_Interval_M_To_S)
+            Max_SDU_S_To_M[n] = calcMaxIsoSdu(self.Framing, self.BN_S_To_M[n], self.Max_PDU_S_To_M[n], self.ISO_Interval * 1.25 * 1000, self.SDU_Interval_S_To_M)
+
+        # Override
+        self.Max_SDU_M_To_S = self.per_cis_value(kwargs.get('Max_SDU_M_To_S', Max_SDU_M_To_S))
+        self.Max_SDU_S_To_M = self.per_cis_value(kwargs.get('Max_SDU_S_To_M', Max_SDU_S_To_M))
+
+    def per_cis_value(self, value):
+        if isinstance(value, list):
+            # List value given, so must match CIS_Count
+            if len(value) != self.CIS_Count:
+                raise ValueError('Field {} has wrong length {}, expected {}'.format(key, len(value), self.CIS_Count))
+        else:
+            # Single value given, so multiply by CIS_Count
+            value = [value] * self.CIS_Count
+        return value
+
+"""
+    [CIS Setup Response Procedure, Slave]
+"""
+def cis_setup_response_procedure_slave(transport, upperTester, lowerTester, trace, params):
+    # Establish Initial Condition
+    #
+    # The Isochronous Channels (Host Support) FeatureSet bit is set.
+    #
+    # An ACL connection has been established between the IUT and Lower Tester with a valid Connection
+    # Handle on the PHY specified in Table 4.115: Slave Test Case Direction Specific Configurations.
+    #
+    # The Lower Tester sets the parameters specified in Table 4.115: Slave Test Case Direction Specific
+    # Configurations and Table 4.116: Slave Test Case Additional Configurations. Any otherwise
+    # unspecified values are specified in Section 4.10.1.3 Default Values for Set CIG Parameters
+    # Commands, except for default values for cis_offset_mn and cis_offset_mx. The CIS offset values are
+    # specified in Section 4.10.1.2 Timing Requirements.
+    #
+    # The Lower Tester is configured as the Master.
+
+    SDU_Interval_M_To_S     = params.SDU_Interval_M_To_S
+    SDU_Interval_S_To_M     = params.SDU_Interval_S_To_M
+    ISO_Interval            = params.ISO_Interval
+    CIS_Count               = params.CIS_Count
+    Slaves_Clock_Accuracy   = params.Slaves_Clock_Accuracy
+    Packing                 = params.Packing
+    Framing                 = params.Framing
+    NSE                     = params.NSE
+    Max_PDU_M_To_S          = params.Max_PDU_M_To_S
+    Max_PDU_S_To_M          = params.Max_PDU_S_To_M
+    PHY_M_To_S              = params.PHY_M_To_S
+    PHY_S_To_M              = params.PHY_S_To_M
+    FT_M_To_S               = params.FT_M_To_S
+    FT_S_To_M               = params.FT_S_To_M
+    BN_M_To_S               = params.BN_M_To_S
+    BN_S_To_M               = params.BN_S_To_M
+    Max_SDU_M_To_S          = params.Max_SDU_M_To_S
+    Max_SDU_S_To_M          = params.Max_SDU_S_To_M
+
+    success = True
+
+    status = le_set_host_feature(transport, lowerTester, FeatureSupport.ISOCHRONOUS_CHANNELS, 1, 100)
+    success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
+
+    status = le_set_host_feature(transport, upperTester, FeatureSupport.ISOCHRONOUS_CHANNELS, 1, 100)
+    success = getCommandCompleteEvent(transport, upperTester, trace) and (status == 0x00) and success
+
+    advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED)
+    success = advertiser.enable() and success
+    connected = initiator.connect()
+    success = success and connected
+
+    if not connected:
+        success = advertiser.disable() and success
+        return success
+
+    # 1. The Upper Tester sends an HCI_LE_Set_Event_Mask command with all events enabled,
+    #    including the HCI_LE_CIS_Request event. The IUT sends a successful
+    #    HCI_Command_Complete in response.
+    #
+    # NOTE: This is already performed during the preamble step
+
+    # 2. The Lower Tester sends an LL_CIS_REQ to the IUT with the contents specified in Table 4.115.
+    # NOTE: CIG_ID is hardcoded to 0
+    status, cigId, cisCount, cisConnectionHandle = \
+    le_set_cig_parameters_test(transport, lowerTester, 0,
+                               SDU_Interval_M_To_S, SDU_Interval_S_To_M,
+                               FT_M_To_S, FT_S_To_M,
+                               ISO_Interval,
+                               Slaves_Clock_Accuracy,
+                               Packing, Framing,
+                               CIS_Count,
+                               list(range(CIS_Count)),
+                               NSE,
+                               Max_SDU_M_To_S, Max_SDU_S_To_M,
+                               Max_PDU_M_To_S, Max_PDU_S_To_M,
+                               PHY_M_To_S, PHY_S_To_M,
+                               BN_M_To_S, BN_S_To_M, 100)
+    success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
+
+    status = le_create_cis(transport, lowerTester, 1, cisConnectionHandle, [initiator.handles[0]], 100)
+    success = verifyAndShowEvent(transport, lowerTester, Events.BT_HCI_EVT_CMD_STATUS, trace) and (status == 0) and success
+
+    # 3. The Upper Tester receives an HCI_LE_CIS_Request event from the IUT and the parameters
+    #    include CIS_Connection_Handle assigned by the IUT.
+    s, event = verifyAndFetchMetaEvent(transport, upperTester, MetaEvents.BT_HCI_EVT_LE_CIS_REQUEST, trace)
+    success = s and success
+    aclConnectionHandle, cisConnectionHandle, cigId, cisId = event.decode()
+
+    # 4. The Upper Tester sends an HCI_LE_Accept_CIS_Request command to the IUT, with the
+    #    Connection_Handle field set to the value of the CIS_Connection_Handle received in step 3.
+    status = le_accept_cis_request(transport, upperTester, cisConnectionHandle, 100)
+
+    # 5. The Upper Tester expects the IUT to send a successful Command Status.
+    success = verifyAndShowEvent(transport, upperTester, Events.BT_HCI_EVT_CMD_STATUS, trace) and (status == 0) and success
+
+    # 6. The Lower Tester receives an LL_CIS_RSP PDU from the IUT. In the message, the
+    #    CIS_Offset_Min field and the CIS_Offset_Max field are equal to or a subset of the values
+    #    received in the LL_CIS_REQ sent in step 2.
+    #
+    # NOTE: Timing is not possible to validate/control
+    s, event = verifyAndFetchMetaEvent(transport, lowerTester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace, 1000)
+    success = s and (event.decode()[0] == 0x00) and success
+
+    # 7. The Lower Tester sends an LL_CIS_IND where the CIS_Offset is the time (ms) from the start of
+    #    the ACL connection event in connEvent Count to the first CIS anchor point, the CIS_Sync_Delay
+    #    is CIG_Sync_Delay minus the offset from the CIG reference point to the CIS anchor point in us,
+    #    and the connEventCount is the CIS_Offset reference point.
+    #
+    # NOTE: Timing is not possible to validate/control
+
+    # 8. The Upper Tester receives a successful HCI_LE_CIS_Established event from the IUT, after the
+    #    first CIS packet sent by the LT. The Connection_Handle parameter is the
+    #    CIS_Connection_Handle value provided in the HCI_LE_CIS_Request event.
+    #
+    # NOTE: Timing is not possible to validate/control
+    s, event = verifyAndFetchMetaEvent(transport, upperTester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace)
+    success = s and (event.decode()[0] == 0x00) and success
+
+    # 9. The Lower Tester sends data packets to the IUT.
+    # 10. The Lower Tester receives an Ack.
+    # 11. Repeat steps 9 and 10 a total of 50 times.
+    txData = [0 for _ in range(10)]
+    pbFlags = 1
+    for j in range(50):
+        dataSent = writeData(transport, lowerTester, initiator.handles[1], pbFlags, txData, trace)
+        success = dataSent and success
+        if dataSent:
+            dataReceived, rxData = readData(transport, upperTester, trace)
+            success = dataReceived and (len(rxData) == len(txData)) and (rxData == txData) and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
+
+"""
+    LL/CIS/SLA/BV-01-C [CIS Setup Response Procedure, Slave]
+"""
+def ll_cis_sla_bv_01_c(transport, upperTester, lowerTester, trace):
+    params = SetCIGParameters(
+        SDU_Interval_M_To_S     = 7500, # 7.5 ms
+        SDU_Interval_S_To_M     = 7500, # 7.5 ms
+        ISO_Interval            = int(7.5 // 1.25), # 7.5
+        NSE                     = 2,
+        Max_PDU_M_To_S          = 60, # TODO: Supposed to be 180
+        Max_PDU_S_To_M          = 60, # TODO: Supposed to be 180
+        PHY_M_To_S              = 1,
+        PHY_S_To_M              = 1,
+        FT_M_To_S               = 1,
+        FT_S_To_M               = 1,
+        BN_M_To_S               = 1,
+        BN_S_To_M               = 1,
+    )
+
+    return cis_setup_response_procedure_slave(transport, upperTester, lowerTester, trace, params)
+
+"""
+    LL/CIS/SLA/BV-02-C [CIS Setup Response Procedure, Slave, Reject Response]
+"""
+def ll_cis_sla_bv_02_c(transport, upperTester, lowerTester, trace):
+    # Establish Initial Condition
+    #
+    # The Isochronous Channels (Host Support) FeatureSet bit is set.
+    #
+    # An ACL connection has been established between the IUT and Lower Tester with a valid Connection
+    # Handle.
+    #
+    # The Lower Tester acts in the master role.
+    success = True
+
+    status = le_set_host_feature(transport, lowerTester, FeatureSupport.ISOCHRONOUS_CHANNELS, 1, 100)
+    success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
+
+    status = le_set_host_feature(transport, upperTester, FeatureSupport.ISOCHRONOUS_CHANNELS, 1, 100)
+    success = getCommandCompleteEvent(transport, upperTester, trace) and (status == 0x00) and success
+
+    advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED)
+    success = advertiser.enable() and success
+    connected = initiator.connect()
+    success = success and connected
+
+    if not connected:
+        success = advertiser.disable() and success
+        return success
+
+    # 1. The Upper Tester sends an HCI_LE_Set_Event_Mask command with all events enabled,
+    #    including the HCI_LE_CIS_Request event. The IUT sends a successful
+    #    HCI_Command_Complete in response.
+    #
+    # NOTE: This is already performed during the preamble step
+
+    # 2. The Lower Tester sends an LL_CIS_REQ PDU with valid data as specified for the Set CIG
+    #    Parameters command in Section 4.10.1.3 Default Values for Set CIG Parameters Commands to
+    #    the IUT.
+    # NOTE: CIG_ID is hardcoded to 0
+    params = SetCIGParameters()
+    SDU_Interval_M_To_S     = params.SDU_Interval_M_To_S
+    SDU_Interval_S_To_M     = params.SDU_Interval_S_To_M
+    ISO_Interval            = params.ISO_Interval
+    CIS_Count               = params.CIS_Count
+    Slaves_Clock_Accuracy   = params.Slaves_Clock_Accuracy
+    Packing                 = params.Packing
+    Framing                 = params.Framing
+    NSE                     = params.NSE
+    Max_PDU_M_To_S          = params.Max_PDU_M_To_S
+    Max_PDU_S_To_M          = params.Max_PDU_S_To_M
+    PHY_M_To_S              = params.PHY_M_To_S
+    PHY_S_To_M              = params.PHY_S_To_M
+    FT_M_To_S               = params.FT_M_To_S
+    FT_S_To_M               = params.FT_S_To_M
+    BN_M_To_S               = params.BN_M_To_S
+    BN_S_To_M               = params.BN_S_To_M
+    Max_SDU_M_To_S          = params.Max_SDU_M_To_S
+    Max_SDU_S_To_M          = params.Max_SDU_S_To_M
+
+    status, cigId, cisCount, cisConnectionHandle = \
+    le_set_cig_parameters_test(transport, lowerTester, 0,
+                               SDU_Interval_M_To_S, SDU_Interval_S_To_M,
+                               FT_M_To_S, FT_S_To_M,
+                               ISO_Interval,
+                               Slaves_Clock_Accuracy,
+                               Packing, Framing,
+                               CIS_Count,
+                               list(range(CIS_Count)),
+                               NSE,
+                               Max_SDU_M_To_S, Max_SDU_S_To_M,
+                               Max_PDU_M_To_S, Max_PDU_S_To_M,
+                               PHY_M_To_S, PHY_S_To_M,
+                               BN_M_To_S, BN_S_To_M, 100)
+    success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
+
+    status = le_create_cis(transport, lowerTester, 1, cisConnectionHandle, [initiator.handles[0]], 100)
+    success = verifyAndShowEvent(transport, lowerTester, Events.BT_HCI_EVT_CMD_STATUS, trace) and (status == 0) and success
+
+    # 3. The Upper Tester receives an HCI_LE_CIS_Request event from the IUT.
+    s, event = verifyAndFetchMetaEvent(transport, upperTester, MetaEvents.BT_HCI_EVT_LE_CIS_REQUEST, trace)
+    success = s and success
+    aclConnectionHandle, cisConnectionHandle, cigId, cisId = event.decode()
+
+    # 4. The Upper Tester sends an HCI_LE_Reject_CIS_Request command to the IUT with a valid
+    #    reason code and receives a successful return status.
+    status, _ = le_reject_cis_request(transport, upperTester, cisConnectionHandle, 0x0D, 100)
+
+    # 5. The Upper Tester receives an HCI_Command_Complete event from the IUT.
+    success = getCommandCompleteEvent(transport, upperTester, trace) and (status == 0x00) and success
+
+    # 6. The Lower Tester receives an LL_REJECT_EXT_IND from the IUT with a valid reason code.
+    s, event = verifyAndFetchMetaEvent(transport, lowerTester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace)
+    success = s and (event.decode()[0] == 0x0D) and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
+
+
+def state_connected_isochronous_stream_slave(transport, upperTester, lowerTester, trace, params):
+    SDU_Interval_M_To_S     = params.SDU_Interval_M_To_S
+    SDU_Interval_S_To_M     = params.SDU_Interval_S_To_M
+    ISO_Interval            = params.ISO_Interval
+    CIS_Count               = params.CIS_Count
+    Slaves_Clock_Accuracy   = params.Slaves_Clock_Accuracy
+    Packing                 = params.Packing
+    Framing                 = params.Framing
+    NSE                     = params.NSE
+    Max_PDU_M_To_S          = params.Max_PDU_M_To_S
+    Max_PDU_S_To_M          = params.Max_PDU_S_To_M
+    PHY_M_To_S              = params.PHY_M_To_S
+    PHY_S_To_M              = params.PHY_S_To_M
+    FT_M_To_S               = params.FT_M_To_S
+    FT_S_To_M               = params.FT_S_To_M
+    BN_M_To_S               = params.BN_M_To_S
+    BN_S_To_M               = params.BN_S_To_M
+    Max_SDU_M_To_S          = params.Max_SDU_M_To_S
+    Max_SDU_S_To_M          = params.Max_SDU_S_To_M
+
+    success = True
+
+    # The Isochronous Channels (Host Support) FeatureSet bit is set.
+    status = le_set_host_feature(transport, lowerTester, FeatureSupport.ISOCHRONOUS_CHANNELS, 1, 100)
+    success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
+
+    status = le_set_host_feature(transport, upperTester, FeatureSupport.ISOCHRONOUS_CHANNELS, 1, 100)
+    success = getCommandCompleteEvent(transport, upperTester, trace) and (status == 0x00) and success
+
+    ### ACL Connection Established. IUT is Slave. ###
+    advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED)
+    success = advertiser.enable() and success
+    connected = initiator.connect()
+    success = success and connected
+
+    if not connected:
+        success = advertiser.disable() and success
+        return success, None, []
+
+    # LT: Set CIG Parameters for Test
+    status, cigId, cisCount, cisConnectionHandle = \
+    le_set_cig_parameters_test(transport, lowerTester, 0,
+                               SDU_Interval_M_To_S, SDU_Interval_S_To_M,
+                               FT_M_To_S, FT_S_To_M,
+                               ISO_Interval,
+                               Slaves_Clock_Accuracy,
+                               Packing, Framing,
+                               CIS_Count,
+                               list(range(CIS_Count)),
+                               NSE,
+                               Max_SDU_M_To_S, Max_SDU_S_To_M,
+                               Max_PDU_M_To_S, Max_PDU_S_To_M,
+                               PHY_M_To_S, PHY_S_To_M,
+                               BN_M_To_S, BN_S_To_M, 100)
+    success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
+    aclConnectionHandle = [initiator.handles[0]] * CIS_Count
+
+    # LT: Create CIS
+    status = le_create_cis(transport, lowerTester, CIS_Count, cisConnectionHandle, aclConnectionHandle, 100)
+    success = verifyAndShowEvent(transport, lowerTester, Events.BT_HCI_EVT_CMD_STATUS, trace) and (status == 0) and success
+
+    for n in range(CIS_Count):
+        # UT: Wait for HCI_EVT_LE_CIS_REQUEST
+        s, event = verifyAndFetchMetaEvent(transport, upperTester, MetaEvents.BT_HCI_EVT_LE_CIS_REQUEST, trace)
+        success = s and success
+        aclConnectionHandle, cisConnectionHandle, cigId, cisId = event.decode()
+
+        # UT: Accept CIS Request
+        status = le_accept_cis_request(transport, upperTester, cisConnectionHandle, 100)
+        success = verifyAndShowEvent(transport, upperTester, Events.BT_HCI_EVT_CMD_STATUS, trace) and (status == 0) and success
+
+        # LT: Wait for HCI_EVT_LE_CIS_ESTABLISHED
+        s, event = verifyAndFetchMetaEvent(transport, lowerTester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace, 1000)
+        success = s and (event.decode()[0] == 0x00) and success
+
+        # UT: Wait for HCI_EVT_LE_CIS_ESTABLISHED
+        s, event = verifyAndFetchMetaEvent(transport, upperTester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace)
+        success = s and (event.decode()[0] == 0x00) and success
+
+        # LT: Setup Data Path - Data_Path_Direction=0 (Input)  Data_Path_ID=0 (HCI) Codec_ID=0 Controller_Delay=0 Codec_Configuration_Length=0 Codec_Configuration=NULL
+        status, _ = le_setup_iso_data_path(transport, lowerTester, cisConnectionHandle, 0, 0, [0, 0, 0, 0, 0], 0, 0, [], 100)
+        success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
+
+        # UT: Setup Data Path - Data_Path_Direction=1 (Output) Data_Path_ID=0 (HCI) Codec_ID=0 Controller_Delay=0 Codec_Configuration_Length=0 Codec_Configuration=NULL
+        status, _ = le_setup_iso_data_path(transport, upperTester, cisConnectionHandle, 1, 0, [0, 0, 0, 0, 0], 0, 0, [], 100)
+        success = getCommandCompleteEvent(transport, upperTester, trace) and (status == 0x00) and success
+
+    return success, initiator, cisConnectionHandle
+
+
+"""
+    LL/CIS/SLA/BV-05-C [Receiving data in Unidirectional CIS]
+"""
+def ll_cis_sla_bv_05_c(transport, upperTester, lowerTester, trace):
+    # Establish Initial Condition
+    #
+    # Connected in the relevant role as defined in the following initial states:
+    #
+    # Note: “default” refers to values specified in Section 4.10.1.3 Default Values for Set CIG Parameters
+    # Commands.
+
+    # Table 4.126: State Variable Values
+    # NOTE: As the IUT is the Slave, the CIG Parameters are those of the Master
+
+    params = SetCIGParameters(
+        SDU_Interval_M_To_S     = 100000, # 100 ms
+        SDU_Interval_S_To_M     = 100000, # 100 ms
+        ISO_Interval            = int(100 // 1.25), # 100 ms
+        NSE                     = 4,
+        Max_PDU_M_To_S          = 247, # TODO: Supposed to be 251
+        Max_PDU_S_To_M          = 0,
+        PHY_M_To_S              = 1,
+        PHY_S_To_M              = 1,
+        FT_M_To_S               = 1,
+        FT_S_To_M               = 1,
+        BN_M_To_S               = 2,
+        BN_S_To_M               = 1, # TODO: Supposed to be 0
+    )
+
+    success, initiator, cisConnectionHandle = state_connected_isochronous_stream_slave(transport, upperTester, lowerTester, trace, params)
+    if not initiator:
+        return success
+
+    for pkt_seq_num in range(3):
+        # Create a ISO_SDU of Max_SDU_M_To_S[0] length
+        tx_iso_sdu = tuple([(pkt_seq_num + x) % 255 for x in range(params.Max_SDU_M_To_S[0])])
+
+        # Pack the ISO_Data_Load (no Time_Stamp) of an HCI ISO Data packet
+        # <Packet_Sequence_Number, ISO_SDU_Length, ISO_SDU>
+        fmt = '<HH{ISO_SDU_Length}B'.format(ISO_SDU_Length=len(tx_iso_sdu))
+        tx_iso_data_load = struct.pack(fmt, pkt_seq_num, len(tx_iso_sdu), *tx_iso_sdu)
+
+        # LT: TX SDU
+        PbFlag = 2
+        TsFlag = 0
+        le_iso_data_write(transport, lowerTester, cisConnectionHandle, PbFlag, TsFlag, tx_iso_data_load, 100)
+        success = verifyAndShowEvent(transport, lowerTester, Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS, trace, params.SDU_Interval_M_To_S * 2) and success
+
+        # UT: RX SDU
+        time, handle, pbflags, tsflag, rx_iso_data_load = le_iso_data_read(transport, upperTester, 100)
+        rx_iso_data_load = bytearray(rx_iso_data_load)
+
+        # LT: No RX
+        success = not le_iso_data_ready(transport, lowerTester, 100) and success
+
+        # Unpack ISO_Data_Load
+        rx_offset = 0
+        # a. Get Time_Stamp if present
+        if tsflag:
+            fmt = '<I'
+            (time_stamp,) = struct.unpack_from(fmt, rx_iso_data_load)
+            rx_offset += struct.calcsize(fmt)
+
+        # b. Get Packet_Sequence_Number, ISO_SDU_Length and Packet_Status_Flag
+        fmt = '<HH'
+        rx_packet_sequence_number, rx_iso_sdu_length = struct.unpack_from(fmt, rx_iso_data_load, rx_offset)
+        rx_offset += struct.calcsize(fmt)
+        rx_packet_status_flag = rx_iso_sdu_length >> 14
+        rx_iso_sdu_length &= 0xfff # 12 bits valid
+
+        # c. Get ISO_SDU
+        fmt = '<{ISO_SDU_Length}B'.format(ISO_SDU_Length=rx_iso_sdu_length)
+        rx_iso_sdu = struct.unpack_from(fmt, rx_iso_data_load, rx_offset)
+
+        # The ISO_Data_Load field contains a complete SDU.
+        success = (pbflags == 2) and success
+
+        # Valid data. The complete ISO_SDU was received correctly.
+        success = (rx_packet_status_flag == 0x00) and success
+
+        # TX and RX match
+        success = (tx_iso_sdu == rx_iso_sdu) and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
+
+
+"""
+    LL/CIS/SLA/BV-19-C [CIS Setup Response Procedure, Slave]
+"""
+def ll_cis_sla_bv_19_c(transport, upperTester, lowerTester, trace):
+    params = SetCIGParameters(
+        SDU_Interval_M_To_S     = 11250, # 11.25 ms
+        SDU_Interval_S_To_M     = 11250, # 11.25 ms
+        ISO_Interval            = int(11.25 // 1.25), # 11.25 ms
+        NSE                     = 4,
+        Max_PDU_M_To_S          = 200,
+        Max_PDU_S_To_M          = 200,
+        PHY_M_To_S              = 2,
+        PHY_S_To_M              = 2,
+        FT_M_To_S               = 3,
+        FT_S_To_M               = 3,
+        BN_M_To_S               = 3,
+        BN_S_To_M               = 3,
+    )
+
+    return cis_setup_response_procedure_slave(transport, upperTester, lowerTester, trace, params)
+
 __tests__ = {
     "LL/CON/ADV/BV-01-C": [ ll_con_adv_bv_01_c, "Accepting Connection Request" ],
     "LL/CON/ADV/BV-04-C": [ ll_con_adv_bv_04_c, "Accepting Connection Request after Directed Advertising" ],
@@ -6044,7 +6605,11 @@ __tests__ = {
     "LL/SEC/ADV/BV-18-C": [ ll_sec_adv_bv_18_c, "Scannable Advertising with resolvable private address, accept Identity Address" ],
 #   "LL/SEC/ADV/BV-19-C": [ ll_sec_adv_bv_19_c, "Undirected Connectable Advertising with Local IRK and Peer IRK, accept Identity Address" ],
     "LL/SEC/ADV/BV-20-C": [ ll_sec_adv_bv_20_c, "Directed Connectable Advertising with resolvable private address; Connect to Identity Address" ],
-    "LL/SEC/SCN/BV-01-C": [ ll_sec_scn_bv_01_c, "Changing Static Address while Scanning" ]
+    "LL/SEC/SCN/BV-01-C": [ ll_sec_scn_bv_01_c, "Changing Static Address while Scanning" ],
+    "LL/CIS/SLA/BV-01-C": [ ll_cis_sla_bv_01_c, "CIS Setup Response Procedure, Slave" ],
+    "LL/CIS/SLA/BV-02-C": [ ll_cis_sla_bv_02_c, "CIS Setup Response Procedure, Slave, Reject Response" ],
+    "LL/CIS/SLA/BV-05-C": [ ll_cis_sla_bv_05_c, "Receiving data in Unidirectional CIS" ],
+    "LL/CIS/SLA/BV-19-C": [ ll_cis_sla_bv_19_c, "CIS Setup Response Procedure, Slave" ],
 };
 
 _maxNameLength = max([ len(key) for key in __tests__ ]);

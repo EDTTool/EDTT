@@ -202,14 +202,28 @@ def preamble_standby(transport, idx, trace):
             17 LE Extended Advertising Set Terminated Event
             18 LE Scan Request Received Event
             19 LE Channel Selection Algorithm Event
+            20 LE Connectionless IQ Report event
+            21 LE Connection IQ Report event
+            22 LE CTE Request Failed event
+            23 LE Periodic Advertising Sync Transfer Received event
+            24 LE CIS Established event
+            25 LE CIS Request event
+            26 LE Create BIG Complete event
+            27 LE Terminate BIG Complete event
+            28 LE BIG Sync Established event
+            29 LE BIG Sync Lost event
+            30 LE Request Peer SCA Complete event
+            31 LE Path Loss Threshold event
+            32 LE Transmit Power Reporting event
+            33 LE BIGInfo Advertising Report event
 
             Bit:    5  4  4  3  2  1  0  0
                     6  8  0  2  4  6  8  0
                  0x00 00 00 00 00 00 00 1F ~ Default.
-                 0x00 00 00 00 00 07 FF FF ~ All except 'LE Channel Selection Algorithm Event'
+                 0x00 00 00 03 FF F7 FF FF ~ All except 'LE Channel Selection Algorithm Event'
         """
-        events = [0xFF, 0xFF, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00];
         
+        events = [0xFF, 0xFF, 0xF7, 0xFF, 0x03, 0x00, 0x00, 0x00];
         status = le_set_event_mask(transport, idx, events, 100);
         trace.trace(6, "LE Set Event Mask Command returns status: 0x%02X" % status);
         success = __getCommandCompleteEvent(transport, idx, trace) and (status == 0) and success;
