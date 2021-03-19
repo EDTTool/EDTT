@@ -408,6 +408,14 @@ class MetaEvents(IntEnum):
     BT_HCI_EVT_LE_CIS_ESTABLISHED           = 25
     BT_HCI_EVT_LE_CIS_REQUEST               = 26
 
+
+"""
+BLUETOOTH CORE SPECIFICATION Version 5.2 | Vol 6, Part B, 4.6 FEATURE SUPPORT
+"""
+class FeatureSupport(IntEnum):
+    ISOCHRONOUS_CHANNELS = 32
+
+
 def echo(transport, idx, message, to):
     
     cmd = struct.pack('<HH', Commands.CMD_ECHO_REQ, len(message)) + message;
@@ -3243,7 +3251,7 @@ def le_set_cig_parameters(transport, idx, CigId, SduIntervalMToS, SduIntervalSTo
     if ( rcvLen != len(packet) ):
         raise Exception("LE Set CIG Parameters command failed: Response too short (Expected %i bytes got %i bytes)" % (rcvLen, len(packet)))
 
-    RespCmd, RespLen, status, cigId, cisCount, connectionHandle = struct.unpack('<HHBBB' + cCH, packet)
+    RespCmd, RespLen, status, cigId, cisCount, *connectionHandle = struct.unpack('<HHBBB' + cCH, packet)
 
     if ( RespCmd != Commands.CMD_LE_SET_CIG_PARAMETERS_RSP ):
         raise Exception("LE Set CIG Parameters command failed: Inappropriate command response received")
@@ -3278,7 +3286,7 @@ def le_set_cig_parameters_test(transport, idx, CigId, SduIntervalMToS, SduInterv
     if ( rcvLen != len(packet) ):
         raise Exception("LE Set CIG Parameters Test command failed: Response too short (Expected %i bytes got %i bytes)" % (rcvLen, len(packet)))
 
-    RespCmd, RespLen, status, cigId, cisCount, connectionHandle = struct.unpack('<HHBBB' + cCH, packet)
+    RespCmd, RespLen, status, cigId, cisCount, *connectionHandle = struct.unpack('<HHBBB' + cCH, packet)
 
     if ( RespCmd != Commands.CMD_LE_SET_CIG_PARAMETERS_TEST_RSP ):
         raise Exception("LE Set CIG Parameters Test command failed: Inappropriate command response received")
