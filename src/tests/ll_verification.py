@@ -250,6 +250,10 @@ def hasReadRemoteVersionInformationCompleteEvent(transport, idx, trace):
             success = status == 0;
     return success, handle, version, manufacturer, subVersion;
 
+def calcMaxPacketTime(packetLength):
+    #      (preamble + AA + header + packetLength + MIC + CRC) * us/byte
+    return (1        + 4  + 2      + packetLength + 4   + 3  ) * 8
+
 """
     ========================================================================================================================
                                                U T I L I T Y   P R O C E D U R E S                                       END
@@ -3443,7 +3447,7 @@ def ll_con_sla_bv_77_c(transport, upperTester, lowerTester, trace):
         Obtain maximum Data Packet size and maximum number of Data Packets
     """
     success, maxPacketLength, maxPacketNumbers = readBufferSize(transport, lowerTester, trace);
-    maxPacketTime, cmaxTxOctets, cmaxTxTime = 2120 * maxPacketLength // 251, 27, 328;
+    maxPacketTime, cmaxTxOctets, cmaxTxTime = calcMaxPacketTime(maxPacketLength), 27, 328;
 
     success = advertiser.enable() and success;
     connected = initiator.connect();
@@ -3595,7 +3599,7 @@ def ll_con_sla_bv_80_c(transport, upperTester, lowerTester, trace):
         Obtain maximum Data Packet size and maximum number of Data Packets
     """
     success, maxPacketLength, maxPacketNumbers = readBufferSize(transport, lowerTester, trace);
-    maxPacketTime, cmaxTxOctets, cmaxTxTime = 2120 * maxPacketLength // 251, 27, 328;
+    maxPacketTime, cmaxTxOctets, cmaxTxTime = calcMaxPacketTime(maxPacketLength), 27, 328;
 
     success = advertiser.enable() and success;
     connected = initiator.connect();
@@ -4609,7 +4613,7 @@ def ll_con_mas_bv_73_c(transport, upperTester, lowerTester, trace):
         Obtain maximum Data Packet size and maximum number of Data Packets
     """
     success, maxPacketLength, maxPacketNumbers = readBufferSize(transport, lowerTester, trace);
-    maxPacketTime, cmaxTxOctets, cmaxTxTime = 2120 * maxPacketLength // 251, 27, 328;
+    maxPacketTime, cmaxTxOctets, cmaxTxTime = calcMaxPacketTime(maxPacketLength), 27, 328;
 
     success = advertiser.enable() and success;
     connected = initiator.connect();
@@ -4690,7 +4694,7 @@ def ll_con_mas_bv_74_c(transport, upperTester, lowerTester, trace):
         Obtain maximum Data Packet size and maximum number of Data Packets
     """
     success, maxPacketLength, maxPacketNumbers = readBufferSize(transport, lowerTester, trace);
-    maxPacketTime, cmaxTxOctets, cmaxTxTime = 2120 * maxPacketLength // 251, 27, 328;
+    maxPacketTime, cmaxTxOctets, cmaxTxTime = calcMaxPacketTime(maxPacketLength), 27, 328;
 
     success = advertiser.enable() and success;
     connected = initiator.connect();
@@ -4759,7 +4763,7 @@ def ll_con_mas_bv_76_c(transport, upperTester, lowerTester, trace):
         Obtain maximum Data Packet size and maximum number of Data Packets
     """
     success, maxPacketLength, maxPacketNumbers = readBufferSize(transport, lowerTester, trace);
-    maxPacketTime, cmaxTxOctets, cmaxTxTime = 2120 * maxPacketLength // 251, 27, 328;
+    maxPacketTime, cmaxTxOctets, cmaxTxTime = calcMaxPacketTime(maxPacketLength), 27, 328;
 
     success = advertiser.enable() and success;
     connected = initiator.connect();
@@ -4843,7 +4847,7 @@ def ll_con_mas_bv_77_c(transport, upperTester, lowerTester, trace):
         Obtain maximum Data Packet size and maximum number of Data Packets
     """
     success, maxPacketLength, maxPacketNumbers = readBufferSize(transport, lowerTester, trace);
-    maxPacketTime, cmaxTxOctets, cmaxTxTime = 2120 * maxPacketLength // 251, 27, 328;
+    maxPacketTime, cmaxTxOctets, cmaxTxTime = calcMaxPacketTime(maxPacketLength), 27, 328;
 
     success = advertiser.enable() and success;
     connected = initiator.connect();
