@@ -443,7 +443,7 @@ class Initiator:
                       Hence wait for 12 intervals before response timeout
             """
             initiatorUpdated, self.status, handle, interval, latency, timeout = \
-                self.__hasConnectionUpdateCompleteEvent(self.initiator, 100 * int((99 + 12 * self.prevInterval * 1.25) / 100));
+                self.__hasConnectionUpdateCompleteEvent(self.initiator, 100 * int((99 + (12 * self.prevInterval + self.cpr_maxInterval) * 1.25) / 100));
             initiatorUpdated = initiatorUpdated and (self.handles[0] == handle);
             if initiatorUpdated:
                 self.intervalMin = self.intervalMax = self.prevInterval = interval;
@@ -454,11 +454,11 @@ class Initiator:
                 Check for LE Connection Update Complete Event in peer...
             """
             if not self.peer is None:
-                peerUpdated, status, handle, interval, latency, timeout = self.__hasConnectionUpdateCompleteEvent(self.peer, 200);
+                peerUpdated, status, handle, interval, latency, timeout = self.__hasConnectionUpdateCompleteEvent(self.peer, 100 * int((99 + interval * 1.25) / 100));
                 peerUpdated = peerUpdated and (self.handles[1] == handle);
             else:
                 peerUpdated = True;
-            
+
             success = initiatorUpdated and peerUpdated;
 
         return success;
