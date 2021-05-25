@@ -5663,6 +5663,58 @@ def ll_cis_per_bv_02_c(transport, upperTester, lowerTester, trace):
     return success
 
 
+def iso_send_payload_pdu(transport, transmitter, receiver, trace, conn_handle, max_sdu_size, sdu_interval, pkt_seq_num):
+    # Create a ISO_SDU of sdu_size length
+    tx_iso_sdu = tuple([(pkt_seq_num + x) % 255 for x in range(max_sdu_size)])
+
+    # Pack the ISO_Data_Load (no Time_Stamp) of an HCI ISO Data packet
+    # <Packet_Sequence_Number, ISO_SDU_Length, ISO_SDU>
+    fmt = '<HH{ISO_SDU_Length}B'.format(ISO_SDU_Length=len(tx_iso_sdu))
+    tx_iso_data_load = struct.pack(fmt, pkt_seq_num, len(tx_iso_sdu), *tx_iso_sdu)
+
+    # Transmitter: TX SDU
+    PbFlag = 2
+    TsFlag = 0
+    le_iso_data_write(transport, transmitter, conn_handle, PbFlag, TsFlag, tx_iso_data_load, 100)
+    success = verifyAndShowEvent(transport, transmitter, Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS, trace,
+                                 sdu_interval * 2)
+
+    # Receiver: RX SDU
+    time, handle, pbflags, tsflag, rx_iso_data_load = le_iso_data_read(transport, receiver, 100)
+    rx_iso_data_load = bytearray(rx_iso_data_load)
+
+    # Transmitter: No RX
+    success = not le_iso_data_ready(transport, transmitter, 100) and success
+
+    # Unpack ISO_Data_Load
+    rx_offset = 0
+    # a. Get Time_Stamp if present
+    if tsflag:
+        fmt = '<I'
+        (time_stamp,) = struct.unpack_from(fmt, rx_iso_data_load)
+        rx_offset += struct.calcsize(fmt)
+
+    # b. Get Packet_Sequence_Number, ISO_SDU_Length and Packet_Status_Flag
+    fmt = '<HH'
+    rx_packet_sequence_number, rx_iso_sdu_length = struct.unpack_from(fmt, rx_iso_data_load, rx_offset)
+    rx_offset += struct.calcsize(fmt)
+    rx_packet_status_flag = rx_iso_sdu_length >> 14
+    rx_iso_sdu_length &= 0xfff  # 12 bits valid
+
+    # c. Get ISO_SDU
+    fmt = '<{ISO_SDU_Length}B'.format(ISO_SDU_Length=rx_iso_sdu_length)
+    rx_iso_sdu = struct.unpack_from(fmt, rx_iso_data_load, rx_offset)
+
+    # The ISO_Data_Load field contains a complete SDU.
+    success = (pbflags == 2) and success
+
+    # Valid data. The complete ISO_SDU was received correctly.
+    success = (rx_packet_status_flag == 0x00) and success
+
+    # TX and RX match
+    return (tx_iso_sdu == rx_iso_sdu) and success
+
+
 """
     LL/CIS/PER/BV-05-C [Receiving data in Unidirectional CIS]
 """
@@ -5696,54 +5748,8 @@ def ll_cis_per_bv_05_c(transport, upperTester, lowerTester, trace):
         return success
 
     for pkt_seq_num in range(3):
-        # Create a ISO_SDU of Max_SDU_C_To_P[0] length
-        tx_iso_sdu = tuple([(pkt_seq_num + x) % 255 for x in range(params.Max_SDU_C_To_P[0])])
-
-        # Pack the ISO_Data_Load (no Time_Stamp) of an HCI ISO Data packet
-        # <Packet_Sequence_Number, ISO_SDU_Length, ISO_SDU>
-        fmt = '<HH{ISO_SDU_Length}B'.format(ISO_SDU_Length=len(tx_iso_sdu))
-        tx_iso_data_load = struct.pack(fmt, pkt_seq_num, len(tx_iso_sdu), *tx_iso_sdu)
-
-        # LT: TX SDU
-        PbFlag = 2
-        TsFlag = 0
-        le_iso_data_write(transport, lowerTester, cisConnectionHandle, PbFlag, TsFlag, tx_iso_data_load, 100)
-        success = verifyAndShowEvent(transport, lowerTester, Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS, trace, params.SDU_Interval_C_To_P * 2) and success
-
-        # UT: RX SDU
-        time, handle, pbflags, tsflag, rx_iso_data_load = le_iso_data_read(transport, upperTester, 100)
-        rx_iso_data_load = bytearray(rx_iso_data_load)
-
-        # LT: No RX
-        success = not le_iso_data_ready(transport, lowerTester, 100) and success
-
-        # Unpack ISO_Data_Load
-        rx_offset = 0
-        # a. Get Time_Stamp if present
-        if tsflag:
-            fmt = '<I'
-            (time_stamp,) = struct.unpack_from(fmt, rx_iso_data_load)
-            rx_offset += struct.calcsize(fmt)
-
-        # b. Get Packet_Sequence_Number, ISO_SDU_Length and Packet_Status_Flag
-        fmt = '<HH'
-        rx_packet_sequence_number, rx_iso_sdu_length = struct.unpack_from(fmt, rx_iso_data_load, rx_offset)
-        rx_offset += struct.calcsize(fmt)
-        rx_packet_status_flag = rx_iso_sdu_length >> 14
-        rx_iso_sdu_length &= 0xfff # 12 bits valid
-
-        # c. Get ISO_SDU
-        fmt = '<{ISO_SDU_Length}B'.format(ISO_SDU_Length=rx_iso_sdu_length)
-        rx_iso_sdu = struct.unpack_from(fmt, rx_iso_data_load, rx_offset)
-
-        # The ISO_Data_Load field contains a complete SDU.
-        success = (pbflags == 2) and success
-
-        # Valid data. The complete ISO_SDU was received correctly.
-        success = (rx_packet_status_flag == 0x00) and success
-
-        # TX and RX match
-        success = (tx_iso_sdu == rx_iso_sdu) and success
+        success = iso_send_payload_pdu(transport, lowerTester, upperTester, trace, cisConnectionHandle,
+                                       params.Max_SDU_C_To_P[0], params.SDU_Interval_C_To_P, pkt_seq_num) and success
 
     ### TERMINATION ###
     success = initiator.disconnect(0x13) and success
@@ -5771,6 +5777,89 @@ def ll_cis_per_bv_19_c(transport, upperTester, lowerTester, trace):
     )
 
     return cis_setup_response_procedure_peripheral(transport, upperTester, lowerTester, trace, params)
+
+"""
+    LL/CIS/PER/BV-13-C [CIS Terminate Procedure, Accepting, Peripheral]
+"""
+def ll_cis_per_bv_13_c(transport, upper_tester, lower_tester, trace):
+    # Initial Condition
+    #
+    # Connected in the relevant role as defined in the following initial states:
+    #
+    # State: Connected Isochronous Stream, Peripheral (values as specified in Table)
+    #
+    # +-------------------------+----------------+
+    # | State Variable Value(s) |                |
+    # +-------------------------+----------------+
+    # | sdu_int_m2s             | 0x4E20 (20 ms) |
+    # | sdu_int_s2m             | 0x4E20 (20 ms) |
+    # | ft_m2s                  | 1              |
+    # | ft_s2m                  | 1              |
+    # | iso_int                 | 0x10 (20 ms)   |
+    # | packing                 | default        |
+    # | framing                 | default        |
+    # | cis_cnt                 | 1              |
+    # | nse[]                   | 0x01           |
+    # | mx_pdu_m2s[]            | 130            |
+    # | mx_pdu_s2m[]            | 130            |
+    # | phy_m2s[]               | 0x01           |
+    # | phy_s2m[]               | 0x01           |
+    # | bn_m2s[]                | 0x01           |
+    # | bn_s2m[]                | 0x01           |
+    # +-------------------------+----------------+
+
+    params = SetCIGParameters(
+        SDU_Interval_C_To_P     = 20000,  # 20 ms
+        SDU_Interval_P_To_C     = 20000,  # 20 ms
+        ISO_Interval            = int(20 // 1.25),  # 20 ms
+        NSE                     = 1,
+        Max_PDU_C_To_P          = 130,
+        Max_PDU_P_To_C          = 130,
+        PHY_C_To_P              = 1,
+        PHY_P_To_C              = 1,
+        FT_C_To_P               = 1,
+        FT_P_To_C               = 1,
+        BN_C_To_P               = 1,
+        BN_P_To_C               = 1,
+    )
+
+    success, initiator, cis_conn_handle = state_connected_isochronous_stream_peripheral(transport, upper_tester,
+                                                                                        lower_tester, trace, params)
+    if not initiator:
+        return success
+
+    # Test Procedure
+    # 1. A payload PDU and Ack is sent between the IUT and Lower Tester.
+    success = iso_send_payload_pdu(transport, lower_tester, upper_tester, trace, cis_conn_handle,
+                                   params.Max_SDU_C_To_P[0], params.SDU_Interval_C_To_P, 0) and success
+
+    # 2. The Lower Tester sends an LL_CIS_TERMINATE_IND PDU to the IUT and receives an Ack from the IUT.
+    # LT - Initiate CIS Disconnection and verify command status
+    status = disconnect(transport, lower_tester, cis_conn_handle, 0x13, 200)
+    success = verifyAndShowEvent(transport, lower_tester, Events.BT_HCI_EVT_CMD_STATUS, trace) and (status == 0) \
+              and success
+
+    # LT - Verify HCI Disconnection Complete event parameters
+    s, event = verifyAndFetchEvent(transport, lower_tester, Events.BT_HCI_EVT_DISCONN_COMPLETE, trace)
+    status, handle, reason = event.decode()
+    success = s and (status == 0x00) and handle == cis_conn_handle and success
+
+    # 3. The Upper Tester receives an HCI_Disconnection_Complete event from the IUT.
+    s, event = verifyAndFetchEvent(transport, upper_tester, Events.BT_HCI_EVT_DISCONN_COMPLETE, trace)
+    status, handle, reason = event.decode()
+    success = s and (status == 0x00) and handle == cis_conn_handle and success
+
+    # Pass verdict:
+    # - In step 2, the IUT sends an Ack.
+    # TODO: Verify Ack
+
+    # - In step 3, the IUT sends an HCI_Disconnection_Complete event to the Upper Tester.
+    # PASS
+
+    # - The Lower Tester does not receive any payload PDUs from the IUT after step 3.
+    success = not le_iso_data_ready(transport, lower_tester, 100) and success
+
+    return success
 
 __tests__ = {
     "LL/CON/ADV/BV-01-C": [ ll_con_adv_bv_01_c, "Accepting Connection Request" ],
@@ -5902,6 +5991,7 @@ __tests__ = {
     "LL/CIS/PER/BV-02-C": [ ll_cis_per_bv_02_c, "CIS Setup Response Procedure, Peripheral, Reject Response" ],
     "LL/CIS/PER/BV-05-C": [ ll_cis_per_bv_05_c, "Receiving data in Unidirectional CIS" ],
     "LL/CIS/PER/BV-19-C": [ ll_cis_per_bv_19_c, "CIS Setup Response Procedure, Peripheral" ],
+    "LL/CIS/PER/BV-13-C": [ ll_cis_per_bv_13_c, "CIS Terminate Procedure, Accepting, Peripheral" ],
 };
 
 _maxNameLength = max([ len(key) for key in __tests__ ]);
