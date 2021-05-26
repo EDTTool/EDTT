@@ -5952,29 +5952,29 @@ different values.
 class SetCIGParameters:
     # Known parameter fields
     data = [
-        # Name,                      Alias,         Per CIS, Default Value
-        ('SDU_Interval_M_To_S',      'sdu_int_m2s', False,   20000), # 20 ms
-        ('SDU_Interval_S_To_M',      'sdu_int_s2m', False,   20000), # 20 ms
-        ('ISO_Interval',             'iso_int',     False,   int(20 // 1.25)), # 20 ms
-        ('CIS_Count',                'cis_cnt',     False,   1), # NOTE: Needs to be located before the first "Per CIS" field
-        ('Slaves_Clock_Accuracy',    None,          False,   0),
-        ('Packing',                  'packing',     False,   0), # Sequential
-        ('Framing',                  'framing',     False,   0), # Unframed
-        ('NSE',                      'nse',         True,    3),
-        ('Max_SDU_M_To_S',           'mx_sdu_m2s',  True,    None), # NOTE: Calculated in __init__
-        ('Max_SDU_S_To_M',           'mx_sdu_s2m',  True,    None), # NOTE: Calculated in __init__
-        ('Max_PDU_M_To_S',           'mx_pdu_m2s',  True,    251),
-        ('Max_PDU_S_To_M',           'mx_pdu_s2m',  True,    251),
-        ('PHY_M_To_S',               'phy_m2s',     True,    1), # LE 1M PHY
-        ('PHY_S_To_M',               'phy_s2m',     True,    1), # LE 1M PHY
-        ('FT_M_To_S',                'ft_m2s',      False,   1),
-        ('FT_S_To_M',                'ft_s2m',      False,   1),
-        ('BN_M_To_S',                'bn_m2s',      True,    1),
-        ('BN_S_To_M',                'bn_s2m',      True,    1),
-        ('Transport_Latency_M_To_S', None,          True,    40000), # 40 ms
-        ('Transport_Latency_S_To_M', None,          True,    40000), # 40 ms
-        ('RTN_M_To_S',               None,          True,    3),
-        ('RTN_S_To_M',               None,          True,    3),
+        # Name,                             Alias,         Per CIS, Default Value
+        ('SDU_Interval_C_To_P',             'sdu_int_m2s', False,   20000),  # 20 ms
+        ('SDU_Interval_P_To_C',             'sdu_int_s2m', False,   20000),  # 20 ms
+        ('ISO_Interval',                    'iso_int',     False,   int(20 // 1.25)), # 20 ms
+        ('CIS_Count',                       'cis_cnt',     False,   1),  # NOTE: Needs to be located before the first "Per CIS" field
+        ('Worst_Case_SCA',                  None,          False,   0),
+        ('Packing',                         'packing',     False,   0),  # Sequential
+        ('Framing',                         'framing',     False,   0),  # Unframed
+        ('NSE',                             'nse',         True,    3),
+        ('Max_SDU_C_To_P',                  'mx_sdu_m2s',  True,    None),  # NOTE: Calculated in __init__
+        ('Max_SDU_P_To_C',                  'mx_sdu_s2m',  True,    None),  # NOTE: Calculated in __init__
+        ('Max_PDU_C_To_P',                  'mx_pdu_m2s',  True,    251),
+        ('Max_PDU_P_To_C',                  'mx_pdu_s2m',  True,    251),
+        ('PHY_C_To_P',                      'phy_m2s',     True,    1),  # LE 1M PHY
+        ('PHY_P_To_C',                      'phy_s2m',     True,    1),  # LE 1M PHY
+        ('FT_C_To_P',                       'ft_m2s',      False,   1),
+        ('FT_P_To_C',                       'ft_s2m',      False,   1),
+        ('BN_C_To_P',                       'bn_m2s',      True,    1),
+        ('BN_P_To_C',                       'bn_s2m',      True,    1),
+        ('Max_Transport_Latency_C_To_P',    None,          True,    40000),  # 40 ms
+        ('Max_Transport_Latency_P_To_C',    None,          True,    40000),  # 40 ms
+        ('RTN_C_To_P',                      None,          True,    3),
+        ('RTN_P_To_C',                      None,          True,    3),
     ]
 
     def __init__(self, **kwargs):
@@ -6002,17 +6002,17 @@ class SetCIGParameters:
             if alias:
                 setattr(self, alias, value)
 
-        # Calculate the Max_SDU_M_To_S and Max_SDU_S_To_M unless given
-        Max_SDU_M_To_S = [None] * self.CIS_Count
-        Max_SDU_S_To_M = [None] * self.CIS_Count
+        # Calculate the Max_SDU_C_To_P and Max_SDU_P_To_C unless given
+        Max_SDU_C_To_P = [None] * self.CIS_Count
+        Max_SDU_P_To_C = [None] * self.CIS_Count
         for n in range(self.CIS_Count):
             # Calculate default values
-            Max_SDU_M_To_S[n] = calcMaxIsoSdu(self.Framing, self.BN_M_To_S[n], self.Max_PDU_M_To_S[n], self.ISO_Interval * 1.25 * 1000, self.SDU_Interval_M_To_S)
-            Max_SDU_S_To_M[n] = calcMaxIsoSdu(self.Framing, self.BN_S_To_M[n], self.Max_PDU_S_To_M[n], self.ISO_Interval * 1.25 * 1000, self.SDU_Interval_S_To_M)
+            Max_SDU_C_To_P[n] = calcMaxIsoSdu(self.Framing, self.BN_C_To_P[n], self.Max_PDU_C_To_P[n], self.ISO_Interval * 1.25 * 1000, self.SDU_Interval_C_To_P)
+            Max_SDU_P_To_C[n] = calcMaxIsoSdu(self.Framing, self.BN_P_To_C[n], self.Max_PDU_P_To_C[n], self.ISO_Interval * 1.25 * 1000, self.SDU_Interval_P_To_C)
 
         # Override
-        self.Max_SDU_M_To_S = self.per_cis_value(kwargs.get('Max_SDU_M_To_S', Max_SDU_M_To_S))
-        self.Max_SDU_S_To_M = self.per_cis_value(kwargs.get('Max_SDU_S_To_M', Max_SDU_S_To_M))
+        self.Max_SDU_C_To_P = self.per_cis_value(kwargs.get('Max_SDU_C_To_P', Max_SDU_C_To_P))
+        self.Max_SDU_P_To_C = self.per_cis_value(kwargs.get('Max_SDU_P_To_C', Max_SDU_P_To_C))
 
     def per_cis_value(self, value):
         if isinstance(value, list):
@@ -6025,42 +6025,42 @@ class SetCIGParameters:
         return value
 
 """
-    [CIS Setup Response Procedure, Slave]
+    [CIS Setup Response Procedure, Peripheral]
 """
-def cis_setup_response_procedure_slave(transport, upperTester, lowerTester, trace, params):
+def cis_setup_response_procedure_peripheral(transport, upperTester, lowerTester, trace, params):
     # Establish Initial Condition
     #
     # The Isochronous Channels (Host Support) FeatureSet bit is set.
     #
     # An ACL connection has been established between the IUT and Lower Tester with a valid Connection
-    # Handle on the PHY specified in Table 4.115: Slave Test Case Direction Specific Configurations.
+    # Handle on the PHY specified in Table 4.115: Peripheral Test Case Direction Specific Configurations.
     #
-    # The Lower Tester sets the parameters specified in Table 4.115: Slave Test Case Direction Specific
-    # Configurations and Table 4.116: Slave Test Case Additional Configurations. Any otherwise
+    # The Lower Tester sets the parameters specified in Table 4.115: Peripheral Test Case Direction Specific
+    # Configurations and Table 4.116: Peripheral Test Case Additional Configurations. Any otherwise
     # unspecified values are specified in Section 4.10.1.3 Default Values for Set CIG Parameters
     # Commands, except for default values for cis_offset_mn and cis_offset_mx. The CIS offset values are
     # specified in Section 4.10.1.2 Timing Requirements.
     #
-    # The Lower Tester is configured as the Master.
+    # The Lower Tester is configured as the Central.
 
-    SDU_Interval_M_To_S     = params.SDU_Interval_M_To_S
-    SDU_Interval_S_To_M     = params.SDU_Interval_S_To_M
+    SDU_Interval_C_To_P     = params.SDU_Interval_C_To_P
+    SDU_Interval_P_To_C     = params.SDU_Interval_P_To_C
     ISO_Interval            = params.ISO_Interval
     CIS_Count               = params.CIS_Count
-    Slaves_Clock_Accuracy   = params.Slaves_Clock_Accuracy
+    Worst_Case_SCA          = params.Worst_Case_SCA
     Packing                 = params.Packing
     Framing                 = params.Framing
     NSE                     = params.NSE
-    Max_PDU_M_To_S          = params.Max_PDU_M_To_S
-    Max_PDU_S_To_M          = params.Max_PDU_S_To_M
-    PHY_M_To_S              = params.PHY_M_To_S
-    PHY_S_To_M              = params.PHY_S_To_M
-    FT_M_To_S               = params.FT_M_To_S
-    FT_S_To_M               = params.FT_S_To_M
-    BN_M_To_S               = params.BN_M_To_S
-    BN_S_To_M               = params.BN_S_To_M
-    Max_SDU_M_To_S          = params.Max_SDU_M_To_S
-    Max_SDU_S_To_M          = params.Max_SDU_S_To_M
+    Max_PDU_C_To_P          = params.Max_PDU_C_To_P
+    Max_PDU_P_To_C          = params.Max_PDU_P_To_C
+    PHY_C_To_P              = params.PHY_C_To_P
+    PHY_P_To_C              = params.PHY_P_To_C
+    FT_C_To_P               = params.FT_C_To_P
+    FT_P_To_C               = params.FT_P_To_C
+    BN_C_To_P               = params.BN_C_To_P
+    BN_P_To_C               = params.BN_P_To_C
+    Max_SDU_C_To_P          = params.Max_SDU_C_To_P
+    Max_SDU_P_To_C          = params.Max_SDU_P_To_C
 
     success = True
 
@@ -6089,18 +6089,18 @@ def cis_setup_response_procedure_slave(transport, upperTester, lowerTester, trac
     # NOTE: CIG_ID is hardcoded to 0
     status, cigId, cisCount, cisConnectionHandle = \
     le_set_cig_parameters_test(transport, lowerTester, 0,
-                               SDU_Interval_M_To_S, SDU_Interval_S_To_M,
-                               FT_M_To_S, FT_S_To_M,
+                               SDU_Interval_C_To_P, SDU_Interval_P_To_C,
+                               FT_C_To_P, FT_P_To_C,
                                ISO_Interval,
-                               Slaves_Clock_Accuracy,
+                               Worst_Case_SCA,
                                Packing, Framing,
                                CIS_Count,
                                list(range(CIS_Count)),
                                NSE,
-                               Max_SDU_M_To_S, Max_SDU_S_To_M,
-                               Max_PDU_M_To_S, Max_PDU_S_To_M,
-                               PHY_M_To_S, PHY_S_To_M,
-                               BN_M_To_S, BN_S_To_M, 100)
+                               Max_SDU_C_To_P, Max_SDU_P_To_C,
+                               Max_PDU_C_To_P, Max_PDU_P_To_C,
+                               PHY_C_To_P, PHY_P_To_C,
+                               BN_C_To_P, BN_P_To_C, 100)
     success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
 
     status = le_create_cis(transport, lowerTester, 1, cisConnectionHandle, [initiator.handles[0]], 100)
@@ -6160,30 +6160,30 @@ def cis_setup_response_procedure_slave(transport, upperTester, lowerTester, trac
     return success
 
 """
-    LL/CIS/SLA/BV-01-C [CIS Setup Response Procedure, Slave]
+    LL/CIS/PER/BV-01-C [CIS Setup Response Procedure, Peripheral]
 """
-def ll_cis_sla_bv_01_c(transport, upperTester, lowerTester, trace):
+def ll_cis_per_bv_01_c(transport, upperTester, lowerTester, trace):
     params = SetCIGParameters(
-        SDU_Interval_M_To_S     = 7500, # 7.5 ms
-        SDU_Interval_S_To_M     = 7500, # 7.5 ms
+        SDU_Interval_C_To_P     = 7500, # 7.5 ms
+        SDU_Interval_P_To_C     = 7500, # 7.5 ms
         ISO_Interval            = int(7.5 // 1.25), # 7.5
         NSE                     = 2,
-        Max_PDU_M_To_S          = 60, # TODO: Supposed to be 180
-        Max_PDU_S_To_M          = 60, # TODO: Supposed to be 180
-        PHY_M_To_S              = 1,
-        PHY_S_To_M              = 1,
-        FT_M_To_S               = 1,
-        FT_S_To_M               = 1,
-        BN_M_To_S               = 1,
-        BN_S_To_M               = 1,
+        Max_PDU_C_To_P          = 60, # TODO: Supposed to be 180
+        Max_PDU_P_To_C          = 60, # TODO: Supposed to be 180
+        PHY_C_To_P              = 1,
+        PHY_P_To_C              = 1,
+        FT_C_To_P               = 1,
+        FT_P_To_C               = 1,
+        BN_C_To_P               = 1,
+        BN_P_To_C               = 1,
     )
 
-    return cis_setup_response_procedure_slave(transport, upperTester, lowerTester, trace, params)
+    return cis_setup_response_procedure_peripheral(transport, upperTester, lowerTester, trace, params)
 
 """
-    LL/CIS/SLA/BV-02-C [CIS Setup Response Procedure, Slave, Reject Response]
+    LL/CIS/PER/BV-02-C [CIS Setup Response Procedure, Peripheral, Reject Response]
 """
-def ll_cis_sla_bv_02_c(transport, upperTester, lowerTester, trace):
+def ll_cis_per_bv_02_c(transport, upperTester, lowerTester, trace):
     # Establish Initial Condition
     #
     # The Isochronous Channels (Host Support) FeatureSet bit is set.
@@ -6191,7 +6191,7 @@ def ll_cis_sla_bv_02_c(transport, upperTester, lowerTester, trace):
     # An ACL connection has been established between the IUT and Lower Tester with a valid Connection
     # Handle.
     #
-    # The Lower Tester acts in the master role.
+    # The Lower Tester acts in the Central role.
     success = True
 
     status = le_set_host_feature(transport, lowerTester, FeatureSupport.ISOCHRONOUS_CHANNELS, 1, 100)
@@ -6220,39 +6220,39 @@ def ll_cis_sla_bv_02_c(transport, upperTester, lowerTester, trace):
     #    the IUT.
     # NOTE: CIG_ID is hardcoded to 0
     params = SetCIGParameters()
-    SDU_Interval_M_To_S     = params.SDU_Interval_M_To_S
-    SDU_Interval_S_To_M     = params.SDU_Interval_S_To_M
+    SDU_Interval_C_To_P     = params.SDU_Interval_C_To_P
+    SDU_Interval_P_To_C     = params.SDU_Interval_P_To_C
     ISO_Interval            = params.ISO_Interval
     CIS_Count               = params.CIS_Count
-    Slaves_Clock_Accuracy   = params.Slaves_Clock_Accuracy
+    Worst_Case_SCA          = params.Worst_Case_SCA
     Packing                 = params.Packing
     Framing                 = params.Framing
     NSE                     = params.NSE
-    Max_PDU_M_To_S          = params.Max_PDU_M_To_S
-    Max_PDU_S_To_M          = params.Max_PDU_S_To_M
-    PHY_M_To_S              = params.PHY_M_To_S
-    PHY_S_To_M              = params.PHY_S_To_M
-    FT_M_To_S               = params.FT_M_To_S
-    FT_S_To_M               = params.FT_S_To_M
-    BN_M_To_S               = params.BN_M_To_S
-    BN_S_To_M               = params.BN_S_To_M
-    Max_SDU_M_To_S          = params.Max_SDU_M_To_S
-    Max_SDU_S_To_M          = params.Max_SDU_S_To_M
+    Max_PDU_C_To_P          = params.Max_PDU_C_To_P
+    Max_PDU_P_To_C          = params.Max_PDU_P_To_C
+    PHY_C_To_P              = params.PHY_C_To_P
+    PHY_P_To_C              = params.PHY_P_To_C
+    FT_C_To_P               = params.FT_C_To_P
+    FT_P_To_C               = params.FT_P_To_C
+    BN_C_To_P               = params.BN_C_To_P
+    BN_P_To_C               = params.BN_P_To_C
+    Max_SDU_C_To_P          = params.Max_SDU_C_To_P
+    Max_SDU_P_To_C          = params.Max_SDU_P_To_C
 
     status, cigId, cisCount, cisConnectionHandle = \
     le_set_cig_parameters_test(transport, lowerTester, 0,
-                               SDU_Interval_M_To_S, SDU_Interval_S_To_M,
-                               FT_M_To_S, FT_S_To_M,
+                               SDU_Interval_C_To_P, SDU_Interval_P_To_C,
+                               FT_C_To_P, FT_P_To_C,
                                ISO_Interval,
-                               Slaves_Clock_Accuracy,
+                               Worst_Case_SCA,
                                Packing, Framing,
                                CIS_Count,
                                list(range(CIS_Count)),
                                NSE,
-                               Max_SDU_M_To_S, Max_SDU_S_To_M,
-                               Max_PDU_M_To_S, Max_PDU_S_To_M,
-                               PHY_M_To_S, PHY_S_To_M,
-                               BN_M_To_S, BN_S_To_M, 100)
+                               Max_SDU_C_To_P, Max_SDU_P_To_C,
+                               Max_PDU_C_To_P, Max_PDU_P_To_C,
+                               PHY_C_To_P, PHY_P_To_C,
+                               BN_C_To_P, BN_P_To_C, 100)
     success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
 
     status = le_create_cis(transport, lowerTester, 1, cisConnectionHandle, [initiator.handles[0]], 100)
@@ -6280,25 +6280,25 @@ def ll_cis_sla_bv_02_c(transport, upperTester, lowerTester, trace):
     return success
 
 
-def state_connected_isochronous_stream_slave(transport, upperTester, lowerTester, trace, params):
-    SDU_Interval_M_To_S     = params.SDU_Interval_M_To_S
-    SDU_Interval_S_To_M     = params.SDU_Interval_S_To_M
+def state_connected_isochronous_stream_peripheral(transport, upperTester, lowerTester, trace, params):
+    SDU_Interval_C_To_P     = params.SDU_Interval_C_To_P
+    SDU_Interval_P_To_C     = params.SDU_Interval_P_To_C
     ISO_Interval            = params.ISO_Interval
     CIS_Count               = params.CIS_Count
-    Slaves_Clock_Accuracy   = params.Slaves_Clock_Accuracy
+    Worst_Case_SCA          = params.Worst_Case_SCA
     Packing                 = params.Packing
     Framing                 = params.Framing
     NSE                     = params.NSE
-    Max_PDU_M_To_S          = params.Max_PDU_M_To_S
-    Max_PDU_S_To_M          = params.Max_PDU_S_To_M
-    PHY_M_To_S              = params.PHY_M_To_S
-    PHY_S_To_M              = params.PHY_S_To_M
-    FT_M_To_S               = params.FT_M_To_S
-    FT_S_To_M               = params.FT_S_To_M
-    BN_M_To_S               = params.BN_M_To_S
-    BN_S_To_M               = params.BN_S_To_M
-    Max_SDU_M_To_S          = params.Max_SDU_M_To_S
-    Max_SDU_S_To_M          = params.Max_SDU_S_To_M
+    Max_PDU_C_To_P          = params.Max_PDU_C_To_P
+    Max_PDU_P_To_C          = params.Max_PDU_P_To_C
+    PHY_C_To_P              = params.PHY_C_To_P
+    PHY_P_To_C              = params.PHY_P_To_C
+    FT_C_To_P               = params.FT_C_To_P
+    FT_P_To_C               = params.FT_P_To_C
+    BN_C_To_P               = params.BN_C_To_P
+    BN_P_To_C               = params.BN_P_To_C
+    Max_SDU_C_To_P          = params.Max_SDU_C_To_P
+    Max_SDU_P_To_C          = params.Max_SDU_P_To_C
 
     success = True
 
@@ -6309,7 +6309,7 @@ def state_connected_isochronous_stream_slave(transport, upperTester, lowerTester
     status = le_set_host_feature(transport, upperTester, FeatureSupport.ISOCHRONOUS_CHANNELS, 1, 100)
     success = getCommandCompleteEvent(transport, upperTester, trace) and (status == 0x00) and success
 
-    ### ACL Connection Established. IUT is Slave. ###
+    ### ACL Connection Established. IUT is Peripheral. ###
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED)
     success = advertiser.enable() and success
     connected = initiator.connect()
@@ -6322,18 +6322,18 @@ def state_connected_isochronous_stream_slave(transport, upperTester, lowerTester
     # LT: Set CIG Parameters for Test
     status, cigId, cisCount, cisConnectionHandle = \
     le_set_cig_parameters_test(transport, lowerTester, 0,
-                               SDU_Interval_M_To_S, SDU_Interval_S_To_M,
-                               FT_M_To_S, FT_S_To_M,
+                               SDU_Interval_C_To_P, SDU_Interval_P_To_C,
+                               FT_C_To_P, FT_P_To_C,
                                ISO_Interval,
-                               Slaves_Clock_Accuracy,
+                               Worst_Case_SCA,
                                Packing, Framing,
                                CIS_Count,
                                list(range(CIS_Count)),
                                NSE,
-                               Max_SDU_M_To_S, Max_SDU_S_To_M,
-                               Max_PDU_M_To_S, Max_PDU_S_To_M,
-                               PHY_M_To_S, PHY_S_To_M,
-                               BN_M_To_S, BN_S_To_M, 100)
+                               Max_SDU_C_To_P, Max_SDU_P_To_C,
+                               Max_PDU_C_To_P, Max_PDU_P_To_C,
+                               PHY_C_To_P, PHY_P_To_C,
+                               BN_C_To_P, BN_P_To_C, 100)
     success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
     aclConnectionHandle = [initiator.handles[0]] * CIS_Count
 
@@ -6371,9 +6371,9 @@ def state_connected_isochronous_stream_slave(transport, upperTester, lowerTester
 
 
 """
-    LL/CIS/SLA/BV-05-C [Receiving data in Unidirectional CIS]
+    LL/CIS/PER/BV-05-C [Receiving data in Unidirectional CIS]
 """
-def ll_cis_sla_bv_05_c(transport, upperTester, lowerTester, trace):
+def ll_cis_per_bv_05_c(transport, upperTester, lowerTester, trace):
     # Establish Initial Condition
     #
     # Connected in the relevant role as defined in the following initial states:
@@ -6382,30 +6382,30 @@ def ll_cis_sla_bv_05_c(transport, upperTester, lowerTester, trace):
     # Commands.
 
     # Table 4.126: State Variable Values
-    # NOTE: As the IUT is the Slave, the CIG Parameters are those of the Master
+    # NOTE: As the IUT is the Peripheral, the CIG Parameters are those of the Central
 
     params = SetCIGParameters(
-        SDU_Interval_M_To_S     = 100000, # 100 ms
-        SDU_Interval_S_To_M     = 100000, # 100 ms
+        SDU_Interval_C_To_P     = 100000, # 100 ms
+        SDU_Interval_P_To_C     = 100000, # 100 ms
         ISO_Interval            = int(100 // 1.25), # 100 ms
         NSE                     = 4,
-        Max_PDU_M_To_S          = 247, # TODO: Supposed to be 251
-        Max_PDU_S_To_M          = 0,
-        PHY_M_To_S              = 1,
-        PHY_S_To_M              = 1,
-        FT_M_To_S               = 1,
-        FT_S_To_M               = 1,
-        BN_M_To_S               = 2,
-        BN_S_To_M               = 1, # TODO: Supposed to be 0
+        Max_PDU_C_To_P          = 247, # TODO: Supposed to be 251
+        Max_PDU_P_To_C          = 0,
+        PHY_C_To_P              = 1,
+        PHY_P_To_C              = 1,
+        FT_C_To_P               = 1,
+        FT_P_To_C               = 1,
+        BN_C_To_P               = 2,
+        BN_P_To_C               = 1, # TODO: Supposed to be 0
     )
 
-    success, initiator, cisConnectionHandle = state_connected_isochronous_stream_slave(transport, upperTester, lowerTester, trace, params)
+    success, initiator, cisConnectionHandle = state_connected_isochronous_stream_peripheral(transport, upperTester, lowerTester, trace, params)
     if not initiator:
         return success
 
     for pkt_seq_num in range(3):
-        # Create a ISO_SDU of Max_SDU_M_To_S[0] length
-        tx_iso_sdu = tuple([(pkt_seq_num + x) % 255 for x in range(params.Max_SDU_M_To_S[0])])
+        # Create a ISO_SDU of Max_SDU_C_To_P[0] length
+        tx_iso_sdu = tuple([(pkt_seq_num + x) % 255 for x in range(params.Max_SDU_C_To_P[0])])
 
         # Pack the ISO_Data_Load (no Time_Stamp) of an HCI ISO Data packet
         # <Packet_Sequence_Number, ISO_SDU_Length, ISO_SDU>
@@ -6416,7 +6416,7 @@ def ll_cis_sla_bv_05_c(transport, upperTester, lowerTester, trace):
         PbFlag = 2
         TsFlag = 0
         le_iso_data_write(transport, lowerTester, cisConnectionHandle, PbFlag, TsFlag, tx_iso_data_load, 100)
-        success = verifyAndShowEvent(transport, lowerTester, Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS, trace, params.SDU_Interval_M_To_S * 2) and success
+        success = verifyAndShowEvent(transport, lowerTester, Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS, trace, params.SDU_Interval_C_To_P * 2) and success
 
         # UT: RX SDU
         time, handle, pbflags, tsflag, rx_iso_data_load = le_iso_data_read(transport, upperTester, 100)
@@ -6460,25 +6460,25 @@ def ll_cis_sla_bv_05_c(transport, upperTester, lowerTester, trace):
 
 
 """
-    LL/CIS/SLA/BV-19-C [CIS Setup Response Procedure, Slave]
+    LL/CIS/PER/BV-19-C [CIS Setup Response Procedure, Peripheral]
 """
-def ll_cis_sla_bv_19_c(transport, upperTester, lowerTester, trace):
+def ll_cis_per_bv_19_c(transport, upperTester, lowerTester, trace):
     params = SetCIGParameters(
-        SDU_Interval_M_To_S     = 11250, # 11.25 ms
-        SDU_Interval_S_To_M     = 11250, # 11.25 ms
+        SDU_Interval_C_To_P     = 11250, # 11.25 ms
+        SDU_Interval_P_To_C     = 11250, # 11.25 ms
         ISO_Interval            = int(11.25 // 1.25), # 11.25 ms
         NSE                     = 4,
-        Max_PDU_M_To_S          = 200,
-        Max_PDU_S_To_M          = 200,
-        PHY_M_To_S              = 2,
-        PHY_S_To_M              = 2,
-        FT_M_To_S               = 3,
-        FT_S_To_M               = 3,
-        BN_M_To_S               = 3,
-        BN_S_To_M               = 3,
+        Max_PDU_C_To_P          = 200,
+        Max_PDU_P_To_C          = 200,
+        PHY_C_To_P              = 2,
+        PHY_P_To_C              = 2,
+        FT_C_To_P               = 3,
+        FT_P_To_C               = 3,
+        BN_C_To_P               = 3,
+        BN_P_To_C               = 3,
     )
 
-    return cis_setup_response_procedure_slave(transport, upperTester, lowerTester, trace, params)
+    return cis_setup_response_procedure_peripheral(transport, upperTester, lowerTester, trace, params)
 
 __tests__ = {
     "LL/CON/ADV/BV-01-C": [ ll_con_adv_bv_01_c, "Accepting Connection Request" ],
@@ -6606,10 +6606,10 @@ __tests__ = {
 #   "LL/SEC/ADV/BV-19-C": [ ll_sec_adv_bv_19_c, "Undirected Connectable Advertising with Local IRK and Peer IRK, accept Identity Address" ],
     "LL/SEC/ADV/BV-20-C": [ ll_sec_adv_bv_20_c, "Directed Connectable Advertising with resolvable private address; Connect to Identity Address" ],
     "LL/SEC/SCN/BV-01-C": [ ll_sec_scn_bv_01_c, "Changing Static Address while Scanning" ],
-    "LL/CIS/SLA/BV-01-C": [ ll_cis_sla_bv_01_c, "CIS Setup Response Procedure, Slave" ],
-    "LL/CIS/SLA/BV-02-C": [ ll_cis_sla_bv_02_c, "CIS Setup Response Procedure, Slave, Reject Response" ],
-    "LL/CIS/SLA/BV-05-C": [ ll_cis_sla_bv_05_c, "Receiving data in Unidirectional CIS" ],
-    "LL/CIS/SLA/BV-19-C": [ ll_cis_sla_bv_19_c, "CIS Setup Response Procedure, Slave" ],
+    "LL/CIS/PER/BV-01-C": [ ll_cis_per_bv_01_c, "CIS Setup Response Procedure, Peripheral" ],
+    "LL/CIS/PER/BV-02-C": [ ll_cis_per_bv_02_c, "CIS Setup Response Procedure, Peripheral, Reject Response" ],
+    "LL/CIS/PER/BV-05-C": [ ll_cis_per_bv_05_c, "Receiving data in Unidirectional CIS" ],
+    "LL/CIS/PER/BV-19-C": [ ll_cis_per_bv_19_c, "CIS Setup Response Procedure, Peripheral" ],
 };
 
 _maxNameLength = max([ len(key) for key in __tests__ ]);
