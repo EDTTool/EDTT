@@ -5779,6 +5779,23 @@ def ll_cis_per_bv_19_c(transport, upperTester, lowerTester, trace):
     return cis_setup_response_procedure_peripheral(transport, upperTester, lowerTester, trace, params)
 
 """
+    LL/CIS/PER/BV-29-C [CIS Setup Response Procedure, Peripheral]
+"""
+def ll_cis_per_bv_29_c(transport, upper_tester, lower_tester, trace):
+    params = SetCIGParameters(
+        Max_PDU_C_To_P          = 128,
+        Max_PDU_P_To_C          = 128,
+        PHY_C_To_P              = 2,
+        PHY_P_To_C              = 2,
+        FT_C_To_P               = 1,
+        FT_P_To_C               = 1,
+        BN_C_To_P               = 1,
+        BN_P_To_C               = 1,
+    )
+
+    return cis_setup_response_procedure_peripheral(transport, upper_tester, lower_tester, trace, params)
+
+"""
     LL/CIS/PER/BV-13-C [CIS Terminate Procedure, Accepting, Peripheral]
 """
 def ll_cis_per_bv_13_c(transport, upper_tester, lower_tester, trace):
@@ -5991,6 +6008,7 @@ __tests__ = {
     "LL/CIS/PER/BV-02-C": [ ll_cis_per_bv_02_c, "CIS Setup Response Procedure, Peripheral, Reject Response" ],
     "LL/CIS/PER/BV-05-C": [ ll_cis_per_bv_05_c, "Receiving data in Unidirectional CIS" ],
     "LL/CIS/PER/BV-19-C": [ ll_cis_per_bv_19_c, "CIS Setup Response Procedure, Peripheral" ],
+    "LL/CIS/PER/BV-29-C": [ ll_cis_per_bv_29_c, "CIS Setup Response Procedure, Peripheral" ],
     "LL/CIS/PER/BV-13-C": [ ll_cis_per_bv_13_c, "CIS Terminate Procedure, Accepting, Peripheral" ],
 };
 
