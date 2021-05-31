@@ -5878,6 +5878,81 @@ def ll_cis_per_bv_13_c(transport, upper_tester, lower_tester, trace):
 
     return success
 
+"""
+    LL/CIS/PER/BV-16-C [Deterministic Packet Transmission in CIS, Peripheral]
+"""
+def ll_cis_per_bv_16_c(transport, upper_tester, lower_tester, trace):
+    # Initial Condition
+    #
+    # Connected in the Peripheral role as defined in the following initial state:
+    #
+    # State: Connected Isochronous Stream, Peripheral (values as specified in Table)
+    #
+    # +-------------------------+----------------+
+    # | State Variable Value(s) |                |
+    # +-------------------------+----------------+
+    # | sdu_int_m2s             | 0xC350 (50 ms) |
+    # | sdu_int_s2m             | 0xC350 (50 ms) |
+    # | ft_m2s                  | 1              |
+    # | ft_s2m                  | 1              |
+    # | iso_int                 | 0x50 (100 ms)  |
+    # | packing                 | default        |
+    # | framing                 | default        |
+    # | cis_cnt                 | 1              |
+    # | nse[]                   | 0x04           |
+    # | mx_pdu_m2s[]            | 0              |
+    # | mx_pdu_s2m[]            | default        |
+    # | phy_m2s[]               | 0x01           |
+    # | phy_s2m[]               | 0x01           |
+    # | bn_m2s[]                | 0x00           |
+    # | bn_s2m[]                | 0x02           |
+    # +-------------------------+----------------+
+
+    # Inconclusive verdict: TSPX_max_cis_nse is less than 4.
+    max_cis_nse = get_ixit_value(transport, upper_tester, IXITS["TSPX_max_cis_nse"], 100)
+    if max_cis_nse < 4:
+        return False
+
+    params = SetCIGParameters(
+        SDU_Interval_C_To_P     = 50000,  # 50 ms
+        SDU_Interval_P_To_C     = 50000,  # 50 ms
+        ISO_Interval            = int(50 // 1.25),  # 50 ms
+        NSE                     = 4,
+        Max_PDU_C_To_P          = 0,
+        PHY_C_To_P              = 1,
+        PHY_P_To_C              = 1,
+        FT_C_To_P               = 1,
+        FT_P_To_C               = 1,
+        BN_C_To_P               = 0,
+        BN_P_To_C               = 2,
+    )
+
+    success, initiator, cis_conn_handle = state_connected_isochronous_stream_peripheral(transport, upper_tester,
+                                                                                        lower_tester, trace, params)
+    if not initiator:
+        return success
+
+    # Test Procedure
+    # 1. The Upper Tester submits the five HCI ISO data packets for the IUT to send to the Lower Tester.
+    for pkt_seq_num in range(5):
+        # TODO 2. The Lower Tester sends a Null PDU to the IUT. The Lower Tester receives payload one on subevent 1 in CIS Interval 1 and sends an Ack in response.
+        # TODO 3. The Lower Tester receives payload two on subevent 2 in CIS Interval 1, but it sends a Nack to the IUT.
+        # TODO 4. The Lower Tester receives the same payload two on subevent 3 in CIS Interval 1, but it sends a Nack to the IUT.
+        # TODO 5. The Lower Tester receives the same payload two on subevent 4 in CIS Interval 1.
+        # TODO 6. The Lower Tester sends a Null PDU. The Lower Tester receives payload three on subevent 1 in CIS Interval 2, and sends a Nack.
+        # TODO 7. The Lower Tester receives the same payload three on subevent 2 in CIS Interval 2, and sends a Nack.
+        # TODO 8. The Lower Tester receives payload four on subevent 3 in CIS Interval 2, and sends a Nack.
+        # TODO 9. The Lower Tester receives the same payload four on subevent 4 in CIS Interval 2.
+        # TODO 10. The Lower Tester sends a Null PDU. The Lower Tester receives a payload five on subevent 1 in CIS Interval 3 and sends an Ack.
+        success = iso_send_payload_pdu(transport, upper_tester, lower_tester, trace, cis_conn_handle,
+                                       params.Max_SDU_P_To_C[0], params.SDU_Interval_P_To_C, 0) and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
+
+
 __tests__ = {
     "LL/CON/ADV/BV-01-C": [ ll_con_adv_bv_01_c, "Accepting Connection Request" ],
     "LL/CON/ADV/BV-04-C": [ ll_con_adv_bv_04_c, "Accepting Connection Request after Directed Advertising" ],
@@ -6010,6 +6085,7 @@ __tests__ = {
     "LL/CIS/PER/BV-19-C": [ ll_cis_per_bv_19_c, "CIS Setup Response Procedure, Peripheral" ],
     "LL/CIS/PER/BV-29-C": [ ll_cis_per_bv_29_c, "CIS Setup Response Procedure, Peripheral" ],
     "LL/CIS/PER/BV-13-C": [ ll_cis_per_bv_13_c, "CIS Terminate Procedure, Accepting, Peripheral" ],
+    # "LL/CIS/PER/BV-16-C": [ ll_cis_per_bv_16_c, "Deterministic Packet Transmission in CIS, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/9
 };
 
 _maxNameLength = max([ len(key) for key in __tests__ ]);
