@@ -263,6 +263,9 @@ class Commands(IntEnum):
     CMD_LE_REMOVE_ISO_DATA_PATH_RSP                               = 252
     CMD_LE_SET_HOST_FEATURE_REQ                                   = 253
     CMD_LE_SET_HOST_FEATURE_RSP                                   = 254
+    CMD_GET_IXIT_VALUE_REQ                                        = 255
+    CMD_GET_IXIT_VALUE_RSP                                        = 256
+
 
 class HCICommands(IntEnum):
     BT_HCI_OP_INQUIRY                       = 0x401
@@ -409,11 +412,84 @@ class MetaEvents(IntEnum):
     BT_HCI_EVT_LE_CIS_REQUEST               = 26
 
 
+class ProfileId(IntEnum):
+    PROFILE_ID_GAP                          = 0
+    PROFILE_ID_GATT                         = 1
+    PROFILE_ID_HCI                          = 2
+    PROFILE_ID_L2CAP                        = 3
+    PROFILE_ID_LL                           = 4
+    PROFILE_ID_SM                           = 5
+
+
+class Ixit:
+    """
+    Definition of Implementation eXtra Information for Test (IXIT)
+    """
+    def __init__(self, profile_id, ref_major, ref_minor, value_fmt):
+        self.profile_id = profile_id
+        self.ref_major = ref_major
+        self.ref_minor = ref_minor
+        self.value_fmt = value_fmt
+
+
+IXITS = {
+    "TSPX_max_cis_nse":  Ixit(ProfileId.PROFILE_ID_LL, 7, 14, 'B')
+}
+
 """
 BLUETOOTH CORE SPECIFICATION Version 5.2 | Vol 6, Part B, 4.6 FEATURE SUPPORT
 """
 class FeatureSupport(IntEnum):
     ISOCHRONOUS_CHANNELS = 32
+
+
+def edtt_send_cmd(transport, idx, opcode, payload_fmt, payload_tuple):
+    """Send EDTT command
+    EDTT command PDU format
+    0--------16--------------32--------+
+    | Opcode | PayloadLength | Payload |
+    +--------+---------------+---------+
+    :param transport: bearer to be used
+    :param idx: device index
+    :param opcode: command opcode
+    :param payload_fmt: command payload format used to serialize the data
+    :param payload_tuple: payload as tuple
+    :return:
+    """
+    req = struct.pack('<HH' + payload_fmt, opcode, struct.calcsize('<' + payload_fmt), *payload_tuple)
+    transport.send(idx, req)
+
+
+def edtt_wait_cmd_cmpl(transport, idx, opcode, payload_fmt, to):
+    """Wait for command complete reception
+    EDTT command complete PDU format
+    0--------16--------------32--------+
+    | Opcode | PayloadLength | Payload |
+    +--------+---------------+---------+
+    :param transport: bearer to be used
+    :param idx: device index
+    :param opcode: command complete opcode
+    :param payload_fmt: command complete payload format used to deserialize the data
+    :param to: timeout
+    :return:
+    """
+    payload_fmt = '<' + payload_fmt  # specify endianess, avoid alignment
+    exp_payload_len = struct.calcsize(payload_fmt)
+    rsp_size = 4 + exp_payload_len
+    rsp = transport.recv(idx, rsp_size, to)
+    if rsp_size != len(rsp):
+        raise Exception("Response too short (Expected %i bytes got %i bytes)" % (rsp_size, len(rsp)))
+
+    # unpack and validate EDTT header first
+    op, payload_len = struct.unpack_from('<HH', rsp)
+    if op != opcode:
+        raise Exception("Inappropriate command response received (%i)" % op)
+
+    if payload_len != exp_payload_len:
+        raise Exception("Payload length field corrupted (Expected %i got %i)" % (exp_payload_len, payload_len))
+
+    # finally, unpack the payload
+    return struct.unpack_from(payload_fmt, rsp, 4)
 
 
 def echo(transport, idx, message, to):
@@ -3485,3 +3561,16 @@ def le_set_host_feature(transport, idx, BitNumber, BitValue, to):
         raise Exception("LE Set Host Feature command failed: Response length field corrupted (%i)" % RespLen)
 
     return status
+
+
+def get_ixit_value(transport, idx, ixit, to):
+    """Request IXIT value from test device
+    :param transport: bearer to be used
+    :param idx: device index
+    :param ixit: IXIT to read
+    :param to: Receiver timeout
+    :return: IXIT value
+    """
+    edtt_send_cmd(transport, idx, Commands.CMD_GET_IXIT_VALUE_REQ, 'BBB',
+                  (ixit.profile_id, ixit.ref_major, ixit.ref_minor))
+    return edtt_wait_cmd_cmpl(transport, idx, Commands.CMD_GET_IXIT_VALUE_RSP, ixit.value_fmt, to)[0]
