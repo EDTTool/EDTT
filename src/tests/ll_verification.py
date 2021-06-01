@@ -5960,7 +5960,7 @@ class SetCIGParameters:
         ('Worst_Case_SCA',                  None,          False,   0),
         ('Packing',                         'packing',     False,   0),  # Sequential
         ('Framing',                         'framing',     False,   0),  # Unframed
-        ('NSE',                             'nse',         True,    3),
+        ('NSE',                             'nse',         True,    3),  # Note: Set to 3 or the Max Supported CIS NSE defined in IXIT, whichever is less.
         ('Max_SDU_C_To_P',                  'mx_sdu_m2s',  True,    None),  # NOTE: Calculated in __init__
         ('Max_SDU_P_To_C',                  'mx_sdu_s2m',  True,    None),  # NOTE: Calculated in __init__
         ('Max_PDU_C_To_P',                  'mx_pdu_m2s',  True,    251),
@@ -6168,8 +6168,8 @@ def ll_cis_per_bv_01_c(transport, upperTester, lowerTester, trace):
         SDU_Interval_P_To_C     = 7500, # 7.5 ms
         ISO_Interval            = int(7.5 // 1.25), # 7.5
         NSE                     = 2,
-        Max_PDU_C_To_P          = 60, # TODO: Supposed to be 180
-        Max_PDU_P_To_C          = 60, # TODO: Supposed to be 180
+        Max_PDU_C_To_P          = 60, # TODO: Supposed to be 160
+        Max_PDU_P_To_C          = 60, # TODO: Supposed to be 160
         PHY_C_To_P              = 1,
         PHY_P_To_C              = 1,
         FT_C_To_P               = 1,
@@ -6385,12 +6385,11 @@ def ll_cis_per_bv_05_c(transport, upperTester, lowerTester, trace):
     # NOTE: As the IUT is the Peripheral, the CIG Parameters are those of the Central
 
     params = SetCIGParameters(
-        SDU_Interval_C_To_P     = 100000, # 100 ms
-        SDU_Interval_P_To_C     = 100000, # 100 ms
-        ISO_Interval            = int(100 // 1.25), # 100 ms
-        NSE                     = 4,
-        Max_PDU_C_To_P          = 247, # TODO: Supposed to be 251
-        Max_PDU_P_To_C          = 0,
+        SDU_Interval_C_To_P     = 50000,  # 50 ms
+        SDU_Interval_P_To_C     = 50000,  # 50 ms
+        ISO_Interval            = int(50 // 1.25), # 50 ms
+        NSE                     = 4,  # TODO: Note 1: TSPX_max_cis_nse or 0x04, whichever is less
+        # Max_PDU_P_To_C          = 0,  # TODO: Supposed to be 0
         PHY_C_To_P              = 1,
         PHY_P_To_C              = 1,
         FT_C_To_P               = 1,
@@ -6473,9 +6472,9 @@ def ll_cis_per_bv_19_c(transport, upperTester, lowerTester, trace):
         PHY_C_To_P              = 2,
         PHY_P_To_C              = 2,
         FT_C_To_P               = 3,
-        FT_P_To_C               = 3,
+        FT_P_To_C               = 2,
         BN_C_To_P               = 3,
-        BN_P_To_C               = 3,
+        BN_P_To_C               = 1,
     )
 
     return cis_setup_response_procedure_peripheral(transport, upperTester, lowerTester, trace, params)
