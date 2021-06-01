@@ -5946,6 +5946,84 @@ def ll_cis_per_bv_13_c(transport, upper_tester, lower_tester, trace):
 
     return success
 
+
+"""
+    LL/CIS/PER/BV-15-C Bursting of Payloads in CIS, SlavePeripheral
+"""
+def ll_cis_per_bv_15_c(transport, upper_tester, lower_tester, trace):
+    # Initial Condition
+    #
+    # Connected in the relevant role as defined in the following initial states:
+    #
+    # State: Connected Isochronous Stream, Peripheral (values as specified in Table)
+    #
+    # +-------------------------+----------------+
+    # | State Variable Value(s) |                |
+    # +-------------------------+----------------+
+    # | sdu_int_m2s             | 0x4E20 (20 ms) |
+    # | sdu_int_s2m             | 0x4E20 (20 ms) |
+    # | ft_m2s                  | 1              |
+    # | ft_s2m                  | 1              |
+    # | iso_int                 | 0x20 (40 ms)   |
+    # | packing                 | default        |
+    # | framing                 | default        |
+    # | cis_cnt                 | 1              |
+    # | nse[]                   | 0x04           |
+    # | mx_sdu_m2s[]            | 0              |
+    # | mx_sdu_s2m[]            | 130            |
+    # | mx_pdu_m2s[]            | 0              |
+    # | mx_pdu_s2m[]            | 130            |
+    # | phy_m2s[]               | 0x01           |
+    # | phy_s2m[]               | 0x01           |
+    # | bn_m2s[]                | 0x00           |
+    # | bn_s2m[]                | 0x02           |
+    # +-------------------------+----------------+
+    params = SetCIGParameters(
+            SDU_Interval_C_To_P     = 20000,
+            SDU_Interval_P_To_C     = 20000,
+            ISO_Interval            = int(40 // 1.25),
+            NSE                     = 4,
+            Max_PDU_C_To_P          = 0,
+            Max_PDU_P_To_C          = 130,
+            PHY_C_To_P              = 1,
+            PHY_P_To_C              = 1,
+            FT_C_To_P               = 1,
+            FT_P_To_C               = 1,
+            BN_C_To_P               = 0,
+            BN_P_To_C               = 2,
+    )
+
+    success, initiator, cis_conn_handle = state_connected_isochronous_stream_peripheral(transport, upper_tester, lower_tester, trace, params)
+
+    if not initiator:
+        return success;
+
+    # Test procedure
+    # 1. The Upper Tester submits two HCI ISO data packets for the IUT to send to the Lower Tester.
+        success = iso_send_payload_pdu(transport, lower_tester, upper_tester, trace, cis_conn_handle, params.Max_SDU_C_To_P[0], params.SDU_Interval_C_To_P, 2) and success
+
+        #TODO Not able to verify further test steps
+        # 2.The Lower sends a Null PDU on subevent 1 in CIS Interval 1 and in response the IUT sends
+        #   Payload 1.
+        # 3. The Lower Tester sends an Ack in subevent 2 in CIS Interval 1 and in response the IUT sends
+        #   the second payload.
+        # 4. The Lower Tester sends a Nack in subevent 3 in CIS Interval 1 and in response the IUT resends
+        #   the second payload.
+        # 5. The Lower Tester sends a Nack in subevent 4 in CIS Interval 1 and in response the IUT resends
+        #   the second payload.
+        # 6. The Upper Tester submits two new HCI ISO data packets for the IUT to send to the Lower Tester.
+        # 7. The Lower Tester sends a Null PDU on subevent 1 in CIS Interval 2 and in response the IUT
+        #   sends payload three.
+        # 8. The Lower Tester sends an Ack on subevent 2 in CIS Interval 2 and in response the IUT sends
+        #   payload four.
+        # 9. The Lower Tester sends an Ack on subevent 3 in CIS Interval 2.
+        # 10. The Lower Tester does not receive any more payloads from the IUT.
+    
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
+
 """
     LL/CIS/PER/BV-16-C [Deterministic Packet Transmission in CIS, Peripheral]
 """
@@ -6321,6 +6399,7 @@ __tests__ = {
     "LL/CIS/PER/BV-40-C": [ ll_cis_per_bv_40_c, "CIS Setup Response Procedure, Peripheral" ],
     "LL/CIS/PER/BV-12-C": [ ll_cis_per_bv_12_c, "CIS Terminate Procedure, Initiated - Peripheral" ],
     "LL/CIS/PER/BV-13-C": [ ll_cis_per_bv_13_c, "CIS Terminate Procedure, Accepting, Peripheral" ],
+    "LL/CIS/PER/BV-15-C": [ ll_cis_per_bv_15_c, "Bursting of payloads in CIS Peripheral" ],
     # "LL/CIS/PER/BV-16-C": [ ll_cis_per_bv_16_c, "Deterministic Packet Transmission in CIS, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/9
     "LL/IST/PER/BV-01-C": [ ll_ist_per_bv_01_c, "ISO Transmit Test Mode, CIS" ],
     # "LL/IST/PER/BV-03-C": [ ll_ist_per_bv_03_c, "ISO Receive Test Mode, CIS" ],  # https://github.com/EDTTool/packetcraft/issues/10
