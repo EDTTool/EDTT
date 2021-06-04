@@ -146,6 +146,9 @@ class CmdOpcodes(IntEnum):
     BT_HCI_OP_LE_SETUP_ISO_DATA_PATH        = 0x206E
     BT_HCI_OP_LE_REMOVE_ISO_DATA_PATH       = 0x206F
     BT_HCI_OP_LE_ISO_TRANSMIT_TEST          = 0x2070
+    BT_HCI_OP_LE_ISO_RECEIVE_TEST           = 0x2071
+    BT_HCI_OP_LE_ISO_READ_TEST_COUNTERS     = 0x2072
+    BT_HCI_OP_LE_ISO_TEST_END               = 0x2073
     BT_HCI_OP_LE_SET_HOST_FEATURE           = 0x2074
     BT_HCI_OP_VS_WRITE_BD_ADDR              = 0xFC06
 
@@ -318,7 +321,10 @@ class Event:
                        CmdOpcodes.BT_HCI_OP_LE_REJECT_CIS_REQUEST:         'Command Complete Event for LE reject CIS Request status 0x{2:02X} handle {3:d}',
                        CmdOpcodes.BT_HCI_OP_LE_SETUP_ISO_DATA_PATH:        'Command Complete Event for LE Setup ISO Data Path status 0x{2:02X} handle {3:d}',
                        CmdOpcodes.BT_HCI_OP_LE_REMOVE_ISO_DATA_PATH:       'Command Complete Event for LE Remove ISO Data Path status 0x{2:02X} handle {3:d}',
-                       CmdOpcodes.BT_HCI_OP_LE_ISO_TRANSMIT_TEST:          'Command Complete Event for LE LE ISO Receive Test status 0x{2:02X} handle {3:d}',
+                       CmdOpcodes.BT_HCI_OP_LE_ISO_TRANSMIT_TEST:          'Command Complete Event for LE LE ISO Transmit Test status 0x{2:02X} handle {3:d}',
+                       CmdOpcodes.BT_HCI_OP_LE_ISO_RECEIVE_TEST:           'Command Complete Event for LE LE ISO Receive Test status 0x{2:02X} handle {3:d}',
+                       CmdOpcodes.BT_HCI_OP_LE_ISO_READ_TEST_COUNTERS:     'Command Complete Event for LE LE ISO Read Test Counters status 0x{2:02X} handle {3:d} received SDU count {4:d} missed SDU count {5:d} failed SDU count {6:d}',
+                       CmdOpcodes.BT_HCI_OP_LE_ISO_TEST_END:               'Command Complete Event for LE LE ISO Test End status 0x{2:02X} handle {3:d} received SDU count {4:d} missed SDU count {5:d} failed SDU count {6:d}',
                        CmdOpcodes.BT_HCI_OP_LE_SET_HOST_FEATURE:           'Command Complete Event for LE Set Host Feature status 0x{2:02X}',
                        CmdOpcodes.BT_HCI_OP_VS_WRITE_BD_ADDR:              'Command Complete Event for Write BD_ADDR status 0x{2:02X}' };
 
@@ -845,6 +851,26 @@ class Event:
             connectionHandle = 0
         return (connectionHandle,)
 
+    def __leIsoReceiveTest(self):
+        if self.__checkSize(6):
+            connectionHandle = struct.unpack('<H', self.data[4:6])[0]
+            self.__checkConnectionHandle(connectionHandle)
+        else:
+            connectionHandle = 0
+        return (connectionHandle,)
+
+    def __leIsoReadTestCounters(self):
+        if self.__checkSize(18):
+            connectionHandle, receivedSduCount, missedSduCount, failedSduCount = struct.unpack('<HIII', self.data[4:18])
+            self.__checkConnectionHandle(connectionHandle)
+        else:
+            connectionHandle = 0
+        return connectionHandle, receivedSduCount, missedSduCount, failedSduCount
+
+    def __leIsoTestEnd(self):
+        return self.__leIsoReadTestCounters()
+
+
     """ ================================================================================
 
            The above private methods were all sub-sets of the Command Complete Event
@@ -1337,4 +1363,7 @@ class Event:
                        CmdOpcodes.BT_HCI_OP_LE_SETUP_ISO_DATA_PATH:       __leSetupIsoPath,
                        CmdOpcodes.BT_HCI_OP_LE_REMOVE_ISO_DATA_PATH:      __leRemoveIsoPath,
                        CmdOpcodes.BT_HCI_OP_LE_ISO_TRANSMIT_TEST:         __leIsoTransmitTest,
+                       CmdOpcodes.BT_HCI_OP_LE_ISO_RECEIVE_TEST:          __leIsoReceiveTest,
+                       CmdOpcodes.BT_HCI_OP_LE_ISO_READ_TEST_COUNTERS:    __leIsoReadTestCounters,
+                       CmdOpcodes.BT_HCI_OP_LE_ISO_TEST_END:              __leIsoTestEnd,
                        }

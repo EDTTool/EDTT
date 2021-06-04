@@ -267,6 +267,12 @@ class Commands(IntEnum):
     CMD_GET_IXIT_VALUE_RSP                                        = 256
     CMD_HCI_LE_ISO_TRANSMIT_TEST_REQ                              = 257
     CMD_HCI_LE_ISO_TRANSMIT_TEST_RSP                              = 258
+    CMD_HCI_LE_ISO_RECEIVE_TEST_REQ                               = 259
+    CMD_HCI_LE_ISO_RECEIVE_TEST_RSP                               = 260
+    CMD_HCI_LE_ISO_READ_TEST_COUNTERS_REQ                         = 261
+    CMD_HCI_LE_ISO_READ_TEST_COUNTERS_RSP                         = 262
+    CMD_HCI_LE_ISO_TEST_END_REQ                                   = 263
+    CMD_HCI_LE_ISO_TEST_END_RSP                                   = 264
 
 
 class HCICommands(IntEnum):
@@ -374,6 +380,9 @@ class HCICommands(IntEnum):
     BT_HCI_OP_LE_SETUP_ISO_DATA_PATH        = 0x206E
     BT_HCI_OP_LE_REMOVE_ISO_DATA_PATH       = 0x206F
     BT_HCI_OP_LE_ISO_TRANSMIT_TEST          = 0x2070
+    BT_HCI_OP_LE_ISO_RECEIVE_TEST           = 0x2071
+    BT_HCI_OP_LE_ISO_READ_TEST_COUNTERS     = 0x2072
+    BT_HCI_OP_LE_ISO_TEST_END               = 0x2073
     BT_HCI_OP_LE_SET_HOST_FEATURE           = 0x2074
     BT_HCI_OP_VS_WRITE_BD_ADDR              = 0xFC06
 
@@ -3593,3 +3602,48 @@ def hci_le_iso_transmit_test(transport, idx, connection_handle, payload_type, to
     edtt_send_cmd(transport, idx, Commands.CMD_HCI_LE_ISO_TRANSMIT_TEST_REQ, 'HHB',
                   (HCICommands.BT_HCI_OP_LE_ISO_TRANSMIT_TEST, connection_handle, payload_type))
     return edtt_wait_cmd_cmpl(transport, idx, Commands.CMD_HCI_LE_ISO_TRANSMIT_TEST_RSP, 'BH', to)
+
+
+def hci_le_iso_receive_test(transport, idx, connection_handle, payload_type, to):
+    """
+    The command is used to configure an established CIS or a synchronized BIG specified by the Connection_Handle
+    parameter to receive payloads.
+    :param transport: bearer to be used
+    :param idx: device index
+    :param connection_handle: CIS or BIS connection handle
+    :param payload_type: defines the configuration of SDUs in the payload.
+    :param to: Receiver timeout
+    :return: (status, connection_handle)
+    """
+    edtt_send_cmd(transport, idx, Commands.CMD_HCI_LE_ISO_RECEIVE_TEST_REQ, 'HHB',
+                  (HCICommands.BT_HCI_OP_LE_ISO_RECEIVE_TEST, connection_handle, payload_type))
+    return edtt_wait_cmd_cmpl(transport, idx, Commands.CMD_HCI_LE_ISO_RECEIVE_TEST_RSP, 'BH', to)
+
+
+def hci_le_iso_read_test_counters_test(transport, idx, connection_handle, to):
+    """
+    The command is used to read the test counters in the Controller which is configured in ISO Receive Test mode for a
+    CIS or BIS specified by the Connection_Handle. Reading the test counters does not reset the test counters.
+    :param transport: bearer to be used
+    :param idx: device index
+    :param connection_handle: CIS or BIS connection handle
+    :param to: Receiver timeout
+    :return: (status, connection_handle, received_sdu_count, missed_sdu_count, failed_sdu_count)
+    """
+    edtt_send_cmd(transport, idx, Commands.CMD_HCI_LE_ISO_READ_TEST_COUNTERS_REQ, 'HH',
+                  (HCICommands.BT_HCI_OP_LE_ISO_READ_TEST_COUNTERS, connection_handle))
+    return edtt_wait_cmd_cmpl(transport, idx, Commands.CMD_HCI_LE_ISO_READ_TEST_COUNTERS_RSP, 'BHIII', to)
+
+
+def hci_le_iso_test_end(transport, idx, connection_handle, to):
+    """The command is used to terminate the ISO Transmit and/or Receive Test mode for a CIS or BIS specified by the
+    Connection_Handle parameter but does not terminate the CIS or BIS.
+    :param transport: bearer to be used
+    :param idx: device index
+    :param connection_handle: CIS or BIS connection handle
+    :param to: Receiver timeout
+    :return: (status, connection_handle, received_sdu_count, missed_sdu_count, failed_sdu_count)
+    """
+    edtt_send_cmd(transport, idx, Commands.CMD_HCI_LE_ISO_TEST_END_REQ, 'HH', (HCICommands.BT_HCI_OP_LE_ISO_TEST_END,
+                                                                               connection_handle))
+    return edtt_wait_cmd_cmpl(transport, idx, Commands.CMD_HCI_LE_ISO_TEST_END_RSP, 'BHIII', to)
