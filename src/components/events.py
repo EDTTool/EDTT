@@ -145,6 +145,7 @@ class CmdOpcodes(IntEnum):
     BT_HCI_OP_LE_REJECT_CIS_REQUEST         = 0x2067
     BT_HCI_OP_LE_SETUP_ISO_DATA_PATH        = 0x206E
     BT_HCI_OP_LE_REMOVE_ISO_DATA_PATH       = 0x206F
+    BT_HCI_OP_LE_ISO_TRANSMIT_TEST          = 0x2070
     BT_HCI_OP_LE_SET_HOST_FEATURE           = 0x2074
     BT_HCI_OP_VS_WRITE_BD_ADDR              = 0xFC06
 
@@ -317,6 +318,7 @@ class Event:
                        CmdOpcodes.BT_HCI_OP_LE_REJECT_CIS_REQUEST:         'Command Complete Event for LE reject CIS Request status 0x{2:02X} handle {3:d}',
                        CmdOpcodes.BT_HCI_OP_LE_SETUP_ISO_DATA_PATH:        'Command Complete Event for LE Setup ISO Data Path status 0x{2:02X} handle {3:d}',
                        CmdOpcodes.BT_HCI_OP_LE_REMOVE_ISO_DATA_PATH:       'Command Complete Event for LE Remove ISO Data Path status 0x{2:02X} handle {3:d}',
+                       CmdOpcodes.BT_HCI_OP_LE_ISO_TRANSMIT_TEST:          'Command Complete Event for LE LE ISO Receive Test status 0x{2:02X} handle {3:d}',
                        CmdOpcodes.BT_HCI_OP_LE_SET_HOST_FEATURE:           'Command Complete Event for LE Set Host Feature status 0x{2:02X}',
                        CmdOpcodes.BT_HCI_OP_VS_WRITE_BD_ADDR:              'Command Complete Event for Write BD_ADDR status 0x{2:02X}' };
 
@@ -835,6 +837,14 @@ class Event:
             connectionHandle = 0
         return (connectionHandle,)
 
+    def __leIsoTransmitTest(self):
+        if self.__checkSize(6):
+            connectionHandle = struct.unpack('<H', self.data[4:6])[0]
+            self.__checkConnectionHandle(connectionHandle)
+        else:
+            connectionHandle = 0
+        return (connectionHandle,)
+
     """ ================================================================================
 
            The above private methods were all sub-sets of the Command Complete Event
@@ -1325,4 +1335,6 @@ class Event:
                        CmdOpcodes.BT_HCI_OP_LE_REMOVE_CIG:                __leRemoveCig,
                        CmdOpcodes.BT_HCI_OP_LE_REJECT_CIS_REQUEST:        __leRejectCisRequest,
                        CmdOpcodes.BT_HCI_OP_LE_SETUP_ISO_DATA_PATH:       __leSetupIsoPath,
-                       CmdOpcodes.BT_HCI_OP_LE_REMOVE_ISO_DATA_PATH:      __leRemoveIsoPath };
+                       CmdOpcodes.BT_HCI_OP_LE_REMOVE_ISO_DATA_PATH:      __leRemoveIsoPath,
+                       CmdOpcodes.BT_HCI_OP_LE_ISO_TRANSMIT_TEST:         __leIsoTransmitTest,
+                       }
