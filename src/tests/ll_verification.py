@@ -5953,6 +5953,107 @@ def ll_cis_per_bv_16_c(transport, upper_tester, lower_tester, trace):
     return success
 
 
+def iso_transmit_receive_test_mode(transport, transmitter, receiver, trace, cis_conn_handle, payload_type):
+    # 1. The Transmitter sends the HCI_LE_ISO_Transmit_Test command with PayloadType as specified in Table and
+    # receives a successful HCI_Command_Complete event from the IUT in response.
+    status, conn_handle = hci_le_iso_transmit_test(transport, transmitter, cis_conn_handle, payload_type, 100)
+    success = (conn_handle == cis_conn_handle)
+
+    success = getCommandCompleteEvent(transport, transmitter, trace) and success and status == 0x00
+
+    # 1.X The Receiver sends the HCI_LE_ISO_Receive_Test command to the IUT with Payload_Type as specified in Table
+    # and receives a successful HCI_Command_Complete event from the IUT in response.
+    status, conn_handle = hci_le_iso_receive_test(transport, receiver, cis_conn_handle, payload_type, 100)
+    success = (conn_handle == cis_conn_handle) and success
+
+    success = getCommandCompleteEvent(transport, receiver, trace) and success and status == 0x00
+
+    # 2. The IUT sends isochronous data PDUs with Payload.
+    # The controller generates and sends test payloads
+
+    # 3. Repeat step 2 for a total of 5 rounds of payloads.
+    received_sdu_count = 0
+    missed_sdu_count = 0
+    failed_sdu_count = 0
+    while ((received_sdu_count + missed_sdu_count + failed_sdu_count) < 5) and success:
+        # The Receiver sends the HCI_LE_ISO_Read_Test_Counters command to the IUT.
+        status, connection_handle, received_sdu_count, missed_sdu_count, failed_sdu_count = \
+            hci_le_iso_read_test_counters_test(transport, receiver, cis_conn_handle, 100)
+        success = getCommandCompleteEvent(transport, receiver, trace) and success and status == 0x00
+
+        # Core Version Sydney r11 | | Vol 6, Part B
+        # Because the transmitter and receiver do not enter test mode simultaneously, it is not possible to
+        # determine whether the first test SDU received was the first one sent. As a consequence, at the moment the
+        # first valid test SDU is received (indicated by either Received_SDU_Count or Failed_SDU_Count being
+        # incremented), the value of Missed_SDU_Count is unpredictable. Once a valid test SDU has been received,
+        # any further changes in Missed_SDU_Count will be correct.
+        if received_sdu_count == 0 and failed_sdu_count == 0:
+            missed_sdu_count = 0
+
+    success = received_sdu_count >= 5 and missed_sdu_count == 0 and failed_sdu_count == 0 and success
+
+    # 4. The Receiver sends the HCI_LE_ISO_Test_End command to the IUT and receives an HCI_Command_Status event
+    # from the IUT with the Status field set to Success.
+    status, connection_handle, _, _, _ = hci_le_iso_test_end(transport, receiver, cis_conn_handle, 100)
+    success = getCommandCompleteEvent(transport, receiver, trace) and success and status == 0x00
+
+    # 4.X The Transmitter sends the HCI_LE_ISO_Test_End command to the IUT and receives an HCI_Command_Status event
+    # from the IUT with the Status field set to Success.
+    status, connection_handle, _, _, _ = hci_le_iso_test_end(transport, transmitter, cis_conn_handle, 100)
+    success = getCommandCompleteEvent(transport, transmitter, trace) and success and status == 0x00
+
+    return success, received_sdu_count, missed_sdu_count, failed_sdu_count
+
+
+"""
+    LL/IST/PER/BV-01-C [ISO Transmit Test Mode, CIS]
+"""
+def ll_ist_per_bv_01_c(transport, upper_tester, lower_tester, trace):
+    # Initial Condition
+    #
+    # State: Connected Isochronous Stream, Peripheral ((...) Default Values for Set CIG Parameters Commands),
+    # with the exception that the HCI_LE_Setup_ISO_Data_Path command is not executed once the CIG is established.
+    params = SetCIGParameters()  # Default parameters
+
+    success, initiator, cis_conn_handle = state_connected_isochronous_stream_peripheral(transport, upper_tester,
+                                                                                        lower_tester, trace,
+                                                                                        params,
+                                                                                        setup_iso_data_path=False)
+    if not initiator:
+        return success
+
+    # Test Procedure
+    # +-------+--------------+--------------------------------------------------------------------------------------+
+    # | Round | Payload_Type |                                                              Payload                 |
+    # +-------+--------------+--------------------------------------------------------------------------------------+
+    # |     1 |            0 | Each isochronous data PDU has a payload length = 0.                                  |
+    # |     2 |            1 | The first four octets of the isochronous data PDU contains a single 32-bit SDU count |
+    # |       |              | value. The remaining data is vendor specific.                                        |
+    # |     3 |            2 | The first four octets of the isochronous data PDU contains a single 32-bit SDU count |
+    # |       |              | value. The remaining data is vendor specific.                                        |
+    # +-------+--------------+--------------------------------------------------------------------------------------+
+    # For each round in Table execute steps 1–4:
+    payload_types = {
+        "Zero length payload": 0x00,
+        "Variable length payload": 0x01,
+        "Maximum length payload": 0x02,
+    }
+    for payload_name, payload_type in payload_types.items():
+        success, received_sdu_count, missed_sdu_count, failed_sdu_count = \
+            iso_transmit_receive_test_mode(transport, upper_tester, lower_tester, trace, cis_conn_handle, payload_type)
+
+        trace.trace(5, "%s done, received_sdu_count=%d missed_sdu_count=%d failed_sdu_count=%d" %
+                    (payload_name, received_sdu_count, missed_sdu_count, failed_sdu_count))
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    # Pass verdict
+    # - The Upper Tester successfully starts the ISO Transmit Test in step 1.
+    # - The IUT successfully sends five rounds of isochronous data PDUs to the Lower Tester.
+    return success
+
+
 __tests__ = {
     "LL/CON/ADV/BV-01-C": [ ll_con_adv_bv_01_c, "Accepting Connection Request" ],
     "LL/CON/ADV/BV-04-C": [ ll_con_adv_bv_04_c, "Accepting Connection Request after Directed Advertising" ],
@@ -6086,6 +6187,7 @@ __tests__ = {
     "LL/CIS/PER/BV-29-C": [ ll_cis_per_bv_29_c, "CIS Setup Response Procedure, Peripheral" ],
     "LL/CIS/PER/BV-13-C": [ ll_cis_per_bv_13_c, "CIS Terminate Procedure, Accepting, Peripheral" ],
     # "LL/CIS/PER/BV-16-C": [ ll_cis_per_bv_16_c, "Deterministic Packet Transmission in CIS, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/9
+    "LL/IST/PER/BV-01-C": [ ll_ist_per_bv_01_c, "ISO Transmit Test Mode, CIS" ],
 };
 
 _maxNameLength = max([ len(key) for key in __tests__ ]);
