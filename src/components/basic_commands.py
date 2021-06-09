@@ -3260,20 +3260,9 @@ def le_iso_data_ready(transport, idx, to):
 
     return empty != 1
 
-"""
-    Write ISO Data packet
-"""
-def le_iso_data_write(transport, idx, handle, PbFlags, TsFlag, data, to):
-    
-    handle &= 0x0fff
-    handle |= ((PbFlags | (TsFlag << 2)) << 12) & 0x7fff
 
-    cmd = struct.pack('<HHHH' + str(len(data)) + 'B', Commands.CMD_LE_ISO_DATA_WRITE_REQ, 4 + len(data), handle, len(data), *data)
-    transport.send(idx, cmd)
 
-    if ( to == 0 ):
-        return 1
-
+def le_iso_data_write_rsp(transport, idx, to):
     packet = transport.recv(idx, 5, to)
 
     if ( 5 != len(packet) ):
@@ -3288,6 +3277,22 @@ def le_iso_data_write(transport, idx, handle, PbFlags, TsFlag, data, to):
         raise Exception("LE ISO Data Write command failed: Response length field corrupted (%i)" % RespLen)
 
     return status
+
+"""
+    Write ISO Data packet
+"""
+def le_iso_data_write(transport, idx, handle, PbFlags, TsFlag, data, to):
+
+    handle &= 0x0fff
+    handle |= ((PbFlags | (TsFlag << 2)) << 12) & 0x7fff
+
+    cmd = struct.pack('<HHHH' + str(len(data)) + 'B', Commands.CMD_LE_ISO_DATA_WRITE_REQ, 4 + len(data), handle, len(data), *data)
+    transport.send(idx, cmd)
+
+    if ( to == 0 ):
+        return 0
+
+    return le_iso_data_write_rsp(transport, idx, to)
 
 """
     Read ISO Data packet
