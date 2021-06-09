@@ -6054,6 +6054,70 @@ def ll_ist_per_bv_01_c(transport, upper_tester, lower_tester, trace):
     return success
 
 
+"""
+    LL/IST/PER/BV-03-C [ISO Receive Test Mode, CIS]
+"""
+def ll_ist_per_bv_03_c(transport, upper_tester, lower_tester, trace):
+    # Initial Condition
+    #
+    # State: Connected Isochronous Stream, Peripheral ((...) Default Values for Set CIG Parameters Commands),
+    # with the exception that the HCI_LE_Setup_ISO_Data_Path command is not executed once the CIG is established and
+    # ISO_Interval is set to 400 ms.
+
+    params = SetCIGParameters(
+        SDU_Interval_C_To_P = 400000,  # 400 ms
+        SDU_Interval_P_To_C = 400000,  # 400 ms
+        ISO_Interval        = int(400 // 1.25),  # 400 ms
+    )
+
+    initiator = None
+
+    # Test Procedure
+    # +-------+---------+--------------+--------------------+
+    # | Round | Framing | Payload_Type | Received_SDU_Count |
+    # +-------+---------+--------------+--------------------+
+    # |     1 |       0 |            0 |                  5 |
+    # |     2 |       0 |            1 |                  5 |
+    # |     3 |       0 |            2 |                  5 |
+    # |     4 |       1 |            2 |                  5 |
+    # |     5 |       1 |            1 |                  5 |
+    # +-------+---------+--------------+--------------------+
+    payload_types = {
+        "Zero length payload unframed": (0, 0x00),
+        "Variable length payload unframed": (0, 0x01),
+        "Maximum length payload unframed": (0, 0x02),
+        "Maximum length payload framed": (1, 0x02),
+        "Variable length payload framed": (1, 0x01),
+    }
+    # For each round in Table, execute steps 1–7:
+    for payload_name, (framing, payload_type) in payload_types.items():
+        # When Framing is changing between rounds, Isochronous link needs to be terminated and re-established with
+        # correct Framing, as framing cannot be changed after creation.
+        if framing != params.Framing:
+            params.Framing = framing
+            if initiator:
+                success = initiator.disconnect(0x13) and success
+                initiator = None
+
+        if not initiator:
+            success, initiator, cis_conn_handle = \
+                state_connected_isochronous_stream_peripheral(transport, upper_tester, lower_tester, trace, params,
+                                                              setup_iso_data_path=False)
+            if not initiator:
+                return success
+
+        success, received_sdu_count, missed_sdu_count, failed_sdu_count = \
+            iso_transmit_receive_test_mode(transport, lower_tester, upper_tester, trace, cis_conn_handle, payload_type)
+
+        trace.trace(5, "%s done, received_sdu_count=%d missed_sdu_count=%d failed_sdu_count=%d" %
+                    (payload_name, received_sdu_count, missed_sdu_count, failed_sdu_count))
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
+
+
 __tests__ = {
     "LL/CON/ADV/BV-01-C": [ ll_con_adv_bv_01_c, "Accepting Connection Request" ],
     "LL/CON/ADV/BV-04-C": [ ll_con_adv_bv_04_c, "Accepting Connection Request after Directed Advertising" ],
@@ -6188,6 +6252,7 @@ __tests__ = {
     "LL/CIS/PER/BV-13-C": [ ll_cis_per_bv_13_c, "CIS Terminate Procedure, Accepting, Peripheral" ],
     # "LL/CIS/PER/BV-16-C": [ ll_cis_per_bv_16_c, "Deterministic Packet Transmission in CIS, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/9
     "LL/IST/PER/BV-01-C": [ ll_ist_per_bv_01_c, "ISO Transmit Test Mode, CIS" ],
+    # "LL/IST/PER/BV-03-C": [ ll_ist_per_bv_03_c, "ISO Receive Test Mode, CIS" ],  # https://github.com/EDTTool/packetcraft/issues/10
 };
 
 _maxNameLength = max([ len(key) for key in __tests__ ]);
