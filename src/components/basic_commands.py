@@ -3271,6 +3271,9 @@ def le_iso_data_write(transport, idx, handle, PbFlags, TsFlag, data, to):
     cmd = struct.pack('<HHHH' + str(len(data)) + 'B', Commands.CMD_LE_ISO_DATA_WRITE_REQ, 4 + len(data), handle, len(data), *data)
     transport.send(idx, cmd)
 
+    if ( to == 0 ):
+        return 1
+
     packet = transport.recv(idx, 5, to)
 
     if ( 5 != len(packet) ):
