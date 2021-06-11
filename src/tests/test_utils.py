@@ -441,7 +441,7 @@ def state_connected_isochronous_stream_peripheral(transport, upperTester, lowerT
     status = le_set_host_feature(transport, upperTester, FeatureSupport.ISOCHRONOUS_CHANNELS, 1, 100)
     success = getCommandCompleteEvent(transport, upperTester, trace) and (status == 0x00) and success
 
-    ### ACL Connection Established. IUT is Peripheral. ###
+    ### ACL Connection Established. IUT (upperTester) is Peripheral. ###
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED)
     success = advertiser.enable() and success
     connected = initiator.connect()
@@ -491,13 +491,23 @@ def state_connected_isochronous_stream_peripheral(transport, upperTester, lowerT
         s, event = verifyAndFetchMetaEvent(transport, upperTester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace)
         success = s and (event.decode()[0] == 0x00) and success
 
-        # LT: Setup Data Path - Data_Path_Direction=0 (Input)  Data_Path_ID=0 (HCI) Codec_ID=0 Controller_Delay=0 Codec_Configuration_Length=0 Codec_Configuration=NULL
-        status, _ = le_setup_iso_data_path(transport, lowerTester, cisConnectionHandle, 0, 0, [0, 0, 0, 0, 0], 0, 0, [], 100)
-        success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
+        if (Max_SDU_C_To_P != 0):
+            # LT: Setup Data Path - Data_Path_Direction=0 (Input)  Data_Path_ID=1 (HCI) Codec_ID=0 Controller_Delay=0 Codec_Configuration_Length=0 Codec_Configuration=NULL
+            status, _ = le_setup_iso_data_path(transport, lowerTester, cisConnectionHandle, 0, 0, [0, 0, 0, 0, 0], 0, 0, [], 100)
+            success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
 
-        # UT: Setup Data Path - Data_Path_Direction=1 (Output) Data_Path_ID=0 (HCI) Codec_ID=0 Controller_Delay=0 Codec_Configuration_Length=0 Codec_Configuration=NULL
-        status, _ = le_setup_iso_data_path(transport, upperTester, cisConnectionHandle, 1, 0, [0, 0, 0, 0, 0], 0, 0, [], 100)
-        success = getCommandCompleteEvent(transport, upperTester, trace) and (status == 0x00) and success
+            # UT: Setup Data Path - Data_Path_Direction=1 (Output) Data_Path_ID=1 (HCI) Codec_ID=0 Controller_Delay=0 Codec_Configuration_Length=0 Codec_Configuration=NULL
+            status, _ = le_setup_iso_data_path(transport, upperTester, cisConnectionHandle, 1, 0, [0, 0, 0, 0, 0], 0, 0, [], 100)
+            success = getCommandCompleteEvent(transport, upperTester, trace) and (status == 0x00) and success
+
+        if (Max_SDU_P_To_C != 0):
+            # LT: Setup Data Path - Data_Path_Direction=1 (Output)  Data_Path_ID=1 (HCI) Codec_ID=0 Controller_Delay=0 Codec_Configuration_Length=0 Codec_Configuration=NULL
+            status, _ = le_setup_iso_data_path(transport, lowerTester, cisConnectionHandle, 1, 0, [0, 0, 0, 0, 0], 0, 0, [], 100)
+            success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
+
+            # UT: Setup Data Path - Data_Path_Direction=0 (Input) Data_Path_ID=1 (HCI) Codec_ID=0 Controller_Delay=0 Codec_Configuration_Length=0 Codec_Configuration=NULL
+            status, _ = le_setup_iso_data_path(transport, upperTester, cisConnectionHandle, 0, 0, [0, 0, 0, 0, 0], 0, 0, [], 100)
+            success = getCommandCompleteEvent(transport, upperTester, trace) and (status == 0x00) and success
 
     return success, initiator, cisConnectionHandle
 
