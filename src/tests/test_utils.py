@@ -2,13 +2,6 @@
 # Copyright 2019 Oticon A/S
 # SPDX-License-Identifier: Apache-2.0
 
-from numpy import random;
-import statistics;
-import os;
-import numpy;
-import csv
-from collections import defaultdict, namedtuple
-from enum import IntEnum;
 from components.utils import *;
 from components.basic_commands import *;
 from components.address import *;
@@ -19,7 +12,6 @@ from components.scanner import *;
 from components.initiator import *;
 from components.addata import *;
 from components.preambles import *;
-from components.test_spec import TestSpec;
 
 
 def verifyAndShowEvent(transport, idx, expectedEvent, trace, to=100):
