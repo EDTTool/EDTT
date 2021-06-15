@@ -5768,6 +5768,116 @@ def ll_cis_per_bv_29_c(transport, upper_tester, lower_tester, trace):
 
 
 """
+    LL/CIS/PER/BV-39-C [CIS Peripheral Accepts All Supported NSE Values]
+"""
+def ll_cis_per_bv_39_c(transport, upper_tester, lower_tester, trace):
+    # Initial Condition
+    #
+    # The Isochronous Channels (Host Support) FeatureSet bit is set.
+    success = set_isochronous_channels_host_support(transport, upper_tester, trace, 1)
+    success = set_isochronous_channels_host_support(transport, lower_tester, trace, 1) and success
+
+    # An ACL connection has been established between the IUT and the Lower Tester with a valid Connection Handle.
+    s, advertiser, initiator = establish_acl_connection(transport, lower_tester, upper_tester, trace)
+    success = s and success
+    if not initiator:
+        return success
+
+    max_sdu_length = get_ixit_value(transport, upper_tester, IXITS["TSPX_max_sdu_length"], 100)
+    max_cis_bn = get_ixit_value(transport, upper_tester, IXITS["TSPX_max_cis_bn"], 100)
+
+    # 1. Test_BN represents the BN and NSE values for each round, and its initial value is 1.
+    test_bn = 1
+    while True:
+        # 2. The Lower Tester sends an LL_CIS_REQ to the IUT with BN_C_To_P, BN_P_To_C, and NSE set to Test_BN.
+        #    FT_C_To_P and FT_P_To_C are 1. ISO_Interval is a valid value and at least 200 ms. All other values are
+        #    valid values, and Max_SDU_C_To_P and Max_SDU_P_To_C are no greater than TSPX_max_sdu_length.
+        #    The parameters are configured such that each PDU contains a single SDU.
+        max_pdu = min(64, max_sdu_length)
+
+        # BN = ceil(Max_SDU / Max_PDU) * (ISO_Interval / SDU_Interval), where Max_SDU == Max_PDU, thus
+        iso_interval = 200
+        r = iso_interval % test_bn
+        if r != 0:
+            iso_interval += (test_bn - r)
+
+        sdu_interval = int(iso_interval / test_bn)
+
+        params = SetCIGParameters(
+            SDU_Interval_C_To_P = sdu_interval * 1000,
+            SDU_Interval_P_To_C = sdu_interval * 1000,
+            ISO_Interval        = int(iso_interval // 1.25),
+            NSE                 = test_bn,  # NSE set to Test_BN
+            Max_PDU_C_To_P      = max_pdu,
+            Max_PDU_P_To_C      = max_pdu,
+            FT_C_To_P           = 1,
+            FT_P_To_C           = 1,
+            BN_C_To_P           = test_bn,
+            BN_P_To_C           = test_bn,
+            Max_SDU_Supported   = max_pdu,  # Each PDU contains a single SDU
+        )
+
+        # 3-10.
+        s, cis_conn_handle = establish_cis_connection(transport, lower_tester, upper_tester, trace, params,
+                                                      initiator.handles[0])
+        success = s and success
+        if not initiator:
+            return success
+
+        def iso_send_and_receive_payload_pdu(pkt_seq_num):
+            # 11. The Lower Tester sends data packets to the IUT. All data packets contain data , and there are no
+            #     zero length data packets.
+            # 12. The Upper Tester receives ISO data from the IUT.
+            success = iso_send_payload_pdu(transport, lower_tester, upper_tester, trace, cis_conn_handle,
+                                           params.Max_PDU_C_To_P[0], params.SDU_Interval_C_To_P, pkt_seq_num)
+
+            # 13. The Upper Tester sends ISO data to the IUT sufficient to ensure that all data PDUs contain data
+            #     and there are no zero length PDUs.
+            # 14. The Lower Tester receives ISO data from the IUT.
+            return iso_send_payload_pdu(transport, upper_tester, lower_tester, trace, cis_conn_handle,
+                                        params.Max_PDU_P_To_C[0], params.SDU_Interval_P_To_C, pkt_seq_num) and success
+
+        # 15. Repeat steps 11–15 for 20 ISO intervals.
+        for pkt_seq_num in range(20):
+            success = iso_send_and_receive_payload_pdu(pkt_seq_num) and success
+            if not success:
+                break
+
+        # 16. The Lower Tester sends an LL_CIS_TERMINATE_IND PDU to the IUT and receives an Ack from
+        # the IUT.
+        # LT - Initiate CIS Disconnection and verify command status
+        status = disconnect(transport, lower_tester, cis_conn_handle, 0x13, 200)
+        success = verifyAndShowEvent(transport, lower_tester, Events.BT_HCI_EVT_CMD_STATUS, trace) and (status == 0) \
+                  and success
+
+        # LT - Verify HCI Disconnection Complete event parameters
+        s, event = verifyAndFetchEvent(transport, lower_tester, Events.BT_HCI_EVT_DISCONN_COMPLETE, trace)
+        status, handle, reason = event.decode()
+        success = s and (status == 0x00) and handle == cis_conn_handle and success
+
+        # 17. The Upper Tester receives an HCI_Disconnection_Complete event from the IUT.
+        s, event = verifyAndFetchEvent(transport, upper_tester, Events.BT_HCI_EVT_DISCONN_COMPLETE, trace)
+        status, handle, reason = event.decode()
+        success = s and (status == 0x00) and handle == cis_conn_handle and success
+
+        # Remove the CIG, since we are going to create the CIG with different parameters
+        status, _ = le_remove_cig(transport, lower_tester, 0, 100)
+        success = verifyAndShowEvent(transport, lower_tester, Events.BT_HCI_EVT_CMD_COMPLETE, trace) and status == 0 \
+                  and success
+
+        # 18. Test_BN is incremented by 1. If Test_BN exceeds TSPX_max_cis_bn, then the test is complete.
+        #     If not, go to step 2 to execute the next round.
+        test_bn += 1
+        if test_bn > max_cis_bn or not success:
+            break
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
+
+
+"""
     LL/CIS/PER/BV-40-C [CIS Setup Response Procedure, Peripheral]
 """
 def ll_cis_per_bv_40_c(transport, upper_tester, lower_tester, trace):
@@ -6396,6 +6506,7 @@ __tests__ = {
     # "LL/CIS/PER/BV-19-C": [ ll_cis_per_bv_19_c, "CIS Setup Response Procedure, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/12
     # "LL/CIS/PER/BV-23-C": [ ll_cis_per_bv_23_c, "CIS Setup Response Procedure, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/12
     # "LL/CIS/PER/BV-29-C": [ ll_cis_per_bv_29_c, "CIS Setup Response Procedure, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/12
+    "LL/CIS/PER/BV-39-C": [ ll_cis_per_bv_39_c, "CIS Peripheral Accepts All Supported NSE Values" ],
     "LL/CIS/PER/BV-40-C": [ ll_cis_per_bv_40_c, "CIS Setup Response Procedure, Peripheral" ],
     "LL/CIS/PER/BV-12-C": [ ll_cis_per_bv_12_c, "CIS Terminate Procedure, Initiated - Peripheral" ],
     "LL/CIS/PER/BV-13-C": [ ll_cis_per_bv_13_c, "CIS Terminate Procedure, Accepting, Peripheral" ],
