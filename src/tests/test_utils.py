@@ -585,6 +585,8 @@ def cis_setup_response_procedure_peripheral(transport, upperTester, lowerTester,
     #
     # The Lower Tester is configured as the Central.
 
+    # TODO: Instead of steps 1-9, consider using state_connected_isochronous_stream_peripheral
+
     SDU_Interval_C_To_P     = params.SDU_Interval_C_To_P
     SDU_Interval_P_To_C     = params.SDU_Interval_P_To_C
     ISO_Interval            = params.ISO_Interval
@@ -684,17 +686,35 @@ def cis_setup_response_procedure_peripheral(transport, upperTester, lowerTester,
     s, event = verifyAndFetchMetaEvent(transport, upperTester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace)
     success = s and (event.decode()[0] == 0x00) and success
 
-    # 9. The Lower Tester sends data packets to the IUT.
-    # 10. The Lower Tester receives an Ack.
-    # 11. Repeat steps 9 and 10 a total of 50 times.
-    txData = [0 for _ in range(10)]
-    pbFlags = 1
+    # 9. The Upper Tester sends an HCI_LE_Setup_ISO_Data_Path command to the IUT with the output
+    #    path enabled and receives a successful HCI_Command_Complete in response.
+    # UT: Setup Data Path - Data_Path_Direction=1 (Output) Data_Path_ID=0 (HCI) Codec_ID=0 Controller_Delay=0
+    #     Codec_Configuration_Length=0 Codec_Configuration=NULL
+    status, _ = le_setup_iso_data_path(transport, upperTester, cisConnectionHandle, 1, 0, [0, 0, 0, 0, 0], 0, 0, [],
+                                       100)
+    success = getCommandCompleteEvent(transport, upperTester, trace) and (status == 0x00) and success
+
+    # LT: Setup Data Path - Data_Path_Direction=0 (Input) Data_Path_ID=0 (HCI) Codec_ID=0 Controller_Delay=0
+    #     Codec_Configuration_Length=0 Codec_Configuration=NULL
+    status, _ = le_setup_iso_data_path(transport, lowerTester, cisConnectionHandle, 0, 0, [0, 0, 0, 0, 0], 0, 0, [],
+                                       100)
+    success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
+
+    # 10. The Lower Tester sends data packets to the IUT.
+    # 11. The Upper Tester IUT sends an ISO data packet to the Upper Tester.
+    def lt_send_data_packet(pkt_seq_num):
+        return iso_send_payload_pdu(transport, lowerTester, upperTester, trace, cisConnectionHandle, Max_SDU_C_To_P[0],
+                                    SDU_Interval_C_To_P, pkt_seq_num)
+
+    # 12. Perform either Alternative 12A or 12B depending on whether P_To_C Payload (PDU) in Table 4.146 is 0:
+    #     Alternative 12A (P_To_C Payload (PDU) is not equal to 0):
+    #       12A.1. TODO: The IUT sends an Ack to the Lower Tester.
+    #     Alternative 12B (P_To_C Payload (PDU) is equal to 0):
+    #       12B.1. TODO: The IUT sends a CIS Null PDU to the Lower Tester.
+
+    # 13. Repeat steps 10-12 a total of 50 times.
     for j in range(50):
-        dataSent = writeData(transport, lowerTester, initiator.handles[1], pbFlags, txData, trace)
-        success = dataSent and success
-        if dataSent:
-            dataReceived, rxData = readData(transport, upperTester, trace)
-            success = dataReceived and (len(rxData) == len(txData)) and (rxData == txData) and success
+        success = lt_send_data_packet(j) and success
 
     ### TERMINATION ###
     success = initiator.disconnect(0x13) and success
