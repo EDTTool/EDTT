@@ -443,9 +443,14 @@ class Ixit:
         self.ref_minor = ref_minor
         self.value_fmt = value_fmt
 
-
+"""
+The IXIT (Proforma for Bluetooth Conformance Test Suites) comes from Core.IXIT document
+https://www.bluetooth.com/specifications/qualification-test-requirements/
+"""
 IXITS = {
-    "TSPX_max_cis_nse":  Ixit(ProfileId.PROFILE_ID_LL, 7, 14, 'B')
+    "TSPX_max_sdu_length": Ixit(ProfileId.PROFILE_ID_LL, 7, 1, 'H'),
+    "TSPX_max_cis_nse":  Ixit(ProfileId.PROFILE_ID_LL, 7, 14, 'B'),
+    "TSPX_max_cis_bn": Ixit(ProfileId.PROFILE_ID_LL, 7, 15, 'B'),
 }
 
 """
