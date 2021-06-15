@@ -219,9 +219,9 @@ def calcMaxPacketTime(packetLength):
     #      (preamble + AA + header + packetLength + MIC + CRC) * us/byte
     return (1        + 4  + 2      + packetLength + 4   + 3  ) * 8
 
-def calcMaxIsoSdu(Framing, BN, Max_PDU, ISO_Interval, SDU_Interval):
+def calcMaxIsoSdu(Framing, BN, Max_PDU, ISO_Interval, SDU_Interval, Max_SDU_Supported):
     if Framing == 0:
-        return calcUnframedMaxIsoSdu(BN, Max_PDU, ISO_Interval, SDU_Interval, 247) # TODO: Should be something configurable
+        return calcUnframedMaxIsoSdu(BN, Max_PDU, ISO_Interval, SDU_Interval, Max_SDU_Supported)
     elif Framing == 1:
         raise RuntimeError("Framed Max SDU not supported")
     else:
@@ -746,6 +746,7 @@ class SetCIGParameters:
         ('Max_Transport_Latency_P_To_C',    None,          True,    40000),  # 40 ms
         ('RTN_C_To_P',                      None,          True,    3),
         ('RTN_P_To_C',                      None,          True,    3),
+        ('Max_SDU_Supported',               None,          False,   247),  # Maximum ISOAL SDU length
     ]
 
     def __init__(self, **kwargs):
@@ -778,8 +779,12 @@ class SetCIGParameters:
         Max_SDU_P_To_C = [None] * self.CIS_Count
         for n in range(self.CIS_Count):
             # Calculate default values
-            Max_SDU_C_To_P[n] = calcMaxIsoSdu(self.Framing, self.BN_C_To_P[n], self.Max_PDU_C_To_P[n], self.ISO_Interval * 1.25 * 1000, self.SDU_Interval_C_To_P)
-            Max_SDU_P_To_C[n] = calcMaxIsoSdu(self.Framing, self.BN_P_To_C[n], self.Max_PDU_P_To_C[n], self.ISO_Interval * 1.25 * 1000, self.SDU_Interval_P_To_C)
+            Max_SDU_C_To_P[n] = calcMaxIsoSdu(self.Framing, self.BN_C_To_P[n], self.Max_PDU_C_To_P[n],
+                                              self.ISO_Interval * 1.25 * 1000, self.SDU_Interval_C_To_P,
+                                              self.Max_SDU_Supported)
+            Max_SDU_P_To_C[n] = calcMaxIsoSdu(self.Framing, self.BN_P_To_C[n], self.Max_PDU_P_To_C[n],
+                                              self.ISO_Interval * 1.25 * 1000, self.SDU_Interval_P_To_C,
+                                              self.Max_SDU_Supported)
 
         # Override
         self.Max_SDU_C_To_P = self.per_cis_value(kwargs.get('Max_SDU_C_To_P', Max_SDU_C_To_P))
