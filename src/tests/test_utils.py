@@ -215,6 +215,15 @@ def hasReadRemoteVersionInformationCompleteEvent(transport, idx, trace):
             success = status == 0;
     return success, handle, version, manufacturer, subVersion;
 
+def hasLeCisRequestMetaEvent(transport, idx, trace, to):
+
+    success, aclConnectionHandle, cisConnectionHandle, cigId, cisId = has_event(transport, idx, to)[0], -1, -1, -1, -1
+    if success:
+        success, event = verifyAndFetchMetaEvent(transport, idx, MetaEvents.BT_HCI_EVT_LE_CIS_REQUEST, trace)
+        if success:
+            aclConnectionHandle, cisConnectionHandle, cigId, cisId = event.decode()
+    return success, aclConnectionHandle, cisConnectionHandle, cigId, cisId
+
 def calcMaxPacketTime(packetLength):
     #      (preamble + AA + header + packetLength + MIC + CRC) * us/byte
     return (1        + 4  + 2      + packetLength + 4   + 3  ) * 8
@@ -818,4 +827,10 @@ class SetCIGParameters:
             # Single value given, so multiply by CIS_Count
             value = [value] * self.CIS_Count
         return value
+
+    def get_cig_parameters_test(self):
+        return (self.SDU_Interval_C_To_P, self.SDU_Interval_P_To_C, self.FT_C_To_P, self.FT_P_To_C, self.ISO_Interval,
+                self.Worst_Case_SCA, self.Packing, self.Framing, self.CIS_Count, list(range(self.CIS_Count)), self.NSE,
+                self.Max_SDU_C_To_P, self.Max_SDU_P_To_C, self.Max_PDU_C_To_P, self.Max_PDU_P_To_C, self.PHY_C_To_P,
+                self.PHY_P_To_C, self.BN_C_To_P, self.BN_P_To_C)
 

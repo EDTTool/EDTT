@@ -5728,6 +5728,103 @@ def ll_cis_per_bv_19_c(transport, upperTester, lowerTester, trace):
 
 
 """
+    LL/CIS/PER/BV-22-C [CIS Request Event Not Set]
+"""
+def ll_cis_per_bv_22_c(transport, upper_tester, lower_tester, trace):
+    # Initial Condition
+    #
+    # The Isochronous Channels (Host Support) FeatureSet bit is clear.
+    success = set_isochronous_channels_host_support(transport, upper_tester, trace, 0)
+    success = set_isochronous_channels_host_support(transport, lower_tester, trace, 1) and success
+
+    # An ACL connection has been established between the IUT and Lower Tester with the IUT acting as the Peripheral.
+    s, advertiser, initiator = establish_acl_connection(transport, lower_tester, upper_tester, trace)
+    success = s and success
+    if not initiator:
+        return success
+
+    # 1. The Lower Tester sends an LL_CIS_REQ to the IUT with the contents specified per Section 4.10.1.3 Default Values
+    #    for Set CIG Parameters Commands.
+    params = SetCIGParameters()
+
+    def lt_send_ll_cis_req(acl_conn_handle):
+        status, cig_id, cis_count, cis_conn_handle = \
+            le_set_cig_parameters_test(transport, lower_tester, 0, *params.get_cig_parameters_test(), 100)
+        success = getCommandCompleteEvent(transport, lower_tester, trace) and status == 0x00
+
+        status = le_create_cis(transport, lower_tester, cis_count, cis_conn_handle, [acl_conn_handle] * cis_count, 100)
+        return verifyAndShowEvent(transport, lower_tester, Events.BT_HCI_EVT_CMD_STATUS, trace) and status == 0 and success
+
+    acl_conn_handle = initiator.handles[0]
+    success = lt_send_ll_cis_req(acl_conn_handle) and success
+
+    # 2. The IUT responds to the Lower Tester with an LL_REJECT_EXT_IND with error code Unsupported Remote Feature
+    #    (0x1A).
+    s, event = verifyAndFetchMetaEvent(transport, lower_tester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace)
+    success = s and (event.decode()[0] == 0x1A) and success
+
+    # 3. The IUT disconnects the ACL connection from the Lower Tester.
+    # TSE ID: 17099: Core does not mandate IUT to disconnect ACL when CIS Request has been rejected.
+    #                The TS shall be clear that, it is Upper Tester initiated operation, not autonomous IUT operation.
+    status = disconnect(transport, upper_tester, acl_conn_handle, 0x13, 200)
+    success = verifyAndShowEvent(transport, upper_tester, Events.BT_HCI_EVT_CMD_STATUS, trace) and (status == 0) \
+              and success
+
+    s, event = verifyAndFetchEvent(transport, lower_tester, Events.BT_HCI_EVT_DISCONN_COMPLETE, trace)
+    status, handle, reason = event.decode()
+    success = s and (status == 0x00) and handle == acl_conn_handle and success
+
+    s, event = verifyAndFetchEvent(transport, upper_tester, Events.BT_HCI_EVT_DISCONN_COMPLETE, trace)
+    status, handle, reason = event.decode()
+    success = s and (status == 0x00) and handle == acl_conn_handle and success
+
+    # 4. The Upper Tester sends an HCI_LE_Set_Host_Feature command to the IUT with the Bit_Number set to 32 (Isochronous
+    #    Channels) and the Bit_Value set to 0b1. The Upper Tester receives an HCI_Command_Complete event from the IUT.
+    success = set_isochronous_channels_host_support(transport, upper_tester, trace, 1) and success
+
+    # 5. The IUT establishes an ACL connection with the Lower Tester as Peripheral.
+    s, advertiser, initiator = establish_acl_connection(transport, lower_tester, upper_tester, trace)
+    success = s and success
+    if not initiator:
+        return success
+
+    # 6. The Upper Tester sends an HCI_LE_Set_Event_Mask command with all events enabled except the HCI_LE_CIS_Request
+    #    event. The IUT sends a successful HCI_Command_Complete in response.
+    def ut_set_event_mask(event_mask):
+        status = le_set_event_mask(transport, upper_tester, event_mask, 100)
+        return getCommandCompleteEvent(transport, upper_tester, trace) and status == 0x00
+
+    success = ut_set_event_mask([0xFF, 0xFF, 0xFF, 0xFD, 0x07, 0x00, 0x00, 0x00]) and success
+
+    # 7. Repeat step 1.
+    success = lt_send_ll_cis_req(initiator.handles[0]) and success
+
+    # 8. The IUT responds to the Lower Tester with an LL_REJECT_EXT_IND with a valid reason code.
+    s, event = verifyAndFetchMetaEvent(transport, lower_tester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace)
+    success = s and (event.decode()[0] != 0x00) and success
+
+    # 9. The Upper Tester does not receive an HCI_LE_CIS_Request event. Confirm for at least 5 seconds.
+    s, _, _, _, _ = hasLeCisRequestMetaEvent(transport, upper_tester, trace, 5000)
+    success = not s and success
+
+    # 10. The Upper Tester sends an HCI_LE_Set_Event_Mask command with all events enabled including the
+    #     HCI_LE_CIS_Request event. The IUT sends a successful HCI_Command_Complete in response.
+    success = ut_set_event_mask([0xFF, 0xFF, 0xFF, 0xFF, 0x07, 0x00, 0x00, 0x00]) and success
+
+    # 11. Repeat step 1.
+    success = lt_send_ll_cis_req(initiator.handles[0]) and success
+
+    # 12. The Upper Tester receives an HCI_LE_CIS_Request event.
+    s, _, _, _, _ = hasLeCisRequestMetaEvent(transport, upper_tester, trace, 5000)
+    success = s and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
+
+
+"""
     LL/CIS/PER/BV-23-C [CIS Setup Response Procedure, Peripheral]
 """
 def ll_cis_per_bv_23_c(transport, upper_tester, lower_tester, trace):
@@ -6504,6 +6601,7 @@ __tests__ = {
     "LL/CIS/PER/BV-02-C": [ ll_cis_per_bv_02_c, "CIS Setup Response Procedure, Peripheral, Reject Response" ],
     "LL/CIS/PER/BV-05-C": [ ll_cis_per_bv_05_c, "Receiving data in Unidirectional CIS" ],
     # "LL/CIS/PER/BV-19-C": [ ll_cis_per_bv_19_c, "CIS Setup Response Procedure, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/12
+    "LL/CIS/PER/BV-22-C": [ ll_cis_per_bv_22_c, "CIS Request Event Not Set" ],
     # "LL/CIS/PER/BV-23-C": [ ll_cis_per_bv_23_c, "CIS Setup Response Procedure, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/12
     # "LL/CIS/PER/BV-29-C": [ ll_cis_per_bv_29_c, "CIS Setup Response Procedure, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/12
     "LL/CIS/PER/BV-39-C": [ ll_cis_per_bv_39_c, "CIS Peripheral Accepts All Supported NSE Values" ],
