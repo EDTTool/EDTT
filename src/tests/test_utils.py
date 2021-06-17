@@ -431,7 +431,7 @@ def iso_send_payload_pdu(transport, transmitter, receiver, trace, conn_handle, m
                                  sdu_interval * 2)
 
     # Receiver: RX SDU
-    time, handle, pbflags, tsflag, rx_iso_data_load = le_iso_data_read(transport, receiver, 100)
+    time, handle, pbflags, tsflag, rx_iso_data_load = le_iso_data_read(transport, receiver, sdu_interval * 2)
     rx_iso_data_load = bytearray(rx_iso_data_load)
 
     # Transmitter: No RX
@@ -506,7 +506,7 @@ def establish_cis_connection(transport, central, peripheral, trace, params, acl_
     success = True
 
     # LT: Set CIG Parameters for Test
-    status, cigId, cisCount, cisConnectionHandle = \
+    status, cigId, cisCount, cisConnectionHandles = \
     le_set_cig_parameters_test(transport, central, 0,
                                SDU_Interval_C_To_P, SDU_Interval_P_To_C,
                                FT_C_To_P, FT_P_To_C,
@@ -521,10 +521,10 @@ def establish_cis_connection(transport, central, peripheral, trace, params, acl_
                                PHY_C_To_P, PHY_P_To_C,
                                BN_C_To_P, BN_P_To_C, 100)
     success = getCommandCompleteEvent(transport, central, trace) and (status == 0x00) and success
-    aclConnectionHandle = [acl_conn_handle] * CIS_Count
+    aclConnectionHandles = [acl_conn_handle] * CIS_Count
 
     # LT: Create CIS
-    status = le_create_cis(transport, central, CIS_Count, cisConnectionHandle, aclConnectionHandle, 100)
+    status = le_create_cis(transport, central, CIS_Count, cisConnectionHandles, aclConnectionHandles, 100)
     success = verifyAndShowEvent(transport, central, Events.BT_HCI_EVT_CMD_STATUS, trace) and (status == 0) and success
 
     for n in range(CIS_Count):
@@ -545,26 +545,29 @@ def establish_cis_connection(transport, central, peripheral, trace, params, acl_
         s, event = verifyAndFetchMetaEvent(transport, peripheral, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace)
         success = s and (event.decode()[0] == 0x00) and success
 
-        if setup_iso_data_path:
-            if (Max_SDU_C_To_P != 0):
-                # LT: Setup Data Path - Data_Path_Direction=0 (Input)  Data_Path_ID=1 (HCI) Codec_ID=0 Controller_Delay=0 Codec_Configuration_Length=0 Codec_Configuration=NULL
-                status, _ = le_setup_iso_data_path(transport, central, cisConnectionHandle, 0, 0, [0, 0, 0, 0, 0], 0, 0, [], 100)
-                success = getCommandCompleteEvent(transport, central, trace) and (status == 0x00) and success
+    if not setup_iso_data_path:
+        return success, cisConnectionHandles
 
-                # UT: Setup Data Path - Data_Path_Direction=1 (Output) Data_Path_ID=1 (HCI) Codec_ID=0 Controller_Delay=0 Codec_Configuration_Length=0 Codec_Configuration=NULL
-                status, _ = le_setup_iso_data_path(transport, peripheral, cisConnectionHandle, 1, 0, [0, 0, 0, 0, 0], 0, 0, [], 100)
-                success = getCommandCompleteEvent(transport, peripheral, trace) and (status == 0x00) and success
+    for cisConnectionHandle in cisConnectionHandles:
+        if (Max_SDU_C_To_P != 0):
+            # LT: Setup Data Path - Data_Path_Direction=0 (Input)  Data_Path_ID=1 (HCI) Codec_ID=0 Controller_Delay=0 Codec_Configuration_Length=0 Codec_Configuration=NULL
+            status, _ = le_setup_iso_data_path(transport, central, cisConnectionHandle, 0, 0, [0, 0, 0, 0, 0], 0, 0, [], 100)
+            success = getCommandCompleteEvent(transport, central, trace) and (status == 0x00) and success
 
-            if (Max_SDU_P_To_C != 0):
-                # LT: Setup Data Path - Data_Path_Direction=1 (Output)  Data_Path_ID=1 (HCI) Codec_ID=0 Controller_Delay=0 Codec_Configuration_Length=0 Codec_Configuration=NULL
-                status, _ = le_setup_iso_data_path(transport, central, cisConnectionHandle, 1, 0, [0, 0, 0, 0, 0], 0, 0, [], 100)
-                success = getCommandCompleteEvent(transport, central, trace) and (status == 0x00) and success
+            # UT: Setup Data Path - Data_Path_Direction=1 (Output) Data_Path_ID=1 (HCI) Codec_ID=0 Controller_Delay=0 Codec_Configuration_Length=0 Codec_Configuration=NULL
+            status, _ = le_setup_iso_data_path(transport, peripheral, cisConnectionHandle, 1, 0, [0, 0, 0, 0, 0], 0, 0, [], 100)
+            success = getCommandCompleteEvent(transport, peripheral, trace) and (status == 0x00) and success
 
-                # UT: Setup Data Path - Data_Path_Direction=0 (Input) Data_Path_ID=1 (HCI) Codec_ID=0 Controller_Delay=0 Codec_Configuration_Length=0 Codec_Configuration=NULL
-                status, _ = le_setup_iso_data_path(transport, peripheral, cisConnectionHandle, 0, 0, [0, 0, 0, 0, 0], 0, 0, [], 100)
-                success = getCommandCompleteEvent(transport, peripheral, trace) and (status == 0x00) and success
+        if (Max_SDU_P_To_C != 0):
+            # LT: Setup Data Path - Data_Path_Direction=1 (Output)  Data_Path_ID=1 (HCI) Codec_ID=0 Controller_Delay=0 Codec_Configuration_Length=0 Codec_Configuration=NULL
+            status, _ = le_setup_iso_data_path(transport, central, cisConnectionHandle, 1, 0, [0, 0, 0, 0, 0], 0, 0, [], 100)
+            success = getCommandCompleteEvent(transport, central, trace) and (status == 0x00) and success
 
-    return success, cisConnectionHandle
+            # UT: Setup Data Path - Data_Path_Direction=0 (Input) Data_Path_ID=1 (HCI) Codec_ID=0 Controller_Delay=0 Codec_Configuration_Length=0 Codec_Configuration=NULL
+            status, _ = le_setup_iso_data_path(transport, peripheral, cisConnectionHandle, 0, 0, [0, 0, 0, 0, 0], 0, 0, [], 100)
+            success = getCommandCompleteEvent(transport, peripheral, trace) and (status == 0x00) and success
+
+    return success, cisConnectionHandles
 
 
 def state_connected_isochronous_stream_peripheral(transport, upperTester, lowerTester, trace, params,
@@ -579,11 +582,10 @@ def state_connected_isochronous_stream_peripheral(transport, upperTester, lowerT
     if not initiator:
         return success, None, []
 
-    s, cisConnectionHandle = establish_cis_connection(transport, lowerTester, upperTester, trace, params,
+    s, cisConnectionHandles = establish_cis_connection(transport, lowerTester, upperTester, trace, params,
                                                       initiator.handles[0], setup_iso_data_path)
-    success = s and success
 
-    return success, initiator, cisConnectionHandle
+    return s and success, initiator, cisConnectionHandles
 
 
 """
@@ -651,7 +653,7 @@ def cis_setup_response_procedure_peripheral(transport, upperTester, lowerTester,
 
     # 2. The Lower Tester sends an LL_CIS_REQ to the IUT with the contents specified in Table 4.115.
     # NOTE: CIG_ID is hardcoded to 0
-    status, cigId, cisCount, cisConnectionHandle = \
+    status, cigId, cisCount, cisConnectionHandles = \
     le_set_cig_parameters_test(transport, lowerTester, 0,
                                SDU_Interval_C_To_P, SDU_Interval_P_To_C,
                                FT_C_To_P, FT_P_To_C,
@@ -666,8 +668,9 @@ def cis_setup_response_procedure_peripheral(transport, upperTester, lowerTester,
                                PHY_C_To_P, PHY_P_To_C,
                                BN_C_To_P, BN_P_To_C, 100)
     success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
+    aclConnectionHandles = [initiator.handles[0]] * CIS_Count
 
-    status = le_create_cis(transport, lowerTester, 1, cisConnectionHandle, [initiator.handles[0]], 100)
+    status = le_create_cis(transport, lowerTester, 1, cisConnectionHandles, aclConnectionHandles, 100)
     success = verifyAndShowEvent(transport, lowerTester, Events.BT_HCI_EVT_CMD_STATUS, trace) and (status == 0) and success
 
     # 3. The Upper Tester receives an HCI_LE_CIS_Request event from the IUT and the parameters
