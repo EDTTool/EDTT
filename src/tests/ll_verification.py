@@ -5691,7 +5691,8 @@ def ll_cis_per_bv_05_c(transport, upperTester, lowerTester, trace):
         BN_P_To_C               = 1, # TODO: Supposed to be 0
     )
 
-    success, initiator, cisConnectionHandle = state_connected_isochronous_stream_peripheral(transport, upperTester, lowerTester, trace, params)
+    success, initiator, (cisConnectionHandle,) = state_connected_isochronous_stream_peripheral(transport, upperTester,
+                                                                                               lowerTester, trace, params)
     if not initiator:
         return success
 
@@ -5915,8 +5916,8 @@ def ll_cis_per_bv_39_c(transport, upper_tester, lower_tester, trace):
         )
 
         # 3-10.
-        s, cis_conn_handle = establish_cis_connection(transport, lower_tester, upper_tester, trace, params,
-                                                      initiator.handles[0])
+        s, (cis_conn_handle,) = establish_cis_connection(transport, lower_tester, upper_tester, trace, params,
+                                                         initiator.handles[0])
         success = s and success
         if not initiator:
             return success
@@ -6042,8 +6043,8 @@ def ll_cis_per_bv_12_c(transport, upper_tester, lower_tester, trace):
             BN_P_To_C               = 1,
     )
 
-    success, initiator, cis_conn_handle = state_connected_isochronous_stream_peripheral(transport, upper_tester,
-                                                                                        lower_tester, trace, params)
+    success, initiator, (cis_conn_handle,) = state_connected_isochronous_stream_peripheral(transport, upper_tester,
+                                                                                           lower_tester, trace, params)
 
     if not initiator:
         return success;
@@ -6115,8 +6116,8 @@ def ll_cis_per_bv_13_c(transport, upper_tester, lower_tester, trace):
         BN_P_To_C               = 1,
     )
 
-    success, initiator, cis_conn_handle = state_connected_isochronous_stream_peripheral(transport, upper_tester,
-                                                                                        lower_tester, trace, params)
+    success, initiator, (cis_conn_handle,) = state_connected_isochronous_stream_peripheral(transport, upper_tester,
+                                                                                           lower_tester, trace, params)
     if not initiator:
         return success
 
@@ -6200,7 +6201,8 @@ def ll_cis_per_bv_15_c(transport, upper_tester, lower_tester, trace):
             BN_P_To_C               = 2,
     )
 
-    success, initiator, cis_conn_handle = state_connected_isochronous_stream_peripheral(transport, upper_tester, lower_tester, trace, params)
+    success, initiator, (cis_conn_handle,) = state_connected_isochronous_stream_peripheral(transport, upper_tester,
+                                                                                           lower_tester, trace, params)
 
     if not initiator:
         return success;
@@ -6280,8 +6282,8 @@ def ll_cis_per_bv_16_c(transport, upper_tester, lower_tester, trace):
         BN_P_To_C               = 2,
     )
 
-    success, initiator, cis_conn_handle = state_connected_isochronous_stream_peripheral(transport, upper_tester,
-                                                                                        lower_tester, trace, params)
+    success, initiator, (cis_conn_handle,) = state_connected_isochronous_stream_peripheral(transport, upper_tester,
+                                                                                           lower_tester, trace, params)
     if not initiator:
         return success
 
@@ -6368,10 +6370,9 @@ def ll_ist_per_bv_01_c(transport, upper_tester, lower_tester, trace):
     # with the exception that the HCI_LE_Setup_ISO_Data_Path command is not executed once the CIG is established.
     params = SetCIGParameters()  # Default parameters
 
-    success, initiator, cis_conn_handle = state_connected_isochronous_stream_peripheral(transport, upper_tester,
-                                                                                        lower_tester, trace,
-                                                                                        params,
-                                                                                        setup_iso_data_path=False)
+    success, initiator, (cis_conn_handle,) = state_connected_isochronous_stream_peripheral(transport, upper_tester,
+                                                                                           lower_tester, trace, params,
+                                                                                           setup_iso_data_path=False)
     if not initiator:
         return success
 
@@ -6453,7 +6454,7 @@ def ll_ist_per_bv_03_c(transport, upper_tester, lower_tester, trace):
                 initiator = None
 
         if not initiator:
-            success, initiator, cis_conn_handle = \
+            success, initiator, (cis_conn_handle,) = \
                 state_connected_isochronous_stream_peripheral(transport, upper_tester, lower_tester, trace, params,
                                                               setup_iso_data_path=False)
             if not initiator:
