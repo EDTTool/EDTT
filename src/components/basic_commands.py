@@ -3327,32 +3327,16 @@ def le_iso_data_read(transport, idx, to):
 def le_set_cig_parameters(transport, idx, CigId, SduIntervalMToS, SduIntervalSToM, SlavesClockAccuracy, Packing,
                           Framing, MaxTransportLatencyMToS, MaxTransportLatencySToM, CisCount, CisId, MaxSduMToS, MaxSduSToM,
                           PhyMToS, PhySToM, RtnMToS, RtnSToM, to):
+    cmd_parameters = [HCICommands.BT_HCI_OP_LE_SET_CIG_PARAMETERS, CigId, *toArray(SduIntervalMToS, 3),
+                      *toArray(SduIntervalSToM, 3), SlavesClockAccuracy, Packing, Framing, MaxTransportLatencyMToS,
+                      MaxTransportLatencySToM, CisCount]
+    for i in range(CisCount):
+        cmd_parameters += [CisId[i], MaxSduMToS[i], MaxSduSToM[i], PhyMToS[i], PhySToM[i], RtnMToS[i], RtnSToM[i]]
 
-    cCB = str(CisCount) + 'B'
-    cCH = str(CisCount) + 'H'
+    edtt_send_cmd(transport, idx, Commands.CMD_LE_SET_CIG_PARAMETERS_REQ, 'HB3B3BBBBHHB' + CisCount * 'BHHBBBB',
+                  cmd_parameters)
 
-    cmd = struct.pack('<HHHB3B3BBBBHHB' + cCB + cCH + cCH + cCB + cCB + cCB + cCB,
-                      Commands.CMD_LE_SET_CIG_PARAMETERS_REQ, 17 + (5 * CisCount * 1) + (2 * CisCount * 2), HCICommands.BT_HCI_OP_LE_SET_CIG_PARAMETERS,
-                      CigId, *toArray(SduIntervalMToS, 3), *toArray(SduIntervalSToM, 3), SlavesClockAccuracy, Packing,
-                      Framing, MaxTransportLatencyMToS, MaxTransportLatencySToM, CisCount, *CisId, *MaxSduMToS, *MaxSduSToM,
-                      *PhyMToS, *PhySToM, *RtnMToS, *RtnSToM)
-    transport.send(idx, cmd)
-
-    rcvLen = 7 + (CisCount * 2)
-    packet = transport.recv(idx, rcvLen, to)
-
-    if ( rcvLen != len(packet) ):
-        raise Exception("LE Set CIG Parameters command failed: Response too short (Expected %i bytes got %i bytes)" % (rcvLen, len(packet)))
-
-    RespCmd, RespLen, status, cigId, cisCount, *connectionHandle = struct.unpack('<HHBBB' + cCH, packet)
-
-    if ( RespCmd != Commands.CMD_LE_SET_CIG_PARAMETERS_RSP ):
-        raise Exception("LE Set CIG Parameters command failed: Inappropriate command response received")
-
-    if ( RespLen != 3 + (CisCount * 2) ):
-        raise Exception("LE Set CIG Parameters command failed: Response length field corrupted (%i)" % RespLen)
-
-    return status, cigId, cisCount, connectionHandle
+    return edtt_wait_cmd_cmpl(transport, idx, Commands.CMD_LE_SET_CIG_PARAMETERS_RSP, f'BBB{CisCount}H', to)
 
 """
     The command is used by a master's Host to set the parameters of one or more
@@ -3362,32 +3346,20 @@ def le_set_cig_parameters(transport, idx, CigId, SduIntervalMToS, SduIntervalSTo
 def le_set_cig_parameters_test(transport, idx, CigId, SduIntervalMToS, SduIntervalSToM, FtMToS, FtSToM, IsoInterval, SlavesClockAccuracy,
                                Packing, Framing, CisCount, CisId, Nse, MaxSduMToS, MaxSduSToM, MaxPduMToS, MaxPduSToM,
                                PhyMToS, PhySToM, BnMToS, BnSToM, to):
+    cmd_parameters = [HCICommands.BT_HCI_OP_LE_SET_CIG_PARAMETERS_TEST, CigId, *toArray(SduIntervalMToS, 3),
+                      *toArray(SduIntervalSToM, 3), FtMToS, FtSToM, IsoInterval, SlavesClockAccuracy, Packing, Framing,
+                      CisCount]
+    for i in range(CisCount):
+        cmd_parameters += [CisId[i], Nse[i], MaxSduMToS[i], MaxSduSToM[i], MaxPduMToS[i], MaxPduSToM[i], PhyMToS[i],
+                           PhySToM[i], BnMToS[i], BnSToM[i]]
 
-    cCB = str(CisCount) + 'B'
-    cCH = str(CisCount) + 'H'
+    edtt_send_cmd(transport, idx, Commands.CMD_LE_SET_CIG_PARAMETERS_TEST_REQ,
+                  'HB3B3BBBHBBBB' + CisCount * 'BBHHHHBBBB', cmd_parameters)
 
-    cmd = struct.pack('<HHHB3B3BBBHBBBB' + cCB + cCB + cCH + cCH + cCH + cCH + cCB + cCB + cCB + cCB,
-                      Commands.CMD_LE_SET_CIG_PARAMETERS_TEST_REQ, 17 + (6 * CisCount * 1) + (4 * CisCount * 2), HCICommands.BT_HCI_OP_LE_SET_CIG_PARAMETERS_TEST,
-                      CigId, *toArray(SduIntervalMToS, 3), *toArray(SduIntervalSToM, 3), FtMToS, FtSToM, IsoInterval, SlavesClockAccuracy,
-                      Packing, Framing, CisCount, *CisId, *Nse, *MaxSduMToS, *MaxSduSToM, *MaxPduMToS, *MaxPduSToM,
-                      *PhyMToS, *PhySToM, *BnMToS, *BnSToM)
-    transport.send(idx, cmd)
+    status, cigId, cisCount, *cisConnectionHandle = \
+        edtt_wait_cmd_cmpl(transport, idx, Commands.CMD_LE_SET_CIG_PARAMETERS_TEST_RSP, f'BBB{CisCount}H', to)
 
-    rcvLen = 7 + (CisCount * 2)
-    packet = transport.recv(idx, rcvLen, to)
-
-    if ( rcvLen != len(packet) ):
-        raise Exception("LE Set CIG Parameters Test command failed: Response too short (Expected %i bytes got %i bytes)" % (rcvLen, len(packet)))
-
-    RespCmd, RespLen, status, cigId, cisCount, *connectionHandle = struct.unpack('<HHBBB' + cCH, packet)
-
-    if ( RespCmd != Commands.CMD_LE_SET_CIG_PARAMETERS_TEST_RSP ):
-        raise Exception("LE Set CIG Parameters Test command failed: Inappropriate command response received")
-
-    if ( RespLen != 3 + (CisCount * 2) ):
-        raise Exception("LE Set CIG Parameters Test command failed: Response length field corrupted (%i)" % RespLen)
-
-    return status, cigId, cisCount, connectionHandle
+    return status, cigId, cisCount, cisConnectionHandle
 
 """
     The HCI_LE_Create_CIS command is used by the master's Host to create one
@@ -3395,26 +3367,13 @@ def le_set_cig_parameters_test(transport, idx, CigId, SduIntervalMToS, SduInterv
     parameter array.
 """
 def le_create_cis(transport, idx, CisCount, CisConnectionHandle, AclConnectionHandle, to):
+    cmd_parameters = [HCICommands.BT_HCI_OP_LE_CREATE_CIS, CisCount]
+    for i in range(CisCount):
+        cmd_parameters += [CisConnectionHandle[i], AclConnectionHandle[i]]
 
-    cmd = struct.pack('<HHHB' + str(CisCount) + 'H' + str(CisCount) + 'H',
-                      Commands.CMD_LE_CREATE_CIS_REQ, 3 + (2 * CisCount * 2), HCICommands.BT_HCI_OP_LE_CREATE_CIS,
-                      CisCount, *CisConnectionHandle, *AclConnectionHandle)
-    transport.send(idx, cmd)
+    edtt_send_cmd(transport, idx, Commands.CMD_LE_CREATE_CIS_REQ, 'HB' + CisCount * 'HH', cmd_parameters)
 
-    packet = transport.recv(idx, 5, to)
-
-    if ( 5 != len(packet) ):
-        raise Exception("LE Create CIS command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)))
-
-    RespCmd, RespLen, status = struct.unpack('<HHB', packet)
-
-    if ( RespCmd != Commands.CMD_LE_CREATE_CIS_RSP ):
-        raise Exception("LE Create CIS command failed: Inappropriate command response received")
-
-    if ( RespLen != 1 ):
-        raise Exception("LE Create CIS command failed: Response length field corrupted (%i)" % RespLen)
-
-    return status
+    return edtt_wait_cmd_cmpl(transport, idx, Commands.CMD_LE_CREATE_CIS_RSP, 'B', to)[0]
 
 """
     The HCI_LE_Remove_CIG command is used by the master's Host to remove
