@@ -5708,7 +5708,8 @@ def ll_cis_per_bv_05_c(transport, upperTester, lowerTester, trace):
 
 
 def sending_and_receiving_data_in_multiple_cises(transport, idx_c, idx_p, trace, cis_conn_handles, sdu_interval_c_to_p,
-                                                 sdu_interval_p_to_c, max_sdu_c_to_p, max_sdu_p_to_c, round_num):
+                                                 sdu_interval_p_to_c, max_sdu_c_to_p, max_sdu_p_to_c, round_num,
+                                                 c_send_delay=0):
     packets_sent = {
         idx_c: [],
         idx_p: [],
@@ -5770,9 +5771,15 @@ def sending_and_receiving_data_in_multiple_cises(transport, idx_c, idx_p, trace,
 
     success = True
     for i in range(2):  # send 2 HCI ISO Data packets
+        pkt_seq_num = round_num * 2 + i
         for j in range(len(cis_conn_handles)):  # per each CIS
-            pkt_seq_num = round_num * 2 + i
             success = send_packet(idx_p, cis_conn_handles[j], max_sdu_p_to_c[j], pkt_seq_num) and success
+
+        if c_send_delay:
+            # wait some time so that ISO event begins with central's Null PDU
+            transport.wait(c_send_delay)
+
+        for j in range(len(cis_conn_handles)):  # per each CIS
             success = send_packet(idx_c, cis_conn_handles[j], max_sdu_c_to_p[j], pkt_seq_num) and success
 
     success = verify_packets(idx_p, packets_sent[idx_p], packets_sent[idx_c], sdu_interval_c_to_p) and success
@@ -5782,10 +5789,60 @@ def sending_and_receiving_data_in_multiple_cises(transport, idx_c, idx_p, trace,
 
 
 def sending_and_receiving_data_in_multiple_cises_peripheral(transport, lower_tester, upper_tester, trace,
-                                                            cis_conn_handles, params, round_num):
+                                                            cis_conn_handles, params, round_num,
+                                                            lower_tester_send_delay=0):
     return sending_and_receiving_data_in_multiple_cises(transport, lower_tester, upper_tester, trace, cis_conn_handles,
                                                         params.SDU_Interval_C_To_P, params.SDU_Interval_P_To_C,
-                                                        params.Max_SDU_C_To_P, params.Max_SDU_P_To_C, round_num)
+                                                        params.Max_SDU_C_To_P, params.Max_SDU_P_To_C, round_num,
+                                                        lower_tester_send_delay)
+
+
+"""
+    LL/CIS/PER/BV-07-C [Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG,
+                        Peripheral]
+"""
+def ll_cis_per_bv_07_c(transport, upper_tester, lower_tester, trace):
+    # Establish Initial Condition
+    #
+    # State: Connected Isochronous Stream, Peripheral
+    max_cis_nse = get_ixit_value(transport, upper_tester, IXITS["TSPX_max_cis_nse"], 100)
+
+    params = SetCIGParameters(
+        SDU_Interval_C_To_P     = 50000,  # 50 ms
+        SDU_Interval_P_To_C     = 50000,  # 50 ms
+        FT_C_To_P               = 1,
+        FT_P_To_C               = 1,
+        ISO_Interval            = int(100 // 1.25),  # 100 ms
+        Packing                 = 1,
+        CIS_Count               = 2,
+        NSE                     = min(max_cis_nse, 4),  # Note 1: TSPX_max_cis_nse or 0x04, whichever is less
+        PHY_C_To_P              = 1,
+        PHY_P_To_C              = 1,
+        BN_C_To_P               = 2,
+        BN_P_To_C               = 2,
+    )
+
+    success, initiator, cis_conn_handles = state_connected_isochronous_stream_peripheral(transport, upper_tester,
+                                                                                         lower_tester, trace, params)
+    if not initiator:
+        return success
+
+    # The Lower Tester sends Null PDU to the IUT on CISes first, so lets wait a specific time prior sending ISO Data PDU
+    lower_tester_send_delay = int(params.ISO_Interval / (params.NSE[0] + params.NSE[1])) + 1
+
+    # Repeat all steps 3 times
+    for round_num in range(1):
+        if not success:
+            break
+
+        success = sending_and_receiving_data_in_multiple_cises_peripheral(transport, lower_tester, upper_tester, trace,
+                                                                          cis_conn_handles, params, round_num,
+                                                                          lower_tester_send_delay) and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
 
 
 """
@@ -6722,6 +6779,7 @@ __tests__ = {
     "LL/CIS/PER/BV-01-C": [ ll_cis_per_bv_01_c, "CIS Setup Response Procedure, Peripheral" ],
     "LL/CIS/PER/BV-02-C": [ ll_cis_per_bv_02_c, "CIS Setup Response Procedure, Peripheral, Reject Response" ],
     "LL/CIS/PER/BV-05-C": [ ll_cis_per_bv_05_c, "Receiving data in Unidirectional CIS" ],
+    # "LL/CIS/PER/BV-07-C": [ ll_cis_per_bv_07_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/12, https://github.com/EDTTool/packetcraft/issues/15
     # "LL/CIS/PER/BV-19-C": [ ll_cis_per_bv_19_c, "CIS Setup Response Procedure, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/12
     "LL/CIS/PER/BV-22-C": [ ll_cis_per_bv_22_c, "CIS Request Event Not Set" ],
     # "LL/CIS/PER/BV-23-C": [ ll_cis_per_bv_23_c, "CIS Setup Response Procedure, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/12
