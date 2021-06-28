@@ -246,7 +246,7 @@ def calcUnframedMaxIsoSdu(BN, Max_PDU, ISO_Interval, SDU_Interval, Max_SDU_Suppo
     #
     # Max_SDU = Max_PDU * BN * (SDU_Interval / ISO_Interval)
 
-    Max_SDU = int(Max_PDU * BN * (SDU_Interval // ISO_Interval))
+    Max_SDU = int(Max_PDU * BN * (SDU_Interval / ISO_Interval))
 
     # Clamp
     return min(Max_SDU, Max_SDU_Supported)
