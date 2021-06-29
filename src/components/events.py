@@ -905,18 +905,14 @@ class Event:
 
     def __completedPackets(self):
         numHandles = struct.unpack('<B', self.data[:1])[0] if self.size > 0 else 0;
+        handles = []
+        packets = []
         if self.__checkSize(1 + 4*numHandles):
-            if numHandles > 0:
-                handles = struct.unpack('<' + str(numHandles) + 'H', self.data[1:1+2*numHandles]);
-                packets = struct.unpack('<' + str(numHandles) + 'H', self.data[1+2*numHandles:]);
-            else:
-                handles = [];
-                packets = [];
+            for i in range(numHandles):
+                handles.append(struct.unpack_from('<H', self.data, 1+i*4)[0])
+                packets.append(struct.unpack_from('<H', self.data, 3+i*4)[0])
             for handle in handles:
                 self.__checkConnectionHandle(handle);
-        else:
-            handles = [];
-            packets = [];
         return numHandles, handles, packets;
 
     def __dataBufferOverflow(self):
