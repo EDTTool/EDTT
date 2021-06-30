@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from numpy import random;
+import copy
 import statistics;
 import os;
 import numpy;
@@ -5706,6 +5707,87 @@ def ll_cis_per_bv_05_c(transport, upperTester, lowerTester, trace):
     return success
 
 
+def sending_and_receiving_data_in_multiple_cises(transport, idx_c, idx_p, trace, cis_conn_handles, sdu_interval_c_to_p,
+                                                 sdu_interval_p_to_c, max_sdu_c_to_p, max_sdu_p_to_c, round_num):
+    packets_sent = {
+        idx_c: [],
+        idx_p: [],
+    }
+
+    def send_packet(idx, cis_conn_handle, max_sdu_size, pkt_seq_num):
+        iso_data_sdu = [pkt_seq_num] * max_sdu_size
+        packets_sent[idx].append((cis_conn_handle, iso_data_sdu))
+        fmt = '<HH{ISO_SDU_Length}B'.format(ISO_SDU_Length=len(iso_data_sdu))
+        iso_data_sdu = struct.pack(fmt, pkt_seq_num, len(iso_data_sdu), *iso_data_sdu)
+
+        return le_iso_data_write(transport, idx, cis_conn_handle, 2, 0, iso_data_sdu, 0) == 0
+
+    def verify_packets(idx, tx_payloads, rx_payloads_expected, sdu_interval):
+        success = True
+
+        # Fetch all the EDTT Write ISO Data command responses
+        for _ in range(len(tx_payloads)):
+            success = (le_iso_data_write_rsp(transport, idx, 100) == 0) and success
+
+        # Fetch all the HCI Number of Completed Packets events
+        number_of_completed_packets_expected = {}
+        for cis_conn_handle, payload in tx_payloads:
+            if number_of_completed_packets_expected.get(cis_conn_handle) is None:
+                number_of_completed_packets_expected.setdefault(cis_conn_handle, 1)
+            else:
+                number_of_completed_packets_expected[cis_conn_handle] += 1
+
+        while not all(n == 0 for n in number_of_completed_packets_expected.values()):
+            event = get_event(transport, idx, sdu_interval)
+            success = event.event == Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS and success
+            if not success:
+                break
+
+            num_handles, conn_handles, packets = event.decode()
+            for conn_handle, packets_num in zip(conn_handles, packets):
+                is_conn_handle_valid = conn_handle in cis_conn_handles
+                if is_conn_handle_valid:
+                    number_of_completed_packets_expected[conn_handle] -= packets_num
+                else:
+                    trace.trace(1, "%d not in cis_conn_handles" % conn_handle)
+
+                success = is_conn_handle_valid and success
+
+        # We'll be removing items from the dict, hence we need copy to not change the original dict
+        rx_payloads_expected_copy = copy.copy(rx_payloads_expected)
+
+        # Fetch and verify the data received
+        while len(rx_payloads_expected_copy) > 0:
+            cis_conn_handle_expected, payload_expected = rx_payloads_expected_copy.pop()
+            if le_iso_data_ready(transport, idx, sdu_interval):
+                s, cis_conn_handle, pb_flags, payload = iso_receive_payload_pdu(transport, idx, trace, sdu_interval)
+                success = s and success and payload == payload_expected and pb_flags == 2 \
+                          and cis_conn_handle == cis_conn_handle_expected
+            else:
+                return False
+
+        return success
+
+    success = True
+    for i in range(2):  # send 2 HCI ISO Data packets
+        for j in range(len(cis_conn_handles)):  # per each CIS
+            pkt_seq_num = round_num * 2 + i
+            success = send_packet(idx_p, cis_conn_handles[j], max_sdu_p_to_c[j], pkt_seq_num) and success
+            success = send_packet(idx_c, cis_conn_handles[j], max_sdu_c_to_p[j], pkt_seq_num) and success
+
+    success = verify_packets(idx_p, packets_sent[idx_p], packets_sent[idx_c], sdu_interval_c_to_p) and success
+    success = verify_packets(idx_c, packets_sent[idx_c], packets_sent[idx_p], sdu_interval_p_to_c) and success
+
+    return success
+
+
+def sending_and_receiving_data_in_multiple_cises_peripheral(transport, lower_tester, upper_tester, trace,
+                                                            cis_conn_handles, params, round_num):
+    return sending_and_receiving_data_in_multiple_cises(transport, lower_tester, upper_tester, trace, cis_conn_handles,
+                                                        params.SDU_Interval_C_To_P, params.SDU_Interval_P_To_C,
+                                                        params.Max_SDU_C_To_P, params.Max_SDU_P_To_C, round_num)
+
+
 """
     LL/CIS/PER/BV-19-C [CIS Setup Response Procedure, Peripheral]
 """
@@ -5863,6 +5945,45 @@ def ll_cis_per_bv_29_c(transport, upper_tester, lower_tester, trace):
     )
 
     return cis_setup_response_procedure_peripheral(transport, upper_tester, lower_tester, trace, params)
+
+
+"""
+    LL/CIS/PER/BV-31-C [Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG,
+                        Peripheral, NSE=2]
+"""
+def ll_cis_per_bv_31_c(transport, upper_tester, lower_tester, trace):
+    params = SetCIGParameters(
+        SDU_Interval_C_To_P     = 50000,  # 50 ms
+        SDU_Interval_P_To_C     = 50000,  # 50 ms
+        FT_C_To_P               = 1,
+        FT_P_To_C               = 1,
+        ISO_Interval            = int(100 // 1.25),  # 100 ms
+        Packing                 = 1,
+        CIS_Count               = 2,
+        NSE                     = 2,
+        PHY_C_To_P              = 1,
+        PHY_P_To_C              = 1,
+        BN_C_To_P               = 2,
+        BN_P_To_C               = 2,
+    )
+
+    success, initiator, cis_conn_handles = state_connected_isochronous_stream_peripheral(transport, upper_tester,
+                                                                                         lower_tester, trace, params)
+    if not initiator:
+        return success
+
+    # Repeat all steps 3 times
+    for round_num in range(3):
+        if not success:
+            break
+
+        success = sending_and_receiving_data_in_multiple_cises_peripheral(transport, lower_tester, upper_tester, trace,
+                                                                          cis_conn_handles, params, round_num) and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
 
 
 """
@@ -6605,6 +6726,7 @@ __tests__ = {
     "LL/CIS/PER/BV-22-C": [ ll_cis_per_bv_22_c, "CIS Request Event Not Set" ],
     # "LL/CIS/PER/BV-23-C": [ ll_cis_per_bv_23_c, "CIS Setup Response Procedure, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/12
     # "LL/CIS/PER/BV-29-C": [ ll_cis_per_bv_29_c, "CIS Setup Response Procedure, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/12
+    "LL/CIS/PER/BV-31-C": [ ll_cis_per_bv_31_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG, Peripheral, NSE=2" ],
     "LL/CIS/PER/BV-39-C": [ ll_cis_per_bv_39_c, "CIS Peripheral Accepts All Supported NSE Values" ],
     "LL/CIS/PER/BV-40-C": [ ll_cis_per_bv_40_c, "CIS Setup Response Procedure, Peripheral" ],
     "LL/CIS/PER/BV-12-C": [ ll_cis_per_bv_12_c, "CIS Terminate Procedure, Initiated - Peripheral" ],
