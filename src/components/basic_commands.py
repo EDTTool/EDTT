@@ -3027,7 +3027,7 @@ def get_event(transport, idx, to, multiple=False):
         data = "" if RespLen <= 6 else transport.recv(idx, RespLen - 6, to);
     
         if RespCmd != Commands.CMD_GET_EVENT_RSP:
-            raise Exception("Get Event command failed: Inappropriate command response received");
+            raise Exception("Get Event command failed: Inappropriate command response received (%i)" % RespCmd);
     
         if RespLen != 6 + eventLen:
             raise Exception("Get Event command failed: Response length field corrupted (%i)" % RespLen);
