@@ -414,28 +414,10 @@ def setPrivateInitiator(transport, initiatorId, trace, advertiseType, advertiser
     return advertiser, initiator;
 
 
-def iso_send_payload_pdu(transport, transmitter, receiver, trace, conn_handle, max_sdu_size, sdu_interval, pkt_seq_num):
-    # Create a ISO_SDU of sdu_size length
-    tx_iso_sdu = tuple([(pkt_seq_num + x) % 255 for x in range(max_sdu_size)])
-
-    # Pack the ISO_Data_Load (no Time_Stamp) of an HCI ISO Data packet
-    # <Packet_Sequence_Number, ISO_SDU_Length, ISO_SDU>
-    fmt = '<HH{ISO_SDU_Length}B'.format(ISO_SDU_Length=len(tx_iso_sdu))
-    tx_iso_data_load = struct.pack(fmt, pkt_seq_num, len(tx_iso_sdu), *tx_iso_sdu)
-
-    # Transmitter: TX SDU
-    PbFlag = 2
-    TsFlag = 0
-    le_iso_data_write(transport, transmitter, conn_handle, PbFlag, TsFlag, tx_iso_data_load, 100)
-    success = verifyAndShowEvent(transport, transmitter, Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS, trace,
-                                 sdu_interval * 2)
-
+def iso_receive_payload_pdu(transport, idx, trace, sdu_interval):
     # Receiver: RX SDU
-    time, handle, pbflags, tsflag, rx_iso_data_load = le_iso_data_read(transport, receiver, sdu_interval * 2)
+    time, handle, pbflags, tsflag, rx_iso_data_load = le_iso_data_read(transport, idx, sdu_interval * 2)
     rx_iso_data_load = bytearray(rx_iso_data_load)
-
-    # Transmitter: No RX
-    success = not le_iso_data_ready(transport, transmitter, 100) and success
 
     # Unpack ISO_Data_Load
     rx_offset = 0
@@ -456,11 +438,36 @@ def iso_send_payload_pdu(transport, transmitter, receiver, trace, conn_handle, m
     fmt = '<{ISO_SDU_Length}B'.format(ISO_SDU_Length=rx_iso_sdu_length)
     rx_iso_sdu = struct.unpack_from(fmt, rx_iso_data_load, rx_offset)
 
+    # Valid data. The complete ISO_SDU was received correctly.
+    success = (rx_packet_status_flag == 0x00)
+
+    # TX and RX match
+    return success, handle, pbflags, rx_iso_sdu
+
+
+def iso_send_payload_pdu(transport, transmitter, receiver, trace, conn_handle, max_sdu_size, sdu_interval, pkt_seq_num):
+    # Create a ISO_SDU of sdu_size length
+    tx_iso_sdu = tuple([(pkt_seq_num + x) % 255 for x in range(max_sdu_size)])
+
+    # Pack the ISO_Data_Load (no Time_Stamp) of an HCI ISO Data packet
+    # <Packet_Sequence_Number, ISO_SDU_Length, ISO_SDU>
+    fmt = '<HH{ISO_SDU_Length}B'.format(ISO_SDU_Length=len(tx_iso_sdu))
+    tx_iso_data_load = struct.pack(fmt, pkt_seq_num, len(tx_iso_sdu), *tx_iso_sdu)
+
+    # Transmitter: TX SDU
+    PbFlag = 2
+    TsFlag = 0
+    le_iso_data_write(transport, transmitter, conn_handle, PbFlag, TsFlag, tx_iso_data_load, 100)
+    success = verifyAndShowEvent(transport, transmitter, Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS, trace,
+                                 sdu_interval * 2)
+
+    s, handle, pbflags, rx_iso_sdu = iso_receive_payload_pdu(transport, receiver, trace, sdu_interval)
+
+    # Transmitter: No RX
+    success = not le_iso_data_ready(transport, transmitter, 100) and success
+
     # The ISO_Data_Load field contains a complete SDU.
     success = (pbflags == 2) and success
-
-    # Valid data. The complete ISO_SDU was received correctly.
-    success = (rx_packet_status_flag == 0x00) and success
 
     # TX and RX match
     return (tx_iso_sdu == rx_iso_sdu) and success
