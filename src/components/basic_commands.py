@@ -3425,10 +3425,10 @@ def le_remove_cig(transport, idx, CigId, to):
     cmd = struct.pack('<HHHB', Commands.CMD_LE_REMOVE_CIG_REQ, 3, HCICommands.BT_HCI_OP_LE_REMOVE_CIG, CigId)
     transport.send(idx, cmd)
 
-    packet = transport.recv(idx, 5, to)
+    packet = transport.recv(idx, 6, to)
 
-    if ( 5 != len(packet) ):
-        raise Exception("LE Remove CIG command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)))
+    if ( 6 != len(packet) ):
+        raise Exception("LE Remove CIG command failed: Response too short (Expected %i bytes got %i bytes)" % (6, len(packet)))
 
     RespCmd, RespLen, status, cigId = struct.unpack('<HHBB', packet)
 
