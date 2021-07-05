@@ -4,6 +4,7 @@
 
 import os;
 from numpy import random;
+from components.dump import DeviceDumpFileTx, DeviceDumpFileRx
 
 def parse_arguments():
     import argparse
@@ -69,26 +70,26 @@ def init_transport(transport, xtra_args, trace):
     transport.connect();
     return transport;
 
-def run_one_test(args, xtra_args, transport, trace, test_mod, test_spec, nameLen):
+def run_one_test(args, xtra_args, transport, trace, test_mod, test_spec, nameLen, device_dumps):
     trace.trace(4, test_spec);
     trace.trace(4, "");
     if test_spec.number_devices > transport.n_devices:
         raise Exception("This test needs %i connected devices but you only connected to %i" %
                         (test_spec.number_devices, transport.n_devices));
 
-    result = test_mod.run_a_test(args, transport, trace, test_spec);
+    result = test_mod.run_a_test(args, transport, trace, test_spec, device_dumps);
     trace.trace(2, "%-*s %s %s" % (nameLen, test_spec.name, test_spec.description[1:], ("PASSED" if result == 0 else "FAILED")));
 
     return result;
 
 # Attempt to load and run the tests
-def run_tests(args, xtra_args, transport, trace):
+def run_tests(args, xtra_args, transport, trace, device_dumps):
     passed = 0;
     total = 0;
 
     test_mod = try_to_import(args.test, "test", "tests.");
     test_specs = test_mod.get_tests_specs();
-    nameLen = max([ len(test_specs[key].name) for key in test_specs ]); 
+    nameLen = max([ len(test_specs[key].name) for key in test_specs ]);
 
     t = args.case
 
@@ -98,14 +99,14 @@ def run_tests(args, xtra_args, transport, trace):
             random.shuffle(tests_list)
 
         for _,test_spec in tests_list:
-            result = run_one_test(args, xtra_args, transport, trace, test_mod, test_spec, nameLen);
+            result = run_one_test(args, xtra_args, transport, trace, test_mod, test_spec, nameLen, device_dumps);
             passed += 1 if result == 0 else 0;
             total += 1;
             if result != 0 and args.stop_on_failure:
                 break;
 
     elif t in test_specs:
-        result = run_one_test(args, xtra_args, transport, trace, test_mod, test_specs[t], nameLen);
+        result = run_one_test(args, xtra_args, transport, trace, test_mod, test_specs[t], nameLen, device_dumps);
         passed += 1 if result == 0 else 0;
         total += 1;
 
@@ -122,7 +123,7 @@ def run_tests(args, xtra_args, transport, trace):
             if not t: #Skip empty lines, or those which had only comments
                 continue
             if t in test_specs:
-                result = run_one_test(args, xtra_args, transport, trace, test_mod, test_specs[t], nameLen);
+                result = run_one_test(args, xtra_args, transport, trace, test_mod, test_specs[t], nameLen, device_dumps);
                 passed += 1 if result == 0 else 0;
                 total += 1;
                 if result != 0 and args.stop_on_failure:
@@ -140,7 +141,7 @@ def run_tests(args, xtra_args, transport, trace):
         trace.trace(2, "\nSummary:\n\nStatus   Count\n%s" % ('='*14));
         if passed > 0:
             trace.trace(2, "PASS%10d" % passed);
-        
+
         if failed > 0:
             trace.trace(2, "FAIL%10d" % failed);
         trace.trace(2, "%s\nTotal%9d" % ('='*14, total));
@@ -177,7 +178,22 @@ def main():
         transport = init_transport(args.transport, xtra_args, trace);
         trace.transport = transport;
 
-        result = run_tests(args, xtra_args, transport, trace);
+        m_tx = []
+        m_rx = []
+        m_tx.append(DeviceDumpFileTx(os.path.join(os.environ['BSIM_OUT_PATH'], 'results', transport.sim_id, 'd_2G4_00.Tx.csv')))
+        m_tx.append(DeviceDumpFileTx(os.path.join(os.environ['BSIM_OUT_PATH'], 'results', transport.sim_id, 'd_2G4_01.Tx.csv')))
+        m_rx.append(DeviceDumpFileRx(os.path.join(os.environ['BSIM_OUT_PATH'], 'results', transport.sim_id, 'd_2G4_00.Rx.csv')))
+        m_rx.append(DeviceDumpFileRx(os.path.join(os.environ['BSIM_OUT_PATH'], 'results', transport.sim_id, 'd_2G4_01.Rx.csv')))
+
+        # Open all device dump files
+        for d in m_tx + m_rx:
+            d.open();
+
+        result = run_tests(args, xtra_args, transport, trace, (m_tx, m_rx));
+
+        # Close all device dump files
+        for d in m_tx + m_rx:
+            d.close()
 
         transport.close();
 
