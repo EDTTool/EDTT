@@ -415,31 +415,33 @@ def setPrivateInitiator(transport, initiatorId, trace, advertiseType, advertiser
 
 
 def iso_receive_payload_pdu(transport, idx, trace, sdu_interval):
-    # Receiver: RX SDU
-    time, handle, pbflags, tsflag, rx_iso_data_load = le_iso_data_read(transport, idx, sdu_interval * 2)
-    rx_iso_data_load = bytearray(rx_iso_data_load)
+    success, handle, pbflags, rx_iso_sdu = le_iso_data_ready(transport, idx, sdu_interval * 2), -1, -1, []
+    if success:
+        # Receiver: RX SDU
+        time, handle, pbflags, tsflag, rx_iso_data_load = le_iso_data_read(transport, idx, sdu_interval * 2)
+        rx_iso_data_load = bytearray(rx_iso_data_load)
 
-    # Unpack ISO_Data_Load
-    rx_offset = 0
-    # a. Get Time_Stamp if present
-    if tsflag:
-        fmt = '<I'
-        (time_stamp,) = struct.unpack_from(fmt, rx_iso_data_load)
+        # Unpack ISO_Data_Load
+        rx_offset = 0
+        # a. Get Time_Stamp if present
+        if tsflag:
+            fmt = '<I'
+            (time_stamp,) = struct.unpack_from(fmt, rx_iso_data_load)
+            rx_offset += struct.calcsize(fmt)
+
+        # b. Get Packet_Sequence_Number, ISO_SDU_Length and Packet_Status_Flag
+        fmt = '<HH'
+        rx_packet_sequence_number, rx_iso_sdu_length = struct.unpack_from(fmt, rx_iso_data_load, rx_offset)
         rx_offset += struct.calcsize(fmt)
+        rx_packet_status_flag = rx_iso_sdu_length >> 14
+        rx_iso_sdu_length &= 0xfff  # 12 bits valid
 
-    # b. Get Packet_Sequence_Number, ISO_SDU_Length and Packet_Status_Flag
-    fmt = '<HH'
-    rx_packet_sequence_number, rx_iso_sdu_length = struct.unpack_from(fmt, rx_iso_data_load, rx_offset)
-    rx_offset += struct.calcsize(fmt)
-    rx_packet_status_flag = rx_iso_sdu_length >> 14
-    rx_iso_sdu_length &= 0xfff  # 12 bits valid
+        # c. Get ISO_SDU
+        fmt = '<{ISO_SDU_Length}B'.format(ISO_SDU_Length=rx_iso_sdu_length)
+        rx_iso_sdu = struct.unpack_from(fmt, rx_iso_data_load, rx_offset)
 
-    # c. Get ISO_SDU
-    fmt = '<{ISO_SDU_Length}B'.format(ISO_SDU_Length=rx_iso_sdu_length)
-    rx_iso_sdu = struct.unpack_from(fmt, rx_iso_data_load, rx_offset)
-
-    # Valid data. The complete ISO_SDU was received correctly.
-    success = (rx_packet_status_flag == 0x00)
+        # Valid data. The complete ISO_SDU was received correctly.
+        success = (rx_packet_status_flag == 0x00)
 
     # TX and RX match
     return success, handle, pbflags, rx_iso_sdu
