@@ -5830,7 +5830,7 @@ def ll_cis_per_bv_07_c(transport, upper_tester, lower_tester, trace):
     lower_tester_send_delay = int(params.ISO_Interval / (params.NSE[0] + params.NSE[1])) + 1
 
     # Repeat all steps 3 times
-    for round_num in range(1):
+    for round_num in range(3):
         if not success:
             break
 
