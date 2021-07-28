@@ -6040,6 +6040,30 @@ def ll_cis_per_bv_31_c(transport, upper_tester, lower_tester, trace):
 
 
 """
+    LL/CIS/PER/BV-32-C [Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Peripheral, BN=1]
+"""
+def ll_cis_per_bv_32_c(transport, upper_tester, lower_tester, trace):
+    params = SetCIGParameters(
+        SDU_Interval_C_To_P     = 50000,  # 50 ms
+        SDU_Interval_P_To_C     = 50000,  # 50 ms
+        FT_C_To_P               = 1,
+        FT_P_To_C               = 1,
+        ISO_Interval            = int(50 // 1.25),  # 50 ms
+        Packing                 = 1,  # Interleaved
+        CIS_Count               = 2,
+        NSE                     = 1,
+        PHY_C_To_P              = 1,
+        PHY_P_To_C              = 1,
+        BN_C_To_P               = 1,
+        BN_P_To_C               = 1,
+    )
+
+    success = test_sending_and_receiving_data_in_multiple_cises(transport, lower_tester, upper_tester, trace, params, 1)
+
+    return success
+
+
+"""
     LL/CIS/PER/BV-39-C [CIS Peripheral Accepts All Supported NSE Values]
 """
 def ll_cis_per_bv_39_c(transport, upper_tester, lower_tester, trace):
@@ -6788,6 +6812,7 @@ __tests__ = {
     "LL/CIS/PER/BV-23-C": [ ll_cis_per_bv_23_c, "CIS Setup Response Procedure, Peripheral" ],
     "LL/CIS/PER/BV-29-C": [ ll_cis_per_bv_29_c, "CIS Setup Response Procedure, Peripheral" ],
     "LL/CIS/PER/BV-31-C": [ ll_cis_per_bv_31_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG, Peripheral, NSE=2" ],
+    "LL/CIS/PER/BV-32-C": [ ll_cis_per_bv_32_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Peripheral, BN=1" ],
     "LL/CIS/PER/BV-39-C": [ ll_cis_per_bv_39_c, "CIS Peripheral Accepts All Supported NSE Values" ],
     "LL/CIS/PER/BV-40-C": [ ll_cis_per_bv_40_c, "CIS Setup Response Procedure, Peripheral" ],
     "LL/CIS/PER/BV-12-C": [ ll_cis_per_bv_12_c, "CIS Terminate Procedure, Initiated - Peripheral" ],
