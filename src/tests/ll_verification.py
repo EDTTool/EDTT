@@ -5676,12 +5676,13 @@ def ll_cis_per_bv_05_c(transport, upperTester, lowerTester, trace):
 
     # Table 4.126: State Variable Values
     # NOTE: As the IUT is the Peripheral, the CIG Parameters are those of the Central
+    max_cis_nse = get_ixit_value(transport, upperTester, IXITS["TSPX_max_cis_nse"], 100)
 
     params = SetCIGParameters(
         SDU_Interval_C_To_P     = 50000,  # 50 ms
         SDU_Interval_P_To_C     = 50000,  # 50 ms
         ISO_Interval            = int(50 // 1.25), # 50 ms
-        NSE                     = 4,  # TODO: Note 1: TSPX_max_cis_nse or 0x04, whichever is less
+        NSE                     = min(max_cis_nse, 4),  # Note 1: TSPX_max_cis_nse or 0x04, whichever is less
         # Max_PDU_P_To_C          = 0,  # TODO: Supposed to be 0
         PHY_C_To_P              = 1,
         PHY_P_To_C              = 1,
