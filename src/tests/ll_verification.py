@@ -5836,6 +5836,75 @@ def test_sending_and_receiving_data_in_multiple_cises(transport, central, periph
     return success
 
 
+def test_sending_and_receiving_data_in_bidirectional_cis(transport, central, peripheral, trace, enc_keys=None):
+    # Establish Initial Condition
+    #
+    # Connected in the relevant role as defined in the following initial states.
+    # Note 2: TSPX_max_cis_bn, or 0x03, whichever is less.
+    cis_nse = min(0x06, get_ixit_value(transport, peripheral, IXITS["TSPX_max_cis_nse"], 100))
+    cis_bn = min(0x03, get_ixit_value(transport, peripheral, IXITS["TSPX_max_cis_bn"], 100))
+
+    params = SetCIGParameters(
+        SDU_Interval_C_To_P     = 100000,  # 100 ms
+        SDU_Interval_P_To_C     = 100000,  # 100 ms
+        FT_C_To_P               = 1,
+        FT_P_To_C               = 1,
+        ISO_Interval            = int(300 // 1.25),  # 300 ms
+        NSE                     = cis_nse,
+        PHY_C_To_P              = 1,
+        PHY_P_To_C              = 1,
+        BN_C_To_P               = cis_bn,
+        BN_P_To_C               = cis_bn,
+    )
+
+    success, initiator, (cis_conn_handle,) = \
+        state_connected_isochronous_stream_peripheral(transport, peripheral, central, trace, params, enc_keys=enc_keys)
+    if not initiator:
+        return success
+
+    for round_num in range(cis_bn):
+        if not success:
+            break
+
+        packets_sent = {
+            peripheral: [],
+            central: [],
+        }
+
+        success = True
+        s, sdu = le_iso_data_write_nbytes(transport, central, trace, cis_conn_handle, params.Max_SDU_C_To_P[0],
+                                          round_num, 0)
+        success = s and success
+        packets_sent[central].append((cis_conn_handle, sdu))
+
+        s, sdu = le_iso_data_write_nbytes(transport, peripheral, trace, cis_conn_handle, params.Max_SDU_P_To_C[0],
+                                          round_num, 0)
+        success = s and success
+        packets_sent[peripheral].append((cis_conn_handle, sdu))
+
+        success = sending_and_receiving_data_complete(transport, central, peripheral, trace, params,
+                                                      packets_sent) and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
+
+
+"""
+    LL/CIS/PER/BV-06-C [Sending and Receiving Data in Bidirectional CIS]
+"""
+def ll_cis_per_bv_06_c(transport, upper_tester, lower_tester, trace):
+    return test_sending_and_receiving_data_in_bidirectional_cis(transport, lower_tester, upper_tester, trace)
+
+
+"""
+    LL/CIS/PER/BV-27-C [Sending and Receiving Data in Bidirectional CIS]
+"""
+def ll_cis_per_bv_27_c(transport, upper_tester, lower_tester, trace):
+    return test_sending_and_receiving_data_in_bidirectional_cis(transport, lower_tester, upper_tester, trace, ENC_KEYS)
+
+
 """
     LL/CIS/PER/BV-07-C [Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG,
                         Peripheral]
@@ -6992,6 +7061,7 @@ __tests__ = {
     "LL/CIS/PER/BV-19-C": [ ll_cis_per_bv_19_c, "CIS Setup Response Procedure, Peripheral" ],
     "LL/CIS/PER/BV-22-C": [ ll_cis_per_bv_22_c, "CIS Request Event Not Set" ],
     "LL/CIS/PER/BV-23-C": [ ll_cis_per_bv_23_c, "CIS Setup Response Procedure, Peripheral" ],
+#   "LL/CIS/PER/BV-27-C": [ ll_cis_per_bv_27_c, "Sending and Receiving Data in Bidirectional CIS, Encryption" ],  # https://github.com/EDTTool/EDTT-le-audio/issues/75
     "LL/CIS/PER/BV-29-C": [ ll_cis_per_bv_29_c, "CIS Setup Response Procedure, Peripheral" ],
 #   "LL/CIS/PER/BV-31-C": [ ll_cis_per_bv_31_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG, Peripheral, NSE=2" ],  # https://github.com/EDTTool/EDTT-le-audio/issues/76
     "LL/CIS/PER/BV-32-C": [ ll_cis_per_bv_32_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Peripheral, BN=1" ],
