@@ -5911,6 +5911,40 @@ def ll_cis_per_bv_18_c(transport, upper_tester, lower_tester, trace):
 
 
 """
+    LL/CIS/PER/BV-08-C [Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Sequential,
+                        Peripheral]
+"""
+def ll_cis_per_bv_08_c(transport, upper_tester, lower_tester, trace):
+    # Establish Initial Condition
+    #
+    # State: Connected Isochronous Stream, Peripheral
+    max_cis_nse = get_ixit_value(transport, upper_tester, IXITS["TSPX_max_cis_nse"], 100)
+
+    params = SetCIGParameters(
+        SDU_Interval_C_To_P     = 100000,  # 100 ms
+        SDU_Interval_P_To_C     = 50000,  # 50 ms
+        FT_C_To_P               = 1,
+        FT_P_To_C               = 1,
+        ISO_Interval            = int(100 // 1.25),  # 100 ms
+        Packing                 = 0,  # Sequential
+        CIS_Count               = 2,
+        NSE                     = min(max_cis_nse, 4),  # Note 1: TSPX_max_cis_nse or 0x04, whichever is less
+        PHY_C_To_P              = 1,
+        PHY_P_To_C              = 1,
+        BN_C_To_P               = 1,
+        BN_P_To_C               = 2,
+    )
+
+    # The Lower Tester sends Null PDU to the IUT on CISes first, so lets wait a specific time prior sending ISO Data PDU
+    lower_tester_send_delay = int(params.ISO_Interval / (params.NSE[0] + params.NSE[1])) + 1
+
+    success = test_sending_and_receiving_data_in_multiple_cises(transport, lower_tester, upper_tester, trace, params, 2,
+                                                                lower_tester_send_delay)
+
+    return success
+
+
+"""
     LL/CIS/PER/BV-19-C [CIS Setup Response Procedure, Peripheral]
 """
 def ll_cis_per_bv_19_c(transport, upperTester, lowerTester, trace):
@@ -6936,6 +6970,7 @@ __tests__ = {
     "LL/CIS/PER/BV-03-C": [ ll_cis_per_bv_03_c, "CIS Map Update" ],
     "LL/CIS/PER/BV-05-C": [ ll_cis_per_bv_05_c, "Receiving data in Unidirectional CIS" ],
 #   "LL/CIS/PER/BV-07-C": [ ll_cis_per_bv_07_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/12, https://github.com/EDTTool/packetcraft/issues/15
+#   "LL/CIS/PER/BV-08-C": [ ll_cis_per_bv_08_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Sequential, Peripheral" ],  # https://github.com/EDTTool/EDTT-le-audio/issues/72
     "LL/CIS/PER/BV-18-C": [ ll_cis_per_bv_18_c, "CIS Updating Peer Clock Accuracy" ],
     "LL/CIS/PER/BV-19-C": [ ll_cis_per_bv_19_c, "CIS Setup Response Procedure, Peripheral" ],
     "LL/CIS/PER/BV-22-C": [ ll_cis_per_bv_22_c, "CIS Request Event Not Set" ],
