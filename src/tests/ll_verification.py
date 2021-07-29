@@ -5707,94 +5707,77 @@ def ll_cis_per_bv_05_c(transport, upperTester, lowerTester, trace):
     return success
 
 
-def sending_and_receiving_data_in_multiple_cises(transport, idx_c, idx_p, trace, cis_conn_handles, sdu_interval_c_to_p,
-                                                 sdu_interval_p_to_c, max_sdu_c_to_p, max_sdu_p_to_c, round_num,
-                                                 c_send_delay=0):
-    packets_sent = {
-        idx_c: [],
-        idx_p: [],
-    }
+def sending_and_receiving_data_complete(transport, central, peripheral, trace, params, packets_sent):
+    # Fetch all the EDTT Write ISO Data command responses
+    success = le_iso_data_write_complete(transport, peripheral, trace, len(packets_sent[peripheral]), 100)
+    success = le_iso_data_write_complete(transport, central, trace, len(packets_sent[central]), 100) and success
 
-    def send_packet(idx, cis_conn_handle, max_sdu_size, pkt_seq_num):
-        iso_data_sdu = [pkt_seq_num] * max_sdu_size
-        packets_sent[idx].append((cis_conn_handle, iso_data_sdu))
-        fmt = '<HH{ISO_SDU_Length}B'.format(ISO_SDU_Length=len(iso_data_sdu))
-        iso_data_sdu = struct.pack(fmt, pkt_seq_num, len(iso_data_sdu), *iso_data_sdu)
+    # Fetch all the HCI Number of Completed Packets events
+    _, conn_handles_p, num_packets_p = \
+        fetch_number_of_completed_packets(transport, peripheral, trace, len(packets_sent[peripheral]),
+                                          params.SDU_Interval_P_To_C)
+    success = len(packets_sent[peripheral]) == sum(num_packets_p) and success
 
-        return le_iso_data_write(transport, idx, cis_conn_handle, 2, 0, iso_data_sdu, 0) == 0
+    _, conn_handles_c, num_packets_c = \
+        fetch_number_of_completed_packets(transport, central, trace, len(packets_sent[central]),
+                                          params.SDU_Interval_C_To_P)
+    success = len(packets_sent[central]) == sum(num_packets_c) and success
 
-    def verify_packets(idx, tx_payloads, rx_payloads_expected, sdu_interval):
-        success = True
+    # Fetch and verify the payloads received
+    for conn_handle_p, payload_sent_p in packets_sent[peripheral]:
+        s, conn_handle_c, pb_flags, payload_received_c = iso_receive_payload_pdu(transport, central, trace,
+                                                                                 params.SDU_Interval_P_To_C)
+        success = s and success and payload_sent_p == payload_received_c and pb_flags == 2
 
-        # Fetch all the EDTT Write ISO Data command responses
-        for _ in range(len(tx_payloads)):
-            success = (le_iso_data_write_rsp(transport, idx, 100) == 0) and success
-
-        # Fetch all the HCI Number of Completed Packets events
-        number_of_completed_packets_expected = {}
-        for cis_conn_handle, payload in tx_payloads:
-            if number_of_completed_packets_expected.get(cis_conn_handle) is None:
-                number_of_completed_packets_expected.setdefault(cis_conn_handle, 1)
-            else:
-                number_of_completed_packets_expected[cis_conn_handle] += 1
-
-        while not all(n == 0 for n in number_of_completed_packets_expected.values()):
-            event = get_event(transport, idx, sdu_interval)
-            success = event.event == Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS and success
-            if not success:
-                break
-
-            num_handles, conn_handles, packets = event.decode()
-            for conn_handle, packets_num in zip(conn_handles, packets):
-                is_conn_handle_valid = conn_handle in cis_conn_handles
-                if is_conn_handle_valid:
-                    number_of_completed_packets_expected[conn_handle] -= packets_num
-                else:
-                    trace.trace(1, "%d not in cis_conn_handles" % conn_handle)
-
-                success = is_conn_handle_valid and success
-
-        # We'll be removing items from the dict, hence we need copy to not change the original dict
-        rx_payloads_expected_copy = copy.copy(rx_payloads_expected)
-
-        # Fetch and verify the data received
-        while len(rx_payloads_expected_copy) > 0:
-            cis_conn_handle_expected, payload_expected = rx_payloads_expected_copy.pop()
-            if le_iso_data_ready(transport, idx, sdu_interval):
-                s, cis_conn_handle, pb_flags, payload = iso_receive_payload_pdu(transport, idx, trace, sdu_interval)
-                success = s and success and payload == payload_expected and pb_flags == 2 \
-                          and cis_conn_handle == cis_conn_handle_expected
-            else:
-                return False
-
-        return success
-
-    success = True
-    for i in range(2):  # send 2 HCI ISO Data packets
-        pkt_seq_num = round_num * 2 + i
-        for j in range(len(cis_conn_handles)):  # per each CIS
-            success = send_packet(idx_p, cis_conn_handles[j], max_sdu_p_to_c[j], pkt_seq_num) and success
-
-        if c_send_delay:
-            # wait some time so that ISO event begins with central's Null PDU
-            transport.wait(c_send_delay)
-
-        for j in range(len(cis_conn_handles)):  # per each CIS
-            success = send_packet(idx_c, cis_conn_handles[j], max_sdu_c_to_p[j], pkt_seq_num) and success
-
-    success = verify_packets(idx_p, packets_sent[idx_p], packets_sent[idx_c], sdu_interval_c_to_p) and success
-    success = verify_packets(idx_c, packets_sent[idx_c], packets_sent[idx_p], sdu_interval_p_to_c) and success
+    for conn_handle_c, payload_sent_c in packets_sent[central]:
+        s, conn_handle_p, pb_flags, payload_received_p = iso_receive_payload_pdu(transport, peripheral, trace,
+                                                                                 params.SDU_Interval_C_To_P)
+        success = s and success and payload_sent_c == payload_received_p and pb_flags == 2
 
     return success
 
 
-def sending_and_receiving_data_in_multiple_cises_peripheral(transport, lower_tester, upper_tester, trace,
-                                                            cis_conn_handles, params, round_num,
-                                                            lower_tester_send_delay=0):
-    return sending_and_receiving_data_in_multiple_cises(transport, lower_tester, upper_tester, trace, cis_conn_handles,
-                                                        params.SDU_Interval_C_To_P, params.SDU_Interval_P_To_C,
-                                                        params.Max_SDU_C_To_P, params.Max_SDU_P_To_C, round_num,
-                                                        lower_tester_send_delay)
+def test_sending_and_receiving_data_in_multiple_cises(transport, central, peripheral, trace, params, send_delay_c=0):
+    success, initiator, cis_conn_handles = state_connected_isochronous_stream_peripheral(transport, peripheral,
+                                                                                         central, trace, params)
+    if not initiator:
+        return success
+
+    # Repeat all steps 3 times
+    for round_num in range(3):
+        if not success:
+            break
+
+        packets_sent = {
+            peripheral: [],
+            central: [],
+        }
+
+        for i in range(2):  # send 2 HCI ISO Data packets
+            pkt_seq_num = round_num * 2 + i
+            for j in range(len(cis_conn_handles)):  # per each CIS
+                s, sdu = le_iso_data_write_nbytes(transport, peripheral, trace, cis_conn_handles[j],
+                                                  params.Max_SDU_P_To_C[j], pkt_seq_num, 0)
+                success = s and success
+                packets_sent[peripheral].append((cis_conn_handles[j], sdu))
+
+            if send_delay_c:
+                # wait some time so that ISO event begins with central's Null PDU
+                transport.wait(send_delay_c)
+
+            for j in range(len(cis_conn_handles)):  # per each CIS
+                s, sdu = le_iso_data_write_nbytes(transport, central, trace, cis_conn_handles[j],
+                                                  params.Max_SDU_C_To_P[j], pkt_seq_num, 0)
+                success = s and success
+                packets_sent[central].append((cis_conn_handles[j], sdu))
+
+        success = sending_and_receiving_data_complete(transport, central, peripheral, trace, params,
+                                                      packets_sent) and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
 
 
 """
@@ -5822,25 +5805,11 @@ def ll_cis_per_bv_07_c(transport, upper_tester, lower_tester, trace):
         BN_P_To_C               = 2,
     )
 
-    success, initiator, cis_conn_handles = state_connected_isochronous_stream_peripheral(transport, upper_tester,
-                                                                                         lower_tester, trace, params)
-    if not initiator:
-        return success
-
     # The Lower Tester sends Null PDU to the IUT on CISes first, so lets wait a specific time prior sending ISO Data PDU
     lower_tester_send_delay = int(params.ISO_Interval / (params.NSE[0] + params.NSE[1])) + 1
 
-    # Repeat all steps 3 times
-    for round_num in range(3):
-        if not success:
-            break
-
-        success = sending_and_receiving_data_in_multiple_cises_peripheral(transport, lower_tester, upper_tester, trace,
-                                                                          cis_conn_handles, params, round_num,
-                                                                          lower_tester_send_delay) and success
-
-    ### TERMINATION ###
-    success = initiator.disconnect(0x13) and success
+    success = test_sending_and_receiving_data_in_multiple_cises(transport, lower_tester, upper_tester, trace, params,
+                                                                lower_tester_send_delay)
 
     return success
 
@@ -6064,21 +6033,7 @@ def ll_cis_per_bv_31_c(transport, upper_tester, lower_tester, trace):
         BN_P_To_C               = 2,
     )
 
-    success, initiator, cis_conn_handles = state_connected_isochronous_stream_peripheral(transport, upper_tester,
-                                                                                         lower_tester, trace, params)
-    if not initiator:
-        return success
-
-    # Repeat all steps 3 times
-    for round_num in range(3):
-        if not success:
-            break
-
-        success = sending_and_receiving_data_in_multiple_cises_peripheral(transport, lower_tester, upper_tester, trace,
-                                                                          cis_conn_handles, params, round_num) and success
-
-    ### TERMINATION ###
-    success = initiator.disconnect(0x13) and success
+    success = test_sending_and_receiving_data_in_multiple_cises(transport, lower_tester, upper_tester, trace, params)
 
     return success
 
