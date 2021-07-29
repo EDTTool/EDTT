@@ -415,6 +415,42 @@ def setPrivateInitiator(transport, initiatorId, trace, advertiseType, advertiser
     return advertiser, initiator;
 
 
+def le_iso_data_write_nbytes(transport, idx, trace, conn_handle, nbytes, pkt_seq_num, to):
+    pb_flag = 2
+    ts_flag = 0
+    iso_data_sdu = tuple([pkt_seq_num] * nbytes)
+    tx_iso_data_load = struct.pack(f'<HH{nbytes}B', pkt_seq_num, nbytes, *iso_data_sdu)
+    success = le_iso_data_write(transport, idx, conn_handle, pb_flag, ts_flag, tx_iso_data_load, to) == 0
+
+    return success, iso_data_sdu
+
+
+def le_iso_data_write_complete(transport, idx, trace, number_of_packets_written, to):
+    success = True
+    for _ in range(number_of_packets_written):
+        success = le_iso_data_write_rsp(transport, idx, to) == 0 and success
+
+    return success
+
+
+def fetch_number_of_completed_packets(transport, idx, trace, number_of_packets_written, to):
+    number_of_completed_packets = {}
+
+    while sum(number_of_completed_packets.values()) < number_of_packets_written:
+        event = get_event(transport, idx, to)
+        if event.event != Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS:
+            break
+
+        num_handles, conn_handles, num_packets = event.decode()
+        for i in range(num_handles):
+            if conn_handles[i] in number_of_completed_packets:
+                number_of_completed_packets[conn_handles[i]] += num_packets[i]
+            else:
+                number_of_completed_packets[conn_handles[i]] = num_packets[i]
+
+    return len(number_of_completed_packets), number_of_completed_packets.keys(), number_of_completed_packets.values()
+
+
 def iso_receive_payload_pdu(transport, idx, trace, sdu_interval):
     success, handle, pbflags, rx_iso_sdu = le_iso_data_ready(transport, idx, sdu_interval * 2), -1, -1, []
     if success:
