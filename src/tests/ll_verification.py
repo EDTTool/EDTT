@@ -6119,6 +6119,39 @@ def ll_cis_per_bv_32_c(transport, upper_tester, lower_tester, trace):
 
 
 """
+    LL/CIS/PER/BV-33-C [Sending Data in Unidirectional CIS, BN = 1, Peripheral]
+"""
+def ll_cis_per_bv_33_c(transport, upper_tester, lower_tester, trace):
+    params = SetCIGParameters(
+        SDU_Interval_C_To_P     = 100000,  # 100 ms
+        SDU_Interval_P_To_C     = 100000,  # 100 ms
+        FT_C_To_P               = 1,
+        FT_P_To_C               = 1,
+        ISO_Interval            = int(100 // 1.25),  # 100 ms
+        CIS_Count               = 1,
+        NSE                     = 1,
+        Max_PDU_C_To_P          = 0,
+        PHY_C_To_P              = 1,
+        PHY_P_To_C              = 1,
+        BN_C_To_P               = 0,
+        BN_P_To_C               = 1,
+    )
+
+    success, initiator, (cis_conn_handle,) = state_connected_isochronous_stream_peripheral(transport, upper_tester,
+                                                                                           lower_tester, trace, params)
+    if not initiator:
+        return success
+
+    success = iso_send_payload_pdu(transport, upper_tester, lower_tester, trace, cis_conn_handle,
+                                   params.Max_SDU_P_To_C[0], params.SDU_Interval_P_To_C, 0) and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
+
+
+"""
     LL/CIS/PER/BV-39-C [CIS Peripheral Accepts All Supported NSE Values]
 """
 def ll_cis_per_bv_39_c(transport, upper_tester, lower_tester, trace):
@@ -6869,6 +6902,7 @@ __tests__ = {
     "LL/CIS/PER/BV-29-C": [ ll_cis_per_bv_29_c, "CIS Setup Response Procedure, Peripheral" ],
     "LL/CIS/PER/BV-31-C": [ ll_cis_per_bv_31_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG, Peripheral, NSE=2" ],
     "LL/CIS/PER/BV-32-C": [ ll_cis_per_bv_32_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Peripheral, BN=1" ],
+    "LL/CIS/PER/BV-33-C": [ ll_cis_per_bv_33_c, "Sending Data in Unidirectional CIS, BN = 1" ],
 #   "LL/CIS/PER/BV-37-C": [ ll_cis_per_bv_37_c, "CIS Map Update" ],  # https://github.com/EDTTool/EDTT-le-audio/issues/83
     "LL/CIS/PER/BV-39-C": [ ll_cis_per_bv_39_c, "CIS Peripheral Accepts All Supported NSE Values" ],
     "LL/CIS/PER/BV-40-C": [ ll_cis_per_bv_40_c, "CIS Setup Response Procedure, Peripheral" ],
