@@ -1265,7 +1265,7 @@ class Event:
         if self.subEvent in self.__metaFuncs__:
             return self.__metaFuncs__[self.subEvent](self);
         else:
-            raise Exception('LE Meta Event with invalid sub-event 0x%02X' % subEvent);
+            raise Exception('LE Meta Event with invalid sub-event 0x%02X' % self.subEvent)
 
     def decode(self):
         if not self.values is None:
