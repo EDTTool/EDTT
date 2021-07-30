@@ -39,6 +39,7 @@ class MetaEvents(IntEnum):
     BT_HCI_EVT_LE_CHAN_SEL_ALGO             = 20
     BT_HCI_EVT_LE_CIS_ESTABLISHED           = 25
     BT_HCI_EVT_LE_CIS_REQUEST               = 26
+    BT_HCI_EVT_LE_REQUEST_PEER_SCA_COMPLETE = 31
 
 class CmdOpcodes(IntEnum):
     BT_HCI_OP_INQUIRY                       = 0x0401
@@ -143,6 +144,7 @@ class CmdOpcodes(IntEnum):
     BT_HCI_OP_LE_REMOVE_CIG                 = 0x2065
     BT_HCI_OP_LE_ACCEPT_CIS_REQUEST         = 0x2066
     BT_HCI_OP_LE_REJECT_CIS_REQUEST         = 0x2067
+    BT_HCI_OP_LE_REQUEST_PEER_SCA           = 0x206D
     BT_HCI_OP_LE_SETUP_ISO_DATA_PATH        = 0x206E
     BT_HCI_OP_LE_REMOVE_ISO_DATA_PATH       = 0x206F
     BT_HCI_OP_LE_ISO_TRANSMIT_TEST          = 0x2070
@@ -191,6 +193,7 @@ class ErrorCodes(IntEnum):
     BT_HCI_ERR_BAD_SYNC_HANDLE              = 0x24
     BT_HCI_ERR_BAD_ADVERTISING_HANDLE       = 0x25
     BT_HCI_ERR_BAD_CHANNEL_SEL_ALGORITHM    = 0x26
+    BT_HCI_ERR_BAD_PEER_CLOCK_ACCURACY      = 0x27
 
 class Event:
 
@@ -216,7 +219,9 @@ class Event:
                        MetaEvents.BT_HCI_EVT_LE_CHAN_SEL_ALGO:             'LE Channel Selection Algorithm Event for handle {0:d} algorithm {1:d}',
                        MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED:           'LE CIS Established Event for handle {1:d} status 0x{0:02X} sync delay (CIG) {2!s} sync delay (CIS) {3!s} TL (MToS) {4!s} TL (SToM) {5!s} PHY (MToS) {6:d} PHY (SToM) {7:d} NSE {8:d}' \
                                                                            'BN (MToS) {9:d} BN (SToM) {10:d} FT (MToS) {11:d} FT (SToM) {12:d} Max PDU (MToS) {13:d} Max PDU (SToM) {14:d} ISO interval {15:d}',
-                       MetaEvents.BT_HCI_EVT_LE_CIS_REQUEST:               'LE CIS Request Event for handle {1:d} acl handle {0:d} CIG id {2:d} CIS id {3:d}' };
+                       MetaEvents.BT_HCI_EVT_LE_CIS_REQUEST:               'LE CIS Request Event for handle {1:d} acl handle {0:d} CIG id {2:d} CIS id {3:d}',
+                       MetaEvents.BT_HCI_EVT_LE_REQUEST_PEER_SCA_COMPLETE: 'LE Request Peer SCA Complete status 0x{0:02X} handle {1:d} peer clock accuracy {2:d}'
+                        }
 
     __eventFormats__ = { Events.BT_HCI_EVT_DISCONN_COMPLETE:               'Disconnect Complete Event for handle {1:d} status 0x{0:02X} reason 0x{2:02X}',
                        Events.BT_HCI_EVT_ENCRYPT_CHANGE:                   'Encryption Change Event for handle {1:d} status 0x{0:02X} encryption enabled {2:d}',
@@ -341,7 +346,9 @@ class Event:
                        CmdOpcodes.BT_HCI_OP_LE_EXT_CREATE_CONN:            'Command Status Event for LE Extended Create Connection status 0x{2:02X}',
                        CmdOpcodes.BT_HCI_OP_LE_PER_ADV_CREATE_SYNC:        'Command Status Event for LE Periodic Advertising Create Sync status 0x{2:02X}',
                        CmdOpcodes.BT_HCI_OP_LE_ACCEPT_CIS_REQUEST:         'Command Status Event for LE Accept CIS Request status 0x{2:02X}',
-                       CmdOpcodes.BT_HCI_OP_LE_CREATE_CIS:                 'Command Status Event for LE Create CIS status 0x{2:02X}' };
+                       CmdOpcodes.BT_HCI_OP_LE_CREATE_CIS:                 'Command Status Event for LE Create CIS status 0x{2:02X}',
+                       CmdOpcodes.BT_HCI_OP_LE_REQUEST_PEER_SCA:           'Command Status Event for LE Request Peer SCA status 0x{2:02X}',
+                       }
 
 
     def __init__(self, event, data, time=None):
@@ -500,6 +507,10 @@ class Event:
     def __checkChannelAlgorithm(self, algorithm):
         if not (0 <= algorithm <= 1):
             self.errors.add(ErrorCodes.BT_HCI_ERR_BAD_CHANNEL_SEL_ALGORITHM);
+
+    def __checkPeerClockAccuracy(self, accuracy):
+        if not (0x00 <= accuracy <= 0x07):
+            self.errors.add(ErrorCodes.BT_HCI_ERR_BAD_PEER_CLOCK_ACCURACY)
 
     def __checkAdvertisingReports(self, reports, minReports=1, maxReports=25):
         if not (minReports <= reports <= maxReports):
@@ -1237,6 +1248,19 @@ class Event:
 
         return aclConnectionHandle, cisConnectionHandle, cigId, cisId
 
+    def __request_peer_sca_complete(self):
+        if self.__checkSize(5):
+            status, connectionHandle, peerClockAccuracy = struct.unpack('<BHB', self.data[1:5])
+
+            if status == 0:
+                self.__checkConnectionHandle(connectionHandle)
+                self.__checkPeerClockAccuracy(peerClockAccuracy)
+        else:
+            status = connectionHandle = peerClockAccuracy = 0
+
+        return status, connectionHandle, peerClockAccuracy
+
+
     def __metaEvent(self):
         if self.subEvent in self.__metaFuncs__:
             return self.__metaFuncs__[self.subEvent](self);
@@ -1302,7 +1326,9 @@ class Event:
                        MetaEvents.BT_HCI_EVT_LE_SCAN_REQ_RECEIVED:        __scanRequestReceived,
                        MetaEvents.BT_HCI_EVT_LE_CHAN_SEL_ALGO:            __channnelSelectionAlgorithm,
                        MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED:          __cisEstablished,
-                       MetaEvents.BT_HCI_EVT_LE_CIS_REQUEST:              __cisRequest };
+                       MetaEvents.BT_HCI_EVT_LE_CIS_REQUEST:              __cisRequest,
+                       MetaEvents.BT_HCI_EVT_LE_REQUEST_PEER_SCA_COMPLETE:  __request_peer_sca_complete,
+                       }
 
     __eventFuncs__ = { Events.BT_HCI_EVT_DISCONN_COMPLETE:                __disconnectComplete,
                        Events.BT_HCI_EVT_ENCRYPT_CHANGE:                  __encryptionChange,
