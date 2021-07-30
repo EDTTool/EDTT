@@ -5845,6 +5845,46 @@ def ll_cis_per_bv_07_c(transport, upper_tester, lower_tester, trace):
 
 
 """
+    LL/CIS/PER/BV-18-C [CIS Updating Peer Clock Accuracy]
+"""
+def ll_cis_per_bv_18_c(transport, upper_tester, lower_tester, trace):
+    # Initial Condition
+
+    # Connected in the relevant role.
+    # An ACL connection has been established between the IUT and Lower Tester with a valid Connection Handle.
+    success, advertiser, initiator = establish_acl_connection(transport, lower_tester, upper_tester, trace)
+    acl_conn_handle = initiator.handles[0]
+
+    # 1. The Upper Tester sends an HCI_LE_Request_Peer_SCA command to the IUT with a valid Connection_Handle.
+    # 2. The Upper Tester receives the Command Status event.
+    status = le_request_peer_sca(transport, upper_tester, acl_conn_handle, 100)
+    s = verifyAndShowEvent(transport, upper_tester, Events.BT_HCI_EVT_CMD_STATUS, trace)
+    success = s and status == 0x00 and success
+
+    # 3. The Lower Tester receives an LL_CLOCK_ACCURACY_REQ PDU from the IUT and sends back an LL_CLOCK_ACCURACY_RSP
+    #    PDU with a valid Peer_Clock_Accuracy value.
+    # 4. The Upper Tester receives an HCI_LE_Request_Peer_SCA_Complete event with the Connection_Handle of the ACL and
+    #    the Peer_Clock_Accuracy parameter when the HCI_LE_Request_Peer_SCA command completes.
+    s, event = verifyAndFetchMetaEvent(transport, upper_tester, MetaEvents.BT_HCI_EVT_LE_REQUEST_PEER_SCA_COMPLETE,
+                                       trace, 1000)
+    status, conn_handle, peer_clock_accuracy = event.decode()
+    success = s and status == 0x00 and conn_handle == acl_conn_handle and success
+
+    # 5. The Upper Tester sends an HCI_LE_Request_Peer_SCA command to the IUT with a valid, but
+    # non-existent Connection_Handle and receives the error code Unknown Connection Identifier
+    # (0x02).
+    acl_conn_handle_non_existent = (acl_conn_handle + 1) % 0x0EFF
+    status = le_request_peer_sca(transport, upper_tester, acl_conn_handle_non_existent, 100)
+    s = verifyAndShowEvent(transport, upper_tester, Events.BT_HCI_EVT_CMD_STATUS, trace)
+    success = s and status == 0x02 and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
+
+
+"""
     LL/CIS/PER/BV-19-C [CIS Setup Response Procedure, Peripheral]
 """
 def ll_cis_per_bv_19_c(transport, upperTester, lowerTester, trace):
@@ -6779,6 +6819,7 @@ __tests__ = {
     "LL/CIS/PER/BV-02-C": [ ll_cis_per_bv_02_c, "CIS Setup Response Procedure, Peripheral, Reject Response" ],
     "LL/CIS/PER/BV-05-C": [ ll_cis_per_bv_05_c, "Receiving data in Unidirectional CIS" ],
 #   "LL/CIS/PER/BV-07-C": [ ll_cis_per_bv_07_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/12, https://github.com/EDTTool/packetcraft/issues/15
+    "LL/CIS/PER/BV-18-C": [ ll_cis_per_bv_18_c, "CIS Updating Peer Clock Accuracy" ],
 #   "LL/CIS/PER/BV-19-C": [ ll_cis_per_bv_19_c, "CIS Setup Response Procedure, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/12
     "LL/CIS/PER/BV-22-C": [ ll_cis_per_bv_22_c, "CIS Request Event Not Set" ],
 #   "LL/CIS/PER/BV-23-C": [ ll_cis_per_bv_23_c, "CIS Setup Response Procedure, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/12
