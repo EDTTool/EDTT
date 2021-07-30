@@ -6118,6 +6118,57 @@ def ll_cis_per_bv_32_c(transport, upper_tester, lower_tester, trace):
     return success
 
 
+def test_sending_and_receiving_data_in_bidirectional_cis_bn_1(transport, central, peripheral, trace, enc_keys=None):
+    params = SetCIGParameters(
+        SDU_Interval_C_To_P     = 100000,  # 100 ms
+        SDU_Interval_P_To_C     = 100000,  # 100 ms
+        FT_C_To_P               = 1,
+        FT_P_To_C               = 1,
+        ISO_Interval            = int(100 // 1.25),  # 100 ms
+        NSE                     = 1,
+        PHY_C_To_P              = 1,
+        PHY_P_To_C              = 1,
+        BN_C_To_P               = 1,
+        BN_P_To_C               = 1,
+    )
+
+    success, initiator, (cis_conn_handle,) = \
+        state_connected_isochronous_stream_peripheral(transport, peripheral, central, trace, params, enc_keys=enc_keys)
+    if not initiator:
+        return success
+
+    # The SDU is equal for both devices
+    assert params.Max_SDU_C_To_P[0] == params.Max_SDU_P_To_C[0]
+
+    iso_data_sdu = tuple([0xD7] * params.Max_SDU_C_To_P[0])
+
+    success = iso_send_payload_pdu(transport, peripheral, central, trace, cis_conn_handle,
+                                   params.Max_SDU_P_To_C[0], params.SDU_Interval_P_To_C, 0, iso_data_sdu) and success
+
+    success = iso_send_payload_pdu(transport, central, peripheral, trace, cis_conn_handle,
+                                   params.Max_SDU_C_To_P[0], params.SDU_Interval_C_To_P, 0, iso_data_sdu) and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
+
+
+"""
+    LL/CIS/PER/BV-35-C [Sending and Receiving Data in Bidirectional CIS, BN = 1]
+"""
+def ll_cis_per_bv_35_c(transport, upper_tester, lower_tester, trace):
+    return test_sending_and_receiving_data_in_bidirectional_cis_bn_1(transport, lower_tester, upper_tester, trace)
+
+
+"""
+    LL/CIS/PER/BV-36-C [Sending and Receiving Data in Bidirectional CIS, BN = 1, Encrypted]
+"""
+def ll_cis_per_bv_36_c(transport, upper_tester, lower_tester, trace):
+    return test_sending_and_receiving_data_in_bidirectional_cis_bn_1(transport, lower_tester, upper_tester, trace,
+                                                                     ENC_KEYS)
+
+
 """
     LL/CIS/PER/BV-33-C [Sending Data in Unidirectional CIS, BN = 1, Peripheral]
 """
@@ -6946,6 +6997,8 @@ __tests__ = {
     "LL/CIS/PER/BV-32-C": [ ll_cis_per_bv_32_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Peripheral, BN=1" ],
     "LL/CIS/PER/BV-33-C": [ ll_cis_per_bv_33_c, "Sending Data in Unidirectional CIS, BN = 1" ],
     "LL/CIS/PER/BV-34-C": [ ll_cis_per_bv_34_c, "Receiving Data in Unidirectional CIS, BN = 1" ],
+    "LL/CIS/PER/BV-35-C": [ ll_cis_per_bv_35_c, "Sending and Receiving Data in Bidirectional CIS, BN = 1" ],
+    "LL/CIS/PER/BV-36-C": [ ll_cis_per_bv_36_c, "Sending and Receiving Data in Bidirectional CIS, BN = 1, Encryption "],
     "LL/CIS/PER/BV-37-C": [ ll_cis_per_bv_37_c, "CIS Map Update" ],
 #   "LL/CIS/PER/BV-39-C": [ ll_cis_per_bv_39_c, "CIS Peripheral Accepts All Supported NSE Values" ],  # https://github.com/EDTTool/EDTT-le-audio/issues/84
 #   "LL/CIS/PER/BV-40-C": [ ll_cis_per_bv_40_c, "CIS Setup Response Procedure, Peripheral" ],  # https://github.com/EDTTool/EDTT-le-audio/issues/85

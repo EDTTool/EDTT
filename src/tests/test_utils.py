@@ -562,9 +562,11 @@ def iso_receive_sdu(transport, idx, trace, sdu_interval):
     return success, tuple(iso_sdu)
 
 
-def iso_send_payload_pdu(transport, transmitter, receiver, trace, conn_handle, max_sdu_size, sdu_interval, pkt_seq_num):
+def iso_send_payload_pdu(transport, transmitter, receiver, trace, conn_handle, max_sdu_size, sdu_interval, pkt_seq_num,
+                         tx_iso_sdu=None):
     # Create a ISO_SDU of sdu_size length
-    tx_iso_sdu = tuple([(pkt_seq_num + x) % 255 for x in range(max_sdu_size)])
+    if not tx_iso_sdu:
+        tx_iso_sdu = tuple([(pkt_seq_num + x) % 255 for x in range(max_sdu_size)])
 
     # Pack the ISO_Data_Load (no Time_Stamp) of an HCI ISO Data packet
     # <Packet_Sequence_Number, ISO_SDU_Length, ISO_SDU>
