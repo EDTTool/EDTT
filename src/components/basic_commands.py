@@ -273,6 +273,8 @@ class Commands(IntEnum):
     CMD_HCI_LE_ISO_READ_TEST_COUNTERS_RSP                         = 262
     CMD_HCI_LE_ISO_TEST_END_REQ                                   = 263
     CMD_HCI_LE_ISO_TEST_END_RSP                                   = 264
+    CMD_HCI_LE_REQUEST_PEER_SCA_REQ                               = 265
+    CMD_HCI_LE_REQUEST_PEER_SCA_RSP                               = 266
 
 
 class HCICommands(IntEnum):
@@ -377,6 +379,7 @@ class HCICommands(IntEnum):
     BT_HCI_OP_LE_REMOVE_CIG                 = 0x2065
     BT_HCI_OP_LE_ACCEPT_CIS_REQUEST         = 0x2066
     BT_HCI_OP_LE_REJECT_CIS_REQUEST         = 0x2067
+    BT_HCI_OP_LE_REQUEST_PEER_SCA           = 0x206D
     BT_HCI_OP_LE_SETUP_ISO_DATA_PATH        = 0x206E
     BT_HCI_OP_LE_REMOVE_ISO_DATA_PATH       = 0x206F
     BT_HCI_OP_LE_ISO_TRANSMIT_TEST          = 0x2070
@@ -422,6 +425,7 @@ class MetaEvents(IntEnum):
     BT_HCI_EVT_LE_CHAN_SEL_ALGO             = 20
     BT_HCI_EVT_LE_CIS_ESTABLISHED           = 25
     BT_HCI_EVT_LE_CIS_REQUEST               = 26
+    BT_HCI_EVT_LE_REQUEST_PEER_SCA_COMPLETE = 31
 
 
 class ProfileId(IntEnum):
@@ -3468,6 +3472,22 @@ def le_reject_cis_request(transport, idx, ConnectionHandle, Reason, to):
         raise Exception("LE Reject CIS Request command failed: Response length field corrupted (%i)" % RespLen)
 
     return status, connectionHandle
+
+
+def le_request_peer_sca(transport, idx, acl_conn_handle, to):
+    """
+    The command is used to read the Sleep Clock Accuracy (SCA) of the peer device.
+    :param transport: bearer to be used
+    :param idx: device index
+    :param acl_conn_handle: Connection handle of the ACL
+    :param to: Receiver timeout
+    :return: command status
+    """
+    cmd_parameters = [HCICommands.BT_HCI_OP_LE_REQUEST_PEER_SCA, acl_conn_handle]
+    edtt_send_cmd(transport, idx, Commands.CMD_HCI_LE_REQUEST_PEER_SCA_REQ, 'HH', cmd_parameters)
+
+    return edtt_wait_cmd_cmpl(transport, idx, Commands.CMD_HCI_LE_REQUEST_PEER_SCA_RSP, 'B', to)[0]
+
 
 """
     The HCI_LE_Setup_ISO_Data_Path command is used to identify and create
