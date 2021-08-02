@@ -1501,7 +1501,7 @@ def le_read_channel_map(transport, idx, handle, to):
     if ( RespLen != 8 ):
         raise Exception("LE Read Channel Map command failed: Response length field corrupted (%i)" % RespLen);
     
-    return status, handle, ChMap;
+    return status, handle, int.from_bytes(ChMap, 'little', signed=False)
 
 """
     This command requests, from the remote device identified by the connection handle, the features used on the connection and
