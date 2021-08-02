@@ -626,7 +626,7 @@ def state_connected_isochronous_stream_peripheral(transport, upperTester, lowerT
     s, advertiser, initiator = establish_acl_connection(transport, lowerTester, upperTester, trace)
     success = s and success
     if not initiator:
-        return success, None, []
+        return success, None, [0xFFFF] * params.CIS_Count
 
     s, cisConnectionHandles = establish_cis_connection(transport, lowerTester, upperTester, trace, params,
                                                       initiator.handles[0], setup_iso_data_path)
