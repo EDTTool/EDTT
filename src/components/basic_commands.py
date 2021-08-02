@@ -3031,7 +3031,9 @@ def get_event(transport, idx, to, multiple=False):
     
         if RespLen != 6 + eventLen:
             raise Exception("Get Event command failed: Response length field corrupted (%i)" % RespLen);
-    
+
+        transport.Trace.btsnoop.send_event(idx, packet, data)
+
         return Event(event, data, time);
 
 """
@@ -3143,6 +3145,8 @@ def le_data_read(transport, idx, to):
     BcFlags = (handle >> 14) & 0x03;
     handle &= 0x0fff;
     
+    transport.Trace.btsnoop.send_monitor_acl_rx(idx, handle, dataLen, packet)
+
     return time, handle, PbFlags, BcFlags, data;
 
 """
@@ -3320,6 +3324,8 @@ def le_iso_data_read(transport, idx, to):
 
     if ( RespLen != 8 + dataLen ):
         raise Exception("LE ISO Data Read command failed: Response length field corrupted (%i)" % RespLen)
+
+    transport.Trace.btsnoop.send_monitor_iso_rx(idx, handle, dataLen, packet)
 
     PbFlags = (handle >> 12) & 0x03
     TsFlag  = (handle >> 14) & 0x01
