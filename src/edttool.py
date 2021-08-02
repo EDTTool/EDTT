@@ -3,8 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os;
+from components.btsnoop import Btsnoop, BtsnoopPriority
 from numpy import random;
 from components.dump import DeviceDumpFileTx, DeviceDumpFileRx
+from components.utils import toArray
 
 def parse_arguments():
     import argparse
@@ -44,6 +46,10 @@ def parse_arguments():
 
     parser.add_argument("--seed", required=False, default=0x1234, help='Random generator seed (0x1234 by default)')
 
+    parser.add_argument("--store_btsnoop", required=False, default=False, help="Store btsnoop to the file")
+
+    parser.add_argument("--btmon_socket_path", required=False, default="/tmp/btmon-sock", help="path to the unix socket used by btmon")
+
     return parser.parse_known_args()
 
 def try_to_import(module_path, type, def_path):
@@ -77,8 +83,10 @@ def run_one_test(args, xtra_args, transport, trace, test_mod, test_spec, nameLen
         raise Exception("This test needs %i connected devices but you only connected to %i" %
                         (test_spec.number_devices, transport.n_devices));
 
+    trace.btsnoop.send_user_data(0, BtsnoopPriority.INFO, test_spec.name)
     result = test_mod.run_a_test(args, transport, trace, test_spec, device_dumps);
     trace.trace(2, "%-*s %s %s" % (nameLen, test_spec.name, test_spec.description[1:], ("PASSED" if result == 0 else "FAILED")));
+    trace.btsnoop.send_user_data(0, BtsnoopPriority.INFO, "%-*s %s %s" % (nameLen, test_spec.name, test_spec.description[1:], ("PASSED" if result == 0 else "FAILED")))
 
     return result;
 
@@ -141,9 +149,11 @@ def run_tests(args, xtra_args, transport, trace, device_dumps):
         trace.trace(2, "\nSummary:\n\nStatus   Count\n%s" % ('='*14));
         if passed > 0:
             trace.trace(2, "PASS%10d" % passed);
+            trace.btsnoop.send_user_data(0, BtsnoopPriority.INFO, "PASS%10d" % passed)
 
         if failed > 0:
             trace.trace(2, "FAIL%10d" % failed);
+            trace.btsnoop.send_user_data(0, BtsnoopPriority.INFO, "FAIL%10d" % failed)
         trace.trace(2, "%s\nTotal%9d" % ('='*14, total));
 
     return failed
@@ -152,6 +162,7 @@ class Trace():
     def __init__(self, level):
         self.level = level;
         self.transport = None
+        self.btsnoop = None
 
     def trace(self, level, msg):
         if ( level <= self.level ):
@@ -170,13 +181,17 @@ def main():
     transport = None;
     try:
         (args, xtra_args) = parse_arguments();
-        
+
         random.seed(args.seed);
 
         trace = Trace(args.verbose);
 
         transport = init_transport(args.transport, xtra_args, trace);
         trace.transport = transport;
+        trace.btsnoop = Btsnoop(args.store_btsnoop, args.btmon_socket_path)
+        address = 0x000000000000
+        trace.btsnoop.send_index_added(0, toArray(address, 6), "UpperTester")
+        trace.btsnoop.send_index_added(1, toArray(address, 6), "LowerTester")
 
         m_tx = []
         m_rx = []
@@ -189,12 +204,15 @@ def main():
         for d in m_tx + m_rx:
             d.open();
 
+        trace.btsnoop.send_user_data(0, BtsnoopPriority.ALERT, "Testing session started")
         result = run_tests(args, xtra_args, transport, trace, (m_tx, m_rx));
+        trace.btsnoop.send_user_data(0, BtsnoopPriority.INFO, "Testing session completed ")
 
         # Close all device dump files
         for d in m_tx + m_rx:
             d.close()
 
+        trace.btsnoop.close()
         transport.close();
 
         from sys import exit;

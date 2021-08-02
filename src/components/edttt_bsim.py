@@ -160,6 +160,7 @@ class EDTTT:
         # send the packet
         self.ll_send(packet)
         # a send is immediate (no time advance)
+        self.Trace.btsnoop.send(idx, message)
 
     def read(self, nbytes):
       received_nbytes = 0;
