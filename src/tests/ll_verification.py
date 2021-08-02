@@ -5663,6 +5663,61 @@ def ll_cis_per_bv_02_c(transport, upperTester, lowerTester, trace):
     return success
 
 
+def test_cis_map_update(transport, upper_tester, lower_tester, trace, bn_c_to_p, nse, sdu_interval_c_to_p):
+    params = SetCIGParameters(
+        SDU_Interval_C_To_P     = sdu_interval_c_to_p,
+        ISO_Interval            = int(100 // 1.25),  # 100 ms
+        NSE                     = nse,
+        Max_PDU_P_To_C          = 0,
+        BN_C_To_P               = bn_c_to_p,
+        BN_P_To_C               = 0,
+    )
+
+    success, initiator, (cis_conn_handle,) = state_connected_isochronous_stream_peripheral(transport, upper_tester,
+                                                                                           lower_tester, trace, params)
+    if not initiator:
+        return success
+
+    acl_handle = initiator.handles[0]
+
+    # 1. The Lower Tester sends an LL_CHANNEL_MAP_IND command to the IUT with the ChM field in CtrData field value
+    #    0x1249249249 and a valid instant field value.
+    success = channelMapUpdate(transport, lower_tester, 0x1249249249, trace) and success
+
+    # 2. After the instant has passed, the Upper Tester sends an HCI_LE_Read_Channel_Map command to IUT.
+    instant_to = initiator.prevInterval * 7  # TODO: calculate based on LL_CHANNEL_MAP_IND PDU instant
+    transport.wait(instant_to)
+    status, handle, channel_map = le_read_channel_map(transport, upper_tester, acl_handle, 100)
+    success = getCommandCompleteEvent(transport, upper_tester, trace) and status == 0x00 and handle == acl_handle and success
+
+    # 3. The Lower Upper Tester receives the return parameter Channel_Map, which has the value 0x1249249249.
+    success = channel_map == 0x1249249249 and success
+
+    # 4. The Lower Tester sends data packets to the IUT.
+    for pkt_seq_num in range(50):
+        success = iso_send_payload_pdu(transport, lower_tester, upper_tester, trace, cis_conn_handle,
+                                       params.Max_SDU_C_To_P[0], params.SDU_Interval_C_To_P, pkt_seq_num) and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
+
+
+"""
+    LL/CIS/PER/BV-03-C [CIS Map Update]
+"""
+def ll_cis_per_bv_03_c(transport, upper_tester, lower_tester, trace):
+    return test_cis_map_update(transport, upper_tester, lower_tester, trace, 0x01, 0x01, 100000)
+
+
+"""
+    LL/CIS/PER/BV-37-C [CIS Map Update]
+"""
+def ll_cis_per_bv_37_c(transport, upper_tester, lower_tester, trace):
+    return test_cis_map_update(transport, upper_tester, lower_tester, trace, 0x02, 0x02, 50000)
+
+
 """
     LL/CIS/PER/BV-05-C [Receiving data in Unidirectional CIS]
 """
@@ -6804,6 +6859,7 @@ __tests__ = {
     "LL/SEC/SCN/BV-01-C": [ ll_sec_scn_bv_01_c, "Changing Static Address while Scanning" ],
     "LL/CIS/PER/BV-01-C": [ ll_cis_per_bv_01_c, "CIS Setup Response Procedure, Peripheral" ],
     "LL/CIS/PER/BV-02-C": [ ll_cis_per_bv_02_c, "CIS Setup Response Procedure, Peripheral, Reject Response" ],
+    "LL/CIS/PER/BV-03-C": [ ll_cis_per_bv_03_c, "CIS Map Update" ],
     "LL/CIS/PER/BV-05-C": [ ll_cis_per_bv_05_c, "Receiving data in Unidirectional CIS" ],
 #   "LL/CIS/PER/BV-07-C": [ ll_cis_per_bv_07_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/12, https://github.com/EDTTool/packetcraft/issues/15
     "LL/CIS/PER/BV-18-C": [ ll_cis_per_bv_18_c, "CIS Updating Peer Clock Accuracy" ],
@@ -6813,6 +6869,7 @@ __tests__ = {
     "LL/CIS/PER/BV-29-C": [ ll_cis_per_bv_29_c, "CIS Setup Response Procedure, Peripheral" ],
     "LL/CIS/PER/BV-31-C": [ ll_cis_per_bv_31_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG, Peripheral, NSE=2" ],
     "LL/CIS/PER/BV-32-C": [ ll_cis_per_bv_32_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Peripheral, BN=1" ],
+#   "LL/CIS/PER/BV-37-C": [ ll_cis_per_bv_37_c, "CIS Map Update" ],  # https://github.com/EDTTool/EDTT-le-audio/issues/83
     "LL/CIS/PER/BV-39-C": [ ll_cis_per_bv_39_c, "CIS Peripheral Accepts All Supported NSE Values" ],
     "LL/CIS/PER/BV-40-C": [ ll_cis_per_bv_40_c, "CIS Setup Response Procedure, Peripheral" ],
     "LL/CIS/PER/BV-12-C": [ ll_cis_per_bv_12_c, "CIS Terminate Procedure, Initiated - Peripheral" ],
