@@ -173,10 +173,10 @@ def preamble_standby(transport, idx, trace):
             Bit:    5  4  4  3  2  1  0  0
                     6  8  0  2  4  6  8  0
                  0x00 00 1F FF FF FF FF FF ~ Default.
-                 0x20 00 1F FF FF FF FF FF ~ Default + Bit 61 ~ LE Meta Event
+                 0x20 00 9F FF FF FF FF FF ~ Default + Bit 47 ~ Encryption Key Refresh Complete Event + Bit 61 ~ LE Meta Event
         """
-        events = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x1F, 0x00, 0x20];
 
+        events = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x9F, 0x00, 0x20];
         status = set_event_mask(transport, idx, events, 100);
         trace.trace(6, "Set Event Mask Command returns status: 0x%02X" % status);
         success = __getCommandCompleteEvent(transport, idx, trace) and (status == 0) and success;
@@ -315,7 +315,7 @@ def preamble_random_address_calculated(transport, idx, key, trace):
     The identity root, IR is referred to as 'ir' and has the default value 0x112233445566778899AABBCCDDEEFF00.
     The encryption root, ER is referred to as 'er' and has the default value 0x112233445566778899AABBCCDDEEFF00.
 """
-def preamble_excryption_keys_calculated(transport, idx, trace):
+def preamble_encryption_keys_calculated(transport, idx, trace):
     trace.trace(4, "Encryption Keys Calculated preamble steps...");
 
     try:
@@ -326,7 +326,7 @@ def preamble_excryption_keys_calculated(transport, idx, trace):
 
         ir = er = 0x112233445566778899AABBCCDDEEFF00;
 
-        _success, dhk = _-encrypt(transport, idx, toArray(ir, 16), toArray(0x02, 16), trace);
+        _success, dhk = __encrypt(transport, idx, toArray(ir, 16), toArray(0x02, 16), trace);
         success = success and _success;
 
         _success, y   = __encrypt(transport, idx, dhk, rand, trace);
@@ -334,17 +334,19 @@ def preamble_excryption_keys_calculated(transport, idx, trace):
 
         _success, ltk = __encrypt(transport, idx, toArray(er, 16), div, trace);
         success = success and _success;
+        trace.trace(6, "Generated LTK: 0x%032X" % toNumber(ltk));
 
         ediv = toArray(toNumber(y) ^ toNumber(div), 16);
+        ediv = ediv[:2]
 
     except Exception as e:
         trace.trace(3, "Encryption Keys Calculated preamble failed: %s" % str(e));
         success = False;
         rand = [0 for _ in range(8)];
-        ediv = [0 for _ in range(16)];
+        ediv = [0 for _ in range(2)];
         ltk  = [0 for _ in range(16)];
 
-    return (success, rand, ediv, ltk);
+    return success, toNumber(rand), toNumber(ediv), ltk
 
 def preamble_set_public_address(transport, idx, address, trace):
     trace.trace(4, "Set Public Address preamble steps...");

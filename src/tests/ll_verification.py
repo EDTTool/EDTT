@@ -24,7 +24,7 @@ from components.preambles import *;
 from components.test_spec import TestSpec;
 from tests.test_utils import *
 
-global lowerIRK, upperIRK;
+global lowerIRK, upperIRK, ENC_KEYS
 
 class FragmentOperation(IntEnum):
     INTERMEDIATE_FRAGMENT = 0      # Intermediate fragment of fragmented extended advertising data
@@ -6969,7 +6969,7 @@ def get_tests_specs():
     return _spec;
 
 def preamble(transport, trace):
-    global lowerIRK, upperIRK;
+    global lowerIRK, upperIRK, ENC_KEYS
 
     ok = success = preamble_standby(transport, 0, trace);
     trace.trace(4, "preamble Standby " + ("PASS" if success else "FAIL"));
@@ -6981,6 +6981,9 @@ def preamble(transport, trace):
     ok = ok and success;
     success, lowerIRK, tests.test_utils.lowerRandomAddress = preamble_device_address_set(transport, 1, trace);
     trace.trace(4, "preamble Device Address Set " + ("PASS" if success else "FAIL"));
+    ok = ok and success
+    success, *ENC_KEYS = preamble_encryption_keys_calculated(transport, 1, trace)
+    trace.trace(4, "preamble Encryption Keys Calculated " + ("PASS" if success else "FAIL"))
     return ok and success;
 
 """

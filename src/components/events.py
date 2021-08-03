@@ -5,7 +5,7 @@ from components.address import *;
 
 class Events(IntEnum):
     BT_HCI_EVT_DISCONN_COMPLETE             = 5
-    BT_HCI_EVT_ENCRYPT_CHANGE               = 8
+    BT_HCI_EVT_ENCRYPT_CHANGE_V1            = 8
     BT_HCI_EVT_REMOTE_VERSION_INFO          = 12
     BT_HCI_EVT_CMD_COMPLETE                 = 14
     BT_HCI_EVT_CMD_STATUS                   = 15
@@ -15,6 +15,8 @@ class Events(IntEnum):
     BT_HCI_EVT_ENCRYPT_KEY_REFRESH_COMPLETE = 48
     BT_HCI_EVT_LE_META_EVENT                = 62
     BT_HCI_EVT_AUTH_PAYLOAD_TIMEOUT_EXP     = 87
+    BT_HCI_EVT_ENCRYPT_CHANGE_V2            = 89
+
 
 class MetaEvents(IntEnum):
     BT_HCI_EVT_LE_CONN_COMPLETE             = 1
@@ -194,6 +196,8 @@ class ErrorCodes(IntEnum):
     BT_HCI_ERR_BAD_ADVERTISING_HANDLE       = 0x25
     BT_HCI_ERR_BAD_CHANNEL_SEL_ALGORITHM    = 0x26
     BT_HCI_ERR_BAD_PEER_CLOCK_ACCURACY      = 0x27
+    BT_HCI_ERR_BAD_ENC_KEY_SIZE             = 0x28
+
 
 class Event:
 
@@ -224,7 +228,7 @@ class Event:
                         }
 
     __eventFormats__ = { Events.BT_HCI_EVT_DISCONN_COMPLETE:               'Disconnect Complete Event for handle {1:d} status 0x{0:02X} reason 0x{2:02X}',
-                       Events.BT_HCI_EVT_ENCRYPT_CHANGE:                   'Encryption Change Event for handle {1:d} status 0x{0:02X} encryption enabled {2:d}',
+                       Events.BT_HCI_EVT_ENCRYPT_CHANGE_V1:                'Encryption Change v1 Event for handle {1:d} status 0x{0:02X} encryption enabled {2:d}',
                        Events.BT_HCI_EVT_REMOTE_VERSION_INFO:              'Read Remote Version Information Event for handle {1:d} status 0x{0:02X} manufacturer 0x{3:04X} version 0x{2:02X} subversion 0x{4:04X}',
                        Events.BT_HCI_EVT_CMD_COMPLETE:                     'Command Complete Event for opCode 0x{1:04X} status 0x{2:02X} packets 0x{0:02X}',
                        Events.BT_HCI_EVT_CMD_STATUS:                       'Command Status Event for opCode 0x{1:04X} status 0x{2:02X} packets 0x{0:02X}',
@@ -233,7 +237,9 @@ class Event:
                        Events.BT_HCI_EVT_DATA_BUF_OVERFLOW:                'Data Buffer Overflow Event link type {0:d}',
                        Events.BT_HCI_EVT_ENCRYPT_KEY_REFRESH_COMPLETE:     'Encryption Key Refresh Complete Event for handle {1:d} status 0x{0:02X}',
                        Events.BT_HCI_EVT_LE_META_EVENT:                    '',
-                       Events.BT_HCI_EVT_AUTH_PAYLOAD_TIMEOUT_EXP:         'Authenticated Payload Timeout Expired Event for handle {0:d}' };
+                       Events.BT_HCI_EVT_AUTH_PAYLOAD_TIMEOUT_EXP:         'Authenticated Payload Timeout Expired Event for handle {0:d}',
+                       Events.BT_HCI_EVT_ENCRYPT_CHANGE_V2:                'Encryption Change v2 Event for handle {1:d} status 0x{0:02X} encryption enabled {2:d} encryption key size {3:d}',
+                         }
 
     __cceFormats__ = { CmdOpcodes.BT_HCI_OP_SET_EVENT_MASK:                'Command Complete Event for Set Event Mask status 0x{2:02X}',
                        CmdOpcodes.BT_HCI_OP_RESET:                         'Command Complete Event for Reset status 0x{2:02X}',
@@ -388,6 +394,10 @@ class Event:
         if not (0 <= enabled <= 2):
             self.errors.add(ErrorCodes.BT_HCI_ERR_BAD_ENCRYPT_ENABLED);
 
+    def __checkEncryptionKeySize(self, key_size):
+        if not (0x01 <= key_size <= 0x10):
+            self.errors.add(ErrorCodes.BT_HCI_ERR_BAD_ENC_KEY_SIZE)
+
     def __checkTXPowerLevel(self, level):
         if not (-30 <= level <= 20):
             self.errors.add(ErrorCodes.BT_HCI_ERR_BAD_TX_POWER_LEVEL);
@@ -525,7 +535,7 @@ class Event:
             status = handle = reason = 0;
         return status, handle, reason;
 
-    def __encryptionChange(self):
+    def __encryptionChangeV1(self):
         if self.__checkSize(4):
             status, handle, enabled = struct.unpack('<BHB', self.data[:4]);
             self.__checkConnectionHandle(handle);
@@ -533,6 +543,18 @@ class Event:
         else:
             status = handle = enabled = 0;
         return status, handle, enabled;
+
+
+    def __encryptionChangeV2(self):
+        if self.__checkSize(5):
+            status, handle, enabled, key_size = struct.unpack('<BHBB', self.data[:5])
+            self.__checkConnectionHandle(handle)
+            self.__checkEncryptionEnabled(enabled)
+            self.__checkEncryptionKeySize(key_size)
+        else:
+            status = handle = enabled = key_size = 0
+        return status, handle, enabled, key_size
+
 
     def __RemoteVersionComplete(self):
         if self.__checkSize(8):
@@ -1331,7 +1353,7 @@ class Event:
                        }
 
     __eventFuncs__ = { Events.BT_HCI_EVT_DISCONN_COMPLETE:                __disconnectComplete,
-                       Events.BT_HCI_EVT_ENCRYPT_CHANGE:                  __encryptionChange,
+                       Events.BT_HCI_EVT_ENCRYPT_CHANGE_V1:               __encryptionChangeV1,
                        Events.BT_HCI_EVT_REMOTE_VERSION_INFO:             __RemoteVersionComplete,
                        Events.BT_HCI_EVT_CMD_COMPLETE:                    __commandComplete,
                        Events.BT_HCI_EVT_CMD_STATUS:                      __commandStatus,
@@ -1340,7 +1362,9 @@ class Event:
                        Events.BT_HCI_EVT_DATA_BUF_OVERFLOW:               __dataBufferOverflow,
                        Events.BT_HCI_EVT_ENCRYPT_KEY_REFRESH_COMPLETE:    __encryptionKeyRefreshComplete,
                        Events.BT_HCI_EVT_LE_META_EVENT:                   __metaEvent,
-                       Events.BT_HCI_EVT_AUTH_PAYLOAD_TIMEOUT_EXP:        __authenticatedPayloadTimeout };
+                       Events.BT_HCI_EVT_AUTH_PAYLOAD_TIMEOUT_EXP:        __authenticatedPayloadTimeout,
+                       Events.BT_HCI_EVT_ENCRYPT_CHANGE_V2:               __encryptionChangeV2,
+                       }
 
     __cceFuncs__ =   { CmdOpcodes.BT_HCI_OP_READ_TX_POWER_LEVEL:          __readTXPowerLevel,
                        CmdOpcodes.BT_HCI_OP_LE_READ_LE_HOST_SUPP:         __readLEHostSupport,
