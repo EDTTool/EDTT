@@ -234,7 +234,7 @@ def calcMaxIsoSdu(Framing, BN, Max_PDU, ISO_Interval, SDU_Interval, Max_SDU_Supp
     if Framing == 0:
         return calcUnframedMaxIsoSdu(BN, Max_PDU, ISO_Interval, SDU_Interval, Max_SDU_Supported)
     elif Framing == 1:
-        raise RuntimeError("Framed Max SDU not supported")
+        return Max_SDU_Supported
     else:
         raise ValueError("Framing must be 0 or 1")
 
@@ -558,9 +558,46 @@ def iso_send_payload_pdu(transport, transmitter, receiver, trace, conn_handle, m
     # Transmitter: No RX
     success = not le_iso_data_ready(transport, transmitter, 100) and success
 
+    # Receiver: No more RX data
+    success = not le_iso_data_ready(transport, receiver, 100) and success
+
 
     # TX and RX match
     return (tx_iso_sdu == rx_iso_sdu) and success
+
+
+def iso_send_payload_pdu_parallel(transport, idx_1, idx_2, trace, conn_handle_1, conn_handle_2, max_sdu_size,
+                                  sdu_interval, pkt_seq_num):
+    # Create a ISO_SDU of sdu_size length
+    tx_iso_sdu = tuple([(pkt_seq_num + x) % 255 for x in range(max_sdu_size)])
+
+    # Pack the ISO_Data_Load (no Time_Stamp) of an HCI ISO Data packet
+    # <Packet_Sequence_Number, ISO_SDU_Length, ISO_SDU>
+    fmt = '<HH{ISO_SDU_Length}B'.format(ISO_SDU_Length=len(tx_iso_sdu))
+    tx_iso_data_load = struct.pack(fmt, pkt_seq_num, len(tx_iso_sdu), *tx_iso_sdu)
+
+    # Transmitter: TX SDU
+    PbFlag = 2
+    TsFlag = 0
+
+    # Feed TX buffers
+    success = le_iso_data_write(transport, idx_1, conn_handle_1, PbFlag, TsFlag, tx_iso_data_load, 0) == 0
+    success = le_iso_data_write(transport, idx_2, conn_handle_2, PbFlag, TsFlag, tx_iso_data_load, 0) == 0 and success
+
+    # Wait for data to be sent; fetch EDTT command response and Number of Completed packets event
+    success = le_iso_data_write_rsp(transport, idx_1, 100) == 0 and success
+    success = le_iso_data_write_rsp(transport, idx_2, 100) == 0 and success
+    success = verifyAndShowEvent(transport, idx_1, Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS, trace) and success
+    success = verifyAndShowEvent(transport, idx_2, Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS, trace) and success
+
+    # Check the data received
+    s, handle, pbflags, rx_iso_sdu = iso_receive_payload_pdu(transport, idx_1, trace, sdu_interval)
+    success = s and pbflags == 2 and tx_iso_sdu == rx_iso_sdu and success
+
+    s, handle, pbflags, rx_iso_sdu = iso_receive_payload_pdu(transport, idx_2, trace, sdu_interval)
+    success = s and pbflags == 2 and tx_iso_sdu == rx_iso_sdu and success
+
+    return success
 
 
 def set_isochronous_channels_host_support(transport, device, trace, value):
@@ -905,6 +942,7 @@ class SetCIGParameters:
         # Calculate the Max_SDU_C_To_P and Max_SDU_P_To_C unless given
         Max_SDU_C_To_P = [None] * self.CIS_Count
         Max_SDU_P_To_C = [None] * self.CIS_Count
+
         for n in range(self.CIS_Count):
             # Calculate default values
             Max_SDU_C_To_P[n] = calcMaxIsoSdu(self.Framing, self.BN_C_To_P[n], self.Max_PDU_C_To_P[n],
