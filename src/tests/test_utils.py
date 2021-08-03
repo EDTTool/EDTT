@@ -226,6 +226,32 @@ def hasLeCisRequestMetaEvent(transport, idx, trace, to):
             aclConnectionHandle, cisConnectionHandle, cigId, cisId = event.decode()
     return success, aclConnectionHandle, cisConnectionHandle, cigId, cisId
 
+
+def hasLeLtkRequestMetaEvent(transport, idx, trace, to):
+
+    success, handle, rand, ediv = has_event(transport, idx, to)[0], -1, -1, -1
+    if success:
+        success, event = verifyAndFetchMetaEvent(transport, idx, MetaEvents.BT_HCI_EVT_LE_LTK_REQUEST, trace)
+        if success:
+            handle, rand, ediv = event.decode()
+    return success, handle, rand, ediv
+
+
+def hasEncryptionChangeEvent(transport, idx, trace, to):
+    success, status, handle, enabled, key_size = has_event(transport, idx, to)[0], -1, -1, -1, -1
+    if success:
+        event = get_event(transport, idx, to)
+        trace.trace(7, str(event))
+        if event.event == Events.BT_HCI_EVT_ENCRYPT_CHANGE_V1:
+            status, handle, enabled = event.decode()
+        elif event.event == Events.BT_HCI_EVT_ENCRYPT_CHANGE_V2:
+            status, handle, enabled, key_size = event.decode()
+
+    success = status == 0 and success
+
+    return success, handle, enabled, key_size
+
+
 def calcMaxPacketTime(packetLength):
     #      (preamble + AA + header + packetLength + MIC + CRC) * us/byte
     return (1        + 4  + 2      + packetLength + 4   + 3  ) * 8
@@ -722,8 +748,32 @@ def calc_supervision_timeout(iso_interval_ms):
     return int(supervision_timeout_ms / 10)
 
 
+def enable_encryption(transport, central, peripheral, trace, conn_handle_c, keys):
+    rand = keys[0]
+    ediv = keys[1]
+    ltk = keys[2]
+
+    status = le_start_encryption(transport, central, conn_handle_c, rand, ediv, ltk, 100)
+    success = verifyAndShowEvent(transport, central, Events.BT_HCI_EVT_CMD_STATUS, trace, 1000) and status == 0x00
+
+    s, conn_handle_p, req_rand, req_ediv = hasLeLtkRequestMetaEvent(transport, peripheral, trace, 1000)
+    success = s and req_rand == rand and req_ediv == ediv and success
+
+    status, handle = le_long_term_key_request_reply(transport, peripheral, conn_handle_p, ltk, 1000)
+    success = getCommandCompleteEvent(transport, peripheral, trace) and status == 0x00 and \
+              handle == conn_handle_p and success
+
+    s, handle, enabled, key_size = hasEncryptionChangeEvent(transport, peripheral, trace, 1000)
+    success = s and handle == conn_handle_p and enabled == 0x01 and success
+
+    s, handle, enabled, key_size = hasEncryptionChangeEvent(transport, central, trace, 1000)
+    success = s and handle == conn_handle_c and enabled == 0x01 and success
+
+    return success
+
+
 def state_connected_isochronous_stream_peripheral(transport, upperTester, lowerTester, trace, params,
-                                                  setup_iso_data_path=True):
+                                                  setup_iso_data_path=True, enc_keys=None):
     # The Isochronous Channels (Host Support) FeatureSet bit is set.
     success = set_isochronous_channels_host_support(transport, upperTester, trace, 1)
     success = set_isochronous_channels_host_support(transport, lowerTester, trace, 1) and success
@@ -734,6 +784,9 @@ def state_connected_isochronous_stream_peripheral(transport, upperTester, lowerT
     success = s and success
     if not initiator:
         return success, None, [0xFFFF] * params.CIS_Count
+
+    if enc_keys:
+        success = enable_encryption(transport, lowerTester, upperTester, trace, initiator.handles[0], enc_keys) and success
 
     s, cisConnectionHandles = establish_cis_connection(transport, lowerTester, upperTester, trace, params,
                                                       initiator.handles[0], setup_iso_data_path)

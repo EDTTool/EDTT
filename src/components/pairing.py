@@ -457,10 +457,10 @@ class Pairing:
                         break;
                     event = get_event(self.transport, self.initiator.peer, 100);
                     self.trace.trace(7, str(event));
-                    success = (event.event == Events.BT_HCI_EVT_ENCRYPT_CHANGE) or (event.event == Events.BT_HCI_EVT_ENCRYPT_KEY_REFRESH_COMPLETE);
+                    success = (event.event == Events.BT_HCI_EVT_ENCRYPT_CHANGE_V1) or (event.event == Events.BT_HCI_EVT_ENCRYPT_KEY_REFRESH_COMPLETE);
                     if not success:
                         break;
-                    if event.event == Events.BT_HCI_EVT_ENCRYPT_CHANGE:
+                    if event.event == Events.BT_HCI_EVT_ENCRYPT_CHANGE_V1:
                         status, handle, enabled = event.decode();
                         success = (status == 0) and (enabled == 1);
                     else:
@@ -475,10 +475,10 @@ class Pairing:
                 break;
             event = get_event(self.transport, self.initiator.initiator, 100)[1:];
             self.trace.trace(7, str(event));
-            success = (event.event == Events.BT_HCI_EVT_ENCRYPT_CHANGE) or (event.event == Events.BT_HCI_EVT_ENCRYPT_KEY_REFRESH_COMPLETE);
+            success = (event.event == Events.BT_HCI_EVT_ENCRYPT_CHANGE_V1) or (event.event == Events.BT_HCI_EVT_ENCRYPT_KEY_REFRESH_COMPLETE);
             if not success:
                 break;
-            if event.event == Events.BT_HCI_EVT_ENCRYPT_CHANGE:
+            if event.event == Events.BT_HCI_EVT_ENCRYPT_CHANGE_V1:
                 status, handle, enabled = event.decode();
                 success = (status == 0) and (enabled == 1);
             else:

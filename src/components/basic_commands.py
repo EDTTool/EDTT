@@ -392,7 +392,7 @@ class HCICommands(IntEnum):
 class Events(IntEnum):
     BT_HCI_EVT_NONE                         = 0
     BT_HCI_EVT_DISCONN_COMPLETE             = 5
-    BT_HCI_EVT_ENCRYPT_CHANGE               = 8
+    BT_HCI_EVT_ENCRYPT_CHANGE_V1            = 8
     BT_HCI_EVT_REMOTE_VERSION_INFO          = 12
     BT_HCI_EVT_CMD_COMPLETE                 = 14
     BT_HCI_EVT_CMD_STATUS                   = 15
@@ -401,6 +401,8 @@ class Events(IntEnum):
     BT_HCI_EVT_ENCRYPT_KEY_REFRESH_COMPLETE = 48
     BT_HCI_EVT_LE_META_EVENT                = 62
     BT_HCI_EVT_AUTH_PAYLOAD_TIMEOUT_EXP     = 87
+    BT_HCI_EVT_ENCRYPT_CHANGE_V2            = 89
+
 
 class MetaEvents(IntEnum):
     BT_HCI_EVT_LE_CONN_COMPLETE             = 1
@@ -1532,6 +1534,15 @@ def le_read_remote_features(transport, idx, handle, to):
     in the command and returns the Encrypted_Data to the Host.
 """
 def le_encrypt(transport, idx, key, plaintext, to):
+    def pad_or_slice(L, n):
+        L = list(L)
+        if len(L) < n:
+            return L + ([0] * (n - len(L)))
+        else:
+            return L[:n]
+
+    key = pad_or_slice(key, 16)
+    plaintext = pad_or_slice(plaintext, 16)
 
     cmd = struct.pack('<HHH16B', Commands.CMD_LE_ENCRYPT_REQ, 34, HCICommands.BT_HCI_OP_LE_ENCRYPT, *key);
     cmd += struct.pack('<16B', *plaintext);
@@ -1578,29 +1589,23 @@ def le_rand(transport, idx, to):
 
     return status, rand;
 
-"""
-    The LE_Start_Encryption command is used to authenticate the given encryption key associated with the remote device
-    specified by the Connection_Handle, and once authenticated will encrypt the connection.
-"""
+
 def le_start_encryption(transport, idx, handle, rand, ediv, ltk, to):
+    """The LE_Start_Encryption command is used to authenticate the given encryption key associated with the remote
+    device specified by the Connection_Handle, and once authenticated will encrypt the connection.
+    :param transport: bearer to be used
+    :param idx: device index
+    :param handle: connection handle
+    :param rand: random number
+    :param ediv: encrypted diversifier
+    :param ltk: 16 byte long term key array
+    :param to: Receiver timeout
+    :return: status
+    """
+    edtt_send_cmd(transport, idx, Commands.CMD_LE_START_ENCRYPTION_REQ, 'HHQH16B',
+                  (HCICommands.BT_HCI_OP_LE_START_ENCRYPTION, handle, rand, ediv, *ltk))
+    return edtt_wait_cmd_cmpl(transport, idx, Commands.CMD_LE_START_ENCRYPTION_RSP, 'B', to)[0]
 
-    cmd = struct.pack('<HHHHQH16B', Commands.CMD_LE_START_ENCRYPTION_REQ, 30, HCICommands.BT_HCI_OP_LE_START_ENCRYPTION, handle, rand, ediv, *ltk);
-    transport.send(idx, cmd);
-
-    packet = transport.recv(idx, 5, to);
-
-    if ( 5 != len(packet) ):
-        raise Exception("LE Start Encryption command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-
-    RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-
-    if ( RespCmd != Commands.CMD_LE_START_ENCRYPTION_RSP ):
-        raise Exception("LE Start Encryption command failed: Inappropriate command response received");
-
-    if ( RespLen != 1 ):
-        raise Exception("LE Start Encryption command failed: Response length field corrupted (%i)" % RespLen);
-
-    return status;
 
 """
     The LE_Long_Term_Key_Request_Reply command is used to reply to an LE Long Term Key Request event from the Controller, and
