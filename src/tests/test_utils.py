@@ -13,6 +13,7 @@ from components.initiator import *;
 from components.addata import *;
 from components.preambles import *;
 
+global lowerRandomAddress, upperRandomAddress;
 
 def verifyAndShowEvent(transport, idx, expectedEvent, trace, to=100):
 
@@ -44,7 +45,7 @@ def getCommandCompleteEvent(transport, idx, trace):
 
 def readLocalResolvableAddress(transport, idx, identityAddress, trace):
 
-    STatus, resolvableAddress = le_read_local_resolvable_address(transport, idx, identityAddress.type, identityAddress.address, 100);
+    status, resolvableAddress = le_read_local_resolvable_address(transport, idx, identityAddress.type, identityAddress.address, 100);
     trace.trace(6, "LE Read Local Resolvable Address returns status: 0x%02X" % status);
     return getCommandCompleteEvent(transport, idx, trace) and (status == 0), resolvableAddress;
 

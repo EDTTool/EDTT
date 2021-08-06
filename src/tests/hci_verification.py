@@ -1002,7 +1002,7 @@ def preamble(transport, trace):
 """
     Run a test given its test_spec
 """
-def run_a_test(args, transport, trace, test_spec):
+def run_a_test(args, transport, trace, test_spec, device_dumps):
     try:
         success = preamble(transport, trace);
     except Exception as e:
@@ -1012,7 +1012,9 @@ def run_a_test(args, transport, trace, test_spec):
     trace.trace(2, "%-*s %s test started..." % (_maxNameLength, test_spec.name, test_spec.description[1:]));
     test_f = test_spec.test_private;
     try:
-        if test_f.__code__.co_argcount > 3:
+        if test_f.__code__.co_argcount > 4:
+            success = success and test_f(transport, 0, 1, trace, device_dumps);
+        elif test_f.__code__.co_argcount > 3:
             success = success and test_f(transport, 0, 1, trace);
         else:
             success = success and test_f(transport, 0, trace);
