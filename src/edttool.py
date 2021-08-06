@@ -129,7 +129,7 @@ def run_tests(args, xtra_args, transport, trace, device_dumps):
                 if result != 0 and args.stop_on_failure:
                     break;
             else:
-                print(("unkown test " + t + ". Skipping"))
+                print(("unknown test " + t + ". Skipping"))
         file.close();
 
     else:

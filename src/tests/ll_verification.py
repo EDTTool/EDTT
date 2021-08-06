@@ -7,7 +7,8 @@ import copy
 import statistics;
 import os;
 import numpy;
-import csv
+import csv;
+import tests.test_utils;
 from collections import defaultdict, namedtuple
 from enum import IntEnum;
 from components.utils import *;
@@ -23,7 +24,7 @@ from components.preambles import *;
 from components.test_spec import TestSpec;
 from tests.test_utils import *
 
-global lowerIRK, upperIRK, lowerRandomAddress, upperRandomAddress;
+global lowerIRK, upperIRK;
 
 class FragmentOperation(IntEnum):
     INTERMEDIATE_FRAGMENT = 0      # Intermediate fragment of fragmented extended advertising data
@@ -1171,7 +1172,7 @@ def ll_ddi_scn_bv_15_c(transport, upperTester, lowerTester, trace):
     RPAs = [ ResolvableAddresses( transport, upperTester, trace, upperIRK ), ResolvableAddresses( transport, lowerTester, trace, lowerIRK ) ];
     success = RPAs[upperTester].clear() and RPAs[lowerTester].clear();
     success = RPAs[lowerTester].add( publicIdentityAddress(upperTester) ) and success;
-    success = RPAs[upperTester].add( Address( SimpleAddressType.RANDOM, lowerRandomAddress ) ) and success;
+    success = RPAs[upperTester].add( Address( SimpleAddressType.RANDOM, tests.test_utils.lowerRandomAddress ) ) and success;
     """
         Set resolvable private address timeout in seconds ( sixty seconds )
     """
@@ -1626,7 +1627,6 @@ def ll_con_ini_bv_02_c(transport, upperTester, lowerTester, trace):
     Reviewed and verified: 09-12-2019 Henrik Eriksen
 """
 def ll_con_ini_bv_06_c(transport, upperTester, lowerTester, trace):
-    global lowerRandomAddress, upperRandomAddress;
 
     success = True;
     for j in range(2):
@@ -1682,7 +1682,6 @@ def ll_con_ini_bv_06_c(transport, upperTester, lowerTester, trace):
     Reviewed and verified: 09-12-2019 Henrik Eriksen
 """
 def ll_con_ini_bv_07_c(transport, upperTester, lowerTester, trace):
-    global lowerRandomAddress, upperRandomAddress;
 
     success = True;
     for j in range(2):
@@ -4595,7 +4594,7 @@ def ll_sec_adv_bv_01_c(transport, upperTester, lowerTester, trace):
     """
         Attempt to change advertiser (upperTester) address...
     """
-    status = le_set_random_address(transport, upperTester, toArray(address_scramble_OUI( toNumber(upperRandomAddress) ), 6), 100);
+    status = le_set_random_address(transport, upperTester, toArray(address_scramble_OUI( toNumber(tests.test_utils.upperRandomAddress) ), 6), 100);
     trace.trace(6, "LE Set Random Address Command returns status: 0x%02X" % status);
     success = getCommandCompleteEvent(transport, upperTester, trace) and (status == 0x0C) and success;
 
@@ -4787,8 +4786,8 @@ def ll_sec_adv_bv_06_c(transport, upperTester, lowerTester, trace):
                                                 ExtendedAddressType.RESOLVABLE_OR_RANDOM, ExtendedAddressType.PUBLIC);
 
     lowerAddresses = [ publicIdentityAddress(lowerTester), \
-                       Address( ExtendedAddressType.PUBLIC, toNumber(lowerRandomAddress) | 0xC00000000000 ), \
-                       Address( ExtendedAddressType.PUBLIC, toNumber(lowerRandomAddress) & 0x3FFFFFFFFFFF ) ];
+                       Address( ExtendedAddressType.PUBLIC, toNumber(tests.test_utils.lowerRandomAddress) | 0xC00000000000 ), \
+                       Address( ExtendedAddressType.PUBLIC, toNumber(tests.test_utils.lowerRandomAddress) & 0x3FFFFFFFFFFF ) ];
 
     success = True;
     for lowerAddress in lowerAddresses:
@@ -5517,7 +5516,7 @@ def ll_sec_scn_bv_01_c(transport, upperTester, lowerTester, trace):
     """
         Attempt to change scanner (upperTester) address...
     """
-    status = le_set_random_address(transport, upperTester, toArray(address_scramble_OUI( toNumber(upperRandomAddress) ), 6), 100);
+    status = le_set_random_address(transport, upperTester, toArray(address_scramble_OUI( toNumber(tests.test_utils.upperRandomAddress) ), 6), 100);
     trace.trace(6, "LE Set Random Address Command returns status: 0x%02X" % status);
     """
         Event queue may hold several Advertising Events...
@@ -6807,17 +6806,17 @@ def get_tests_specs():
     return _spec;
 
 def preamble(transport, trace):
-    global lowerIRK, upperIRK, lowerRandomAddress, upperRandomAddress;
+    global lowerIRK, upperIRK;
 
     ok = success = preamble_standby(transport, 0, trace);
     trace.trace(4, "preamble Standby " + ("PASS" if success else "FAIL"));
     success = preamble_standby(transport, 1, trace);
     ok = ok and success;
     trace.trace(4, "preamble Standby " + ("PASS" if success else "FAIL"));
-    success, upperIRK, upperRandomAddress = preamble_device_address_set(transport, 0, trace);
+    success, upperIRK, tests.test_utils.upperRandomAddress = preamble_device_address_set(transport, 0, trace);
     trace.trace(4, "preamble Device Address Set " + ("PASS" if success else "FAIL"));
     ok = ok and success;
-    success, lowerIRK, lowerRandomAddress = preamble_device_address_set(transport, 1, trace);
+    success, lowerIRK, tests.test_utils.lowerRandomAddress = preamble_device_address_set(transport, 1, trace);
     trace.trace(4, "preamble Device Address Set " + ("PASS" if success else "FAIL"));
     return ok and success;
 
