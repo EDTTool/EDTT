@@ -5,7 +5,7 @@
 import os;
 from components.btsnoop import Btsnoop, BtsnoopPriority
 from numpy import random;
-from components.dump import DeviceDumpFileTx, DeviceDumpFileRx
+from components.dump import DeviceDumps
 from components.utils import toArray
 
 def parse_arguments():
@@ -76,7 +76,7 @@ def init_transport(transport, xtra_args, trace):
     transport.connect();
     return transport;
 
-def run_one_test(args, xtra_args, transport, trace, test_mod, test_spec, nameLen, device_dumps):
+def run_one_test(args, xtra_args, transport, trace, test_mod, test_spec, nameLen, packets):
     trace.trace(4, test_spec);
     trace.trace(4, "");
     if test_spec.number_devices > transport.n_devices:
@@ -84,14 +84,14 @@ def run_one_test(args, xtra_args, transport, trace, test_mod, test_spec, nameLen
                         (test_spec.number_devices, transport.n_devices));
 
     trace.btsnoop.send_user_data(0, BtsnoopPriority.INFO, test_spec.name)
-    result = test_mod.run_a_test(args, transport, trace, test_spec, device_dumps);
+    result = test_mod.run_a_test(args, transport, trace, test_spec, packets);
     trace.trace(2, "%-*s %s %s" % (nameLen, test_spec.name, test_spec.description[1:], ("PASSED" if result == 0 else "FAILED")));
     trace.btsnoop.send_user_data(0, BtsnoopPriority.INFO, "%-*s %s %s" % (nameLen, test_spec.name, test_spec.description[1:], ("PASSED" if result == 0 else "FAILED")))
 
     return result;
 
 # Attempt to load and run the tests
-def run_tests(args, xtra_args, transport, trace, device_dumps):
+def run_tests(args, xtra_args, transport, trace, packets):
     passed = 0;
     total = 0;
 
@@ -107,14 +107,14 @@ def run_tests(args, xtra_args, transport, trace, device_dumps):
             random.shuffle(tests_list)
 
         for _,test_spec in tests_list:
-            result = run_one_test(args, xtra_args, transport, trace, test_mod, test_spec, nameLen, device_dumps);
+            result = run_one_test(args, xtra_args, transport, trace, test_mod, test_spec, nameLen, packets);
             passed += 1 if result == 0 else 0;
             total += 1;
             if result != 0 and args.stop_on_failure:
                 break;
 
     elif t in test_specs:
-        result = run_one_test(args, xtra_args, transport, trace, test_mod, test_specs[t], nameLen, device_dumps);
+        result = run_one_test(args, xtra_args, transport, trace, test_mod, test_specs[t], nameLen, packets);
         passed += 1 if result == 0 else 0;
         total += 1;
 
@@ -131,7 +131,7 @@ def run_tests(args, xtra_args, transport, trace, device_dumps):
             if not t: #Skip empty lines, or those which had only comments
                 continue
             if t in test_specs:
-                result = run_one_test(args, xtra_args, transport, trace, test_mod, test_specs[t], nameLen, device_dumps);
+                result = run_one_test(args, xtra_args, transport, trace, test_mod, test_specs[t], nameLen, packets);
                 passed += 1 if result == 0 else 0;
                 total += 1;
                 if result != 0 and args.stop_on_failure:
@@ -193,25 +193,15 @@ def main():
         trace.btsnoop.send_index_added(0, toArray(address, 6), "UpperTester")
         trace.btsnoop.send_index_added(1, toArray(address, 6), "LowerTester")
 
-        m_tx = []
-        m_rx = []
-        m_tx.append(DeviceDumpFileTx(os.path.join(os.environ['BSIM_OUT_PATH'], 'results', transport.sim_id, 'd_2G4_00.Tx.csv')))
-        m_tx.append(DeviceDumpFileTx(os.path.join(os.environ['BSIM_OUT_PATH'], 'results', transport.sim_id, 'd_2G4_01.Tx.csv')))
-        m_rx.append(DeviceDumpFileRx(os.path.join(os.environ['BSIM_OUT_PATH'], 'results', transport.sim_id, 'd_2G4_00.Rx.csv')))
-        m_rx.append(DeviceDumpFileRx(os.path.join(os.environ['BSIM_OUT_PATH'], 'results', transport.sim_id, 'd_2G4_01.Rx.csv')))
-
-        # Open all device dump files
-        for d in m_tx + m_rx:
-            d.open();
+        device_dumps = DeviceDumps()
+        device_dumps.add_rx(0, os.path.join(os.environ['BSIM_OUT_PATH'], 'results', transport.sim_id, 'd_2G4_01.Rx.csv'))
+        device_dumps.add_tx(0, os.path.join(os.environ['BSIM_OUT_PATH'], 'results', transport.sim_id, 'd_2G4_01.Tx.csv'))
+        device_dumps.add_rx(1, os.path.join(os.environ['BSIM_OUT_PATH'], 'results', transport.sim_id, 'd_2G4_02.Rx.csv'))
+        device_dumps.add_tx(1, os.path.join(os.environ['BSIM_OUT_PATH'], 'results', transport.sim_id, 'd_2G4_02.Tx.csv'))
 
         trace.btsnoop.send_user_data(0, BtsnoopPriority.ALERT, "Testing session started")
-        result = run_tests(args, xtra_args, transport, trace, (m_tx, m_rx));
+        result = run_tests(args, xtra_args, transport, trace, device_dumps.packets())
         trace.btsnoop.send_user_data(0, BtsnoopPriority.INFO, "Testing session completed ")
-
-        # Close all device dump files
-        for d in m_tx + m_rx:
-            d.close()
-
         trace.btsnoop.close()
         transport.close();
 
