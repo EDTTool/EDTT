@@ -6286,6 +6286,9 @@ def ll_cis_per_bv_12_c(transport, upper_tester, lower_tester, trace):
     status, handle, reason = event.decode()
     success = s and (status == 0x00) and handle == cis_conn_handle and success
 
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
     return success
 
 
@@ -6369,6 +6372,9 @@ def ll_cis_per_bv_13_c(transport, upper_tester, lower_tester, trace):
 
     # - The Lower Tester does not receive any payload PDUs from the IUT after step 3.
     success = not le_iso_data_ready(transport, lower_tester, 100) and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
 
     return success
 
