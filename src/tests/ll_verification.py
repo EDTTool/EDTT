@@ -6319,7 +6319,7 @@ def ll_cis_per_bv_40_c(transport, upper_tester, lower_tester, trace):
 """
     LL/CIS/PER/BV-12-C [Cis Terminate Procedure, Initiated - Peripheral]
 """
-def ll_cis_per_bv_12_c(transport, upper_tester, lower_tester, trace):
+def ll_cis_per_bv_12_c(transport, upper_tester, lower_tester, trace, packets):
     # Initial Condition
     #
     # Connected in the relevant role as defined in the following initial states:
@@ -6373,19 +6373,27 @@ def ll_cis_per_bv_12_c(transport, upper_tester, lower_tester, trace):
     success = iso_send_payload_pdu(transport, lower_tester, upper_tester, trace, cis_conn_handle,
                                    params.Max_SDU_C_To_P[0], params.SDU_Interval_C_To_P, 0) and success
 
+    packets.flush()
+
     # 2. The Upper Tester sends an HCI_Disconnect to the IUT and receives HCI_Command_status IUT.
-    status = disconnect(transport, upper_tester, cis_conn_handle, 0x13, 200)
+    reason_code = 0x13
+    status = disconnect(transport, upper_tester, cis_conn_handle, reason_code, 200)
     success = verifyAndShowEvent(transport, upper_tester, Events.BT_HCI_EVT_CMD_STATUS, trace) and (status == 0) and success
 
-    # TODO Not able to verify further test steps
     # 3. The Lower Tester receives an LL_CIS_TERMINATE_IND PDU from the IUT and the ErrorCode
     #        field in the CtrData field matches the Reason code value the Upper Tester sent in step 45.
+    def check_ll_cis_terminate_ind():
+        packet = packets.get(packet_filter='LL_CIS_TERMINATE_IND')
+        return packet and packet.payload.CtrData.ErrorCode == reason_code
     # 4. The Lower Tester sends an Ack to the IUT.
 
     # 5. The Upper Tester receives an HCI_Disconnection_Complete event from the IUT.
     s, event = verifyAndFetchEvent(transport, upper_tester, Events.BT_HCI_EVT_DISCONN_COMPLETE, trace)
     status, handle, reason = event.decode()
     success = s and (status == 0x00) and handle == cis_conn_handle and success
+
+    ### LL VERIFICATION ###
+    success = check_ll_cis_terminate_ind() and success
 
     ### TERMINATION ###
     success = initiator.disconnect(0x13) and success
