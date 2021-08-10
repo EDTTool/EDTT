@@ -5897,11 +5897,11 @@ def ll_cis_per_bv_22_c(transport, upper_tester, lower_tester, trace):
     #    for Set CIG Parameters Commands.
     params = SetCIGParameters()
 
-    def lt_send_ll_cis_req(acl_conn_handle):
-        status, cig_id, cis_count, cis_conn_handle = \
-            le_set_cig_parameters_test(transport, lower_tester, 0, *params.get_cig_parameters_test(), 100)
-        success = getCommandCompleteEvent(transport, lower_tester, trace) and status == 0x00
+    status, cig_id, cis_count, cis_conn_handle = \
+        le_set_cig_parameters_test(transport, lower_tester, 0, *params.get_cig_parameters_test(), 100)
+    success = getCommandCompleteEvent(transport, lower_tester, trace) and status == 0x00 and success
 
+    def lt_send_ll_cis_req(acl_conn_handle):
         status = le_create_cis(transport, lower_tester, cis_count, cis_conn_handle, [acl_conn_handle] * cis_count, 100)
         return verifyAndShowEvent(transport, lower_tester, Events.BT_HCI_EVT_CMD_STATUS, trace) and status == 0 and success
 
