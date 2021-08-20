@@ -6837,7 +6837,7 @@ __tests__ = {
     "LL/CIS/PER/BV-12-C": [ ll_cis_per_bv_12_c, "CIS Terminate Procedure, Initiated - Peripheral" ],
     "LL/CIS/PER/BV-13-C": [ ll_cis_per_bv_13_c, "CIS Terminate Procedure, Accepting, Peripheral" ],
     "LL/CIS/PER/BV-15-C": [ ll_cis_per_bv_15_c, "Bursting of payloads in CIS Peripheral" ],
-#   "LL/CIS/PER/BV-16-C": [ ll_cis_per_bv_16_c, "Deterministic Packet Transmission in CIS, Peripheral" ],  # https://github.com/EDTTool/packetcraft/issues/9
+    "LL/CIS/PER/BV-16-C": [ ll_cis_per_bv_16_c, "Deterministic Packet Transmission in CIS, Peripheral" ],
     "LL/IST/PER/BV-01-C": [ ll_ist_per_bv_01_c, "ISO Transmit Test Mode, CIS" ],
 #   "LL/IST/PER/BV-03-C": [ ll_ist_per_bv_03_c, "ISO Receive Test Mode, CIS" ],  # https://github.com/EDTTool/packetcraft/issues/10
 };
