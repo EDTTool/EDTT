@@ -508,14 +508,16 @@ def iso_receive_sdu(transport, idx, trace, sdu_interval):
             (time_stamp,) = struct.unpack_from(fmt, rx_iso_data_load)
             rx_offset += struct.calcsize(fmt)
 
-        # b. Get Packet_Sequence_Number, ISO_SDU_Length and Packet_Status_Flag
-        fmt = '<HH'
-        rx_packet_sequence_number, rx_iso_sdu_length = struct.unpack_from(fmt, rx_iso_data_load, rx_offset)
-        rx_offset += struct.calcsize(fmt)
-        rx_packet_status_flag = rx_iso_sdu_length >> 14
-        rx_iso_sdu_length &= 0xfff  # 12 bits valid
-
+        # FIXME: Temporary workaround for Packetcraft not being along with Core version Sydney.
+        #  Packet_Sequence_Number, Packet_Status_Flag and ISO_SDU_Length shall be sent for all fragments
         if pbflags == PbFlags.FIRST or pbflags == PbFlags.COMPLETE:
+            # b. Get Packet_Sequence_Number, ISO_SDU_Length and Packet_Status_Flag
+            fmt = '<HH'
+            rx_packet_sequence_number, rx_iso_sdu_length = struct.unpack_from(fmt, rx_iso_data_load, rx_offset)
+            rx_offset += struct.calcsize(fmt)
+            rx_packet_status_flag = rx_iso_sdu_length >> 14
+            rx_iso_sdu_length &= 0xfff  # 12 bits valid
+
             success = (iso_sdu_len == 0) and success
             iso_sdu_len = rx_iso_sdu_length
 
