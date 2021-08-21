@@ -12,6 +12,7 @@ from components.scanner import *;
 from components.initiator import *;
 from components.addata import *;
 from components.preambles import *;
+from enum import IntEnum
 
 global lowerRandomAddress, upperRandomAddress;
 
@@ -484,6 +485,55 @@ def iso_receive_payload_pdu(transport, idx, trace, sdu_interval):
     return success, handle, pbflags, rx_iso_sdu
 
 
+class PbFlags(IntEnum):
+    FIRST = 0
+    CONTINUATION = 1
+    COMPLETE = 2
+    LAST = 3
+
+
+def iso_receive_sdu(transport, idx, trace, sdu_interval):
+    iso_sdu = []
+    iso_sdu_len = 0
+    success = True
+    while success:
+        time, handle, pbflags, tsflag, rx_iso_data_load = le_iso_data_read(transport, idx, sdu_interval * 2)
+        rx_iso_data_load = bytearray(rx_iso_data_load)
+
+        # Unpack ISO_Data_Load
+        rx_offset = 0
+        # a. Get Time_Stamp if present
+        if tsflag:
+            fmt = '<I'
+            (time_stamp,) = struct.unpack_from(fmt, rx_iso_data_load)
+            rx_offset += struct.calcsize(fmt)
+
+        # b. Get Packet_Sequence_Number, ISO_SDU_Length and Packet_Status_Flag
+        fmt = '<HH'
+        rx_packet_sequence_number, rx_iso_sdu_length = struct.unpack_from(fmt, rx_iso_data_load, rx_offset)
+        rx_offset += struct.calcsize(fmt)
+        rx_packet_status_flag = rx_iso_sdu_length >> 14
+        rx_iso_sdu_length &= 0xfff  # 12 bits valid
+
+        if pbflags == PbFlags.FIRST or pbflags == PbFlags.COMPLETE:
+            success = (iso_sdu_len == 0) and success
+            iso_sdu_len = rx_iso_sdu_length
+
+        rx_iso_sdu = rx_iso_data_load[rx_offset:]
+        iso_sdu.extend(rx_iso_sdu)
+
+        # Valid data. The complete ISO_SDU was received correctly.
+        success = (rx_packet_status_flag == 0x00) and success
+
+        if pbflags == PbFlags.LAST or pbflags == PbFlags.COMPLETE:
+            success = (len(iso_sdu) == iso_sdu_len) and success
+            break
+
+        success = (len(iso_sdu) < iso_sdu_len) and success
+
+    return success, tuple(iso_sdu)
+
+
 def iso_send_payload_pdu(transport, transmitter, receiver, trace, conn_handle, max_sdu_size, sdu_interval, pkt_seq_num):
     # Create a ISO_SDU of sdu_size length
     tx_iso_sdu = tuple([(pkt_seq_num + x) % 255 for x in range(max_sdu_size)])
@@ -500,13 +550,12 @@ def iso_send_payload_pdu(transport, transmitter, receiver, trace, conn_handle, m
     success = verifyAndShowEvent(transport, transmitter, Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS, trace,
                                  sdu_interval * 2)
 
-    s, handle, pbflags, rx_iso_sdu = iso_receive_payload_pdu(transport, receiver, trace, sdu_interval)
+    s, rx_iso_sdu = iso_receive_sdu(transport, receiver, trace, sdu_interval)
+    success = s and success
 
     # Transmitter: No RX
     success = not le_iso_data_ready(transport, transmitter, 100) and success
 
-    # The ISO_Data_Load field contains a complete SDU.
-    success = (pbflags == 2) and success
 
     # TX and RX match
     return (tx_iso_sdu == rx_iso_sdu) and success
