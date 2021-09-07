@@ -5737,7 +5737,8 @@ def sending_and_receiving_data_complete(transport, central, peripheral, trace, p
     return success
 
 
-def test_sending_and_receiving_data_in_multiple_cises(transport, central, peripheral, trace, params, send_delay_c=0):
+def test_sending_and_receiving_data_in_multiple_cises(transport, central, peripheral, trace, params,
+                                                      num_iso_data_packets_per_cis, send_delay_c=0):
     success, initiator, cis_conn_handles = state_connected_isochronous_stream_peripheral(transport, peripheral,
                                                                                          central, trace, params)
     if not initiator:
@@ -5753,9 +5754,9 @@ def test_sending_and_receiving_data_in_multiple_cises(transport, central, periph
             central: [],
         }
 
-        for i in range(2):  # send 2 HCI ISO Data packets
-            pkt_seq_num = round_num * 2 + i
-            for j in range(len(cis_conn_handles)):  # per each CIS
+        for i in range(num_iso_data_packets_per_cis):
+            pkt_seq_num = round_num * num_iso_data_packets_per_cis + i
+            for j in range(len(cis_conn_handles)):
                 s, sdu = le_iso_data_write_nbytes(transport, peripheral, trace, cis_conn_handles[j],
                                                   params.Max_SDU_P_To_C[j], pkt_seq_num, 0)
                 success = s and success
@@ -5765,7 +5766,7 @@ def test_sending_and_receiving_data_in_multiple_cises(transport, central, periph
                 # wait some time so that ISO event begins with central's Null PDU
                 transport.wait(send_delay_c)
 
-            for j in range(len(cis_conn_handles)):  # per each CIS
+            for j in range(len(cis_conn_handles)):
                 s, sdu = le_iso_data_write_nbytes(transport, central, trace, cis_conn_handles[j],
                                                   params.Max_SDU_C_To_P[j], pkt_seq_num, 0)
                 success = s and success
@@ -5808,7 +5809,7 @@ def ll_cis_per_bv_07_c(transport, upper_tester, lower_tester, trace):
     # The Lower Tester sends Null PDU to the IUT on CISes first, so lets wait a specific time prior sending ISO Data PDU
     lower_tester_send_delay = int(params.ISO_Interval / (params.NSE[0] + params.NSE[1])) + 1
 
-    success = test_sending_and_receiving_data_in_multiple_cises(transport, lower_tester, upper_tester, trace, params,
+    success = test_sending_and_receiving_data_in_multiple_cises(transport, lower_tester, upper_tester, trace, params, 2,
                                                                 lower_tester_send_delay)
 
     return success
@@ -6033,7 +6034,7 @@ def ll_cis_per_bv_31_c(transport, upper_tester, lower_tester, trace):
         BN_P_To_C               = 2,
     )
 
-    success = test_sending_and_receiving_data_in_multiple_cises(transport, lower_tester, upper_tester, trace, params)
+    success = test_sending_and_receiving_data_in_multiple_cises(transport, lower_tester, upper_tester, trace, params, 2)
 
     return success
 
