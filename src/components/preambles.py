@@ -58,7 +58,7 @@ def __verifyAndFetchMetaEvent(transport, idx, expectedEvent, trace):
 def __getCommandCompleteEvent(transport, idx, trace):
 
     return __verifyAndShowEvent(transport, idx, Events.BT_HCI_EVT_CMD_COMPLETE, trace);
-    
+
 def __random(transport, idx, trace):
     status, rand = le_rand(transport, idx, 100);
     trace.trace(6, "LE Rand Command returns status: 0x%02X; rand: 0x%016X" % (status, toNumber(rand)));
@@ -86,13 +86,13 @@ def preamble_standby(transport, idx, trace):
     try:
         flush_events(transport, idx, 100);
         le_data_flush(transport, idx, 100);
-        
+
         status = reset(transport, idx, 100);
         trace.trace(6, "Reset Command returns status: 0x%02X" % status);
         success = __getCommandCompleteEvent(transport, idx, trace) and (status == 0);
         if not success:
             trace.trace(6, "RESET command not confirmed!");
-        
+
         status, features = read_local_supported_features(transport, idx, 100);
         trace.trace(6, "Read Local Supported Features Command returns status: 0x%02X" % status);
         """
@@ -176,7 +176,7 @@ def preamble_standby(transport, idx, trace):
                  0x20 00 1F FF FF FF FF FF ~ Default + Bit 61 ~ LE Meta Event
         """
         events = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x1F, 0x00, 0x20];
-        
+
         status = set_event_mask(transport, idx, events, 100);
         trace.trace(6, "Set Event Mask Command returns status: 0x%02X" % status);
         success = __getCommandCompleteEvent(transport, idx, trace) and (status == 0) and success;
@@ -209,7 +209,7 @@ def preamble_standby(transport, idx, trace):
                  0x00 00 00 00 00 07 FF FF ~ All except 'LE Channel Selection Algorithm Event'
         """
         events = [0xFF, 0xFF, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00];
-        
+
         status = le_set_event_mask(transport, idx, events, 100);
         trace.trace(6, "LE Set Event Mask Command returns status: 0x%02X" % status);
         success = __getCommandCompleteEvent(transport, idx, trace) and (status == 0) and success;
@@ -217,7 +217,7 @@ def preamble_standby(transport, idx, trace):
             0x00 00 00 00 00 00 00 00 ~ Default.
         """
         events = [0 for _ in range(8)];
-        
+
         status = set_event_mask_page_2(transport, idx, events, 100);
         trace.trace(6, "Set Event Mask Page2 Command returns status: 0x%02X" % status);
         success = __getCommandCompleteEvent(transport, idx, trace) and (status == 0) and success;
@@ -246,11 +246,11 @@ def preamble_random_static_address(transport, idx, key, trace):
     nrand = (toNumber(rand) & 0xFFFFFF) | 0xC00000;
     _success, localHash = __encrypt(transport, idx, key, toArray(nrand, 16), trace);
     success = success and _success;
-        
+
     nlocalHash = toNumber(localHash) & 0xFFFFFF;
     address = nlocalHash | (nrand << 24);
     return success, toArray(address, 6);
-    
+
 """
     Generate a private non-resolvable random address from IRK
 """
@@ -260,14 +260,14 @@ def preamble_random_non_resolvable_address(transport, idx, key, trace):
     nrand = toNumber(rand) & 0x3FFFFF;
     _success, localHash = __encrypt(transport, idx, key, toArray(nrand, 16), trace);
     success = success and _success;
-        
+
     nlocalHash = toNumber(localHash) & 0xFFFFFF;
     address = nlocalHash | (nrand << 24);
     return success, toArray(address, 6);
 
 """
     Calculates a Random Private Address based on the IR (passed to the function)
-    
+
     The random address generation behavior is an extract from GAP [1] Section 2.1.2 and represents here the typical HCI sequences required from a Controller.
     The identity resolving key ‘irk’ is used in the test procedures in group ‘SEC’.
 
@@ -275,7 +275,7 @@ def preamble_random_non_resolvable_address(transport, idx, key, trace):
 """
 def preamble_random_address_calculated(transport, idx, key, trace):
     trace.trace(4, "Random Address Calculated preamble steps...");
-    
+
     try:
         """
             Generate IRK from IR
@@ -303,7 +303,7 @@ def preamble_random_address_calculated(transport, idx, key, trace):
 """
 def preamble_excryption_keys_calculated(transport, idx, trace):
     trace.trace(4, "Encryption Keys Calculated preamble steps...");
-    
+
     try:
         success, div = __random(transport, idx, trace);
 
@@ -383,7 +383,7 @@ def preamble_set_random_address(transport, idx, address, trace):
 
     return success;
 
-       
+
 """
     When the IUT is in advertising state or slave role, a default value for the scanning, initiating or master address used is 0x123456789ABC.
     When the IUT is in scanning state, initiating state or master role, a default value for the address used for the state of advertising
@@ -405,10 +405,10 @@ def preamble_device_address_set(transport, idx, trace):
         trace.trace(6, "Using default identity root value ir: 0x%032X" % ir);
 
         success, irk, randAddress = preamble_random_address_calculated(transport, idx, toArray(ir, 16), trace);
-        trace.trace(6, "Generated IRK: 0x%032X" % toNumber(irk)); 
+        trace.trace(6, "Generated IRK: 0x%032X" % toNumber(irk));
         trace.trace(6, "Generated random address %s" % formatAddress(randAddress));
         success = True;
-        
+
         address = 0x123456789ABC if idx == 0 else 0x456789ABCDEF;
         success = success and preamble_set_public_address(transport, idx, address, trace);
         success = success and preamble_set_random_address(transport, idx, toNumber(randAddress), trace);
@@ -496,7 +496,7 @@ def preamble_buffer_size_read(transport, idx, trace):
             0x90 88 01 00 00 80 00 20 ~ 0x2000800000018890
         """
         events = [0x90, 0x88, 0x01, 0x00, 0x00, 0x80, 0x00, 0x20];
-        
+
         status = set_event_mask(transport, idx, events, 100);
         trace.trace(6, "Set Event Mask Command returns status: 0x%02X" % status);
         success = __getCommandCompleteEvent(transport, idx, trace) and (status == 0) and success;
@@ -540,7 +540,7 @@ def preamble_ext_advertising_data_set(transport, idx, Handle, Operation, FragPre
 
 def preamble_ext_advertise_enable(transport, idx, enable, SHandle, SDuration, SMaxExtAdvEvts, trace):
     trace.trace(5, "Extended Advertising " + ("Enable" if enable else "Disable") + " preamble steps...");
-    
+
     try:
         NumberOfSets = max(len(sHandle), len(SDuration), len(SMaxExtAdvEvts));
         if len(SHandle) < NumberOfSets:
@@ -549,7 +549,7 @@ def preamble_ext_advertise_enable(transport, idx, enable, SHandle, SDuration, SM
             SDuration += [ 0 for _ in range(len(SDuration), NumberOfSets) ];
         if len(SMaxExtAdvEvts) < NumberOfSets:
             SMaxExtAdvEvts += [ 0 for _ in range(len(SMaxExtAdvEvts), NumberOfSets) ];
-            
+
         status = le_set_extended_advertising_enable(transport, idx, enable, NumberOfSets, SHandle, SDuration, SMaxExtAdvEvts, 100);
         trace.trace(6, "LE Set Extended Advertising Enable Command returns status: 0x%02X" % status);
         success = __getCommandCompleteEvent(transport, idx, trace) and (status == 0);
@@ -571,10 +571,10 @@ def preamble_scan_parameters_set(transport, idx, scanType, scanInterval, scanWin
         success = False;
 
     return success;
-    
+
 def preamble_scan_enable(transport, idx, enable, filterDuplicate, trace):
     trace.trace(5, "Scanning " + ("Enable" if enable else "Disable") + " preamble steps...");
-    
+
     try:
         status = le_set_scan_enable(transport, idx, enable, filterDuplicate, 100);
         trace.trace(6, "LE Set Scan Enable Command returns status: 0x%02X" % status);
@@ -586,14 +586,14 @@ def preamble_scan_enable(transport, idx, enable, filterDuplicate, trace):
         success = False;
 
     return success;
-    
+
 def preamble_passive_scanning(transport, idx, scanInterval, scanWindow, addrType, filterPolicy, trace):
     trace.trace(5, "Passive Scanning preamble steps...");
 
     success = preamble_scan_parameters_set(transport, idx, ScanType.PASSIVE, scanInterval, scanWindow, addrType, filterPolicy, trace);
     success = success and preamble_scan_enable(transport, idx, Scan.ENABLE, ScanFilterDuplicate.DISABLE, trace);
     return success;
-    
+
 def preamble_default_physical_channel(transport, idx, AllPhys, TxPhys, RxPhys, trace):
     trace.trace(5, "Default physical channels preamble steps...");
 
@@ -605,7 +605,7 @@ def preamble_default_physical_channel(transport, idx, AllPhys, TxPhys, RxPhys, t
         success = False;
 
     return success;
-    
+
 def public_address( address ):
     return ExtendedAddressType.PUBLIC, toArray(address, 6);
 

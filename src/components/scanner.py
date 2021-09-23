@@ -32,14 +32,14 @@ class ScanFilterDuplicate(IntEnum):
 class Scan(IntEnum):
     DISABLE = 0                    # Disable Scanning
     ENABLE  = 1                    # Enable Scanning
-    
+
 class AdvertisingReport(IntEnum):
     ADV_IND         = 0            # Connectable undirected advertising
     ADV_DIRECT_IND  = 1            # Connectable directed advertising
     ADV_SCAN_IND    = 2            # Scannable undirected advertising
     ADV_NONCONN_IND = 3            # Non connectable undirected advertising
     SCAN_RSP        = 4            # Scan Response
-    
+
 class Scanner:
     """
         A Scanner handles all aspects of Scanning.
@@ -94,7 +94,7 @@ class Scanner:
         self.firstTime = 0;
         self.lastTime = 0;
         self.pivot = 0;
-        
+
     def __verifyAndShowEvent(self, expectedEvent):
         event = get_event(self.transport, self.idx, 200);
         self.trace.trace(7, str(event));
@@ -102,7 +102,7 @@ class Scanner:
 
     def __commandCompleteEvent(self):
         return self.__verifyAndShowEvent(Events.BT_HCI_EVT_CMD_COMPLETE);
-    
+
     def __scan_parameters(self):
         status = le_set_scan_parameters(self.transport, self.idx, self.scanType, self.scanInterval, self.scanWindow, self.ownAddress.type, self.filterPolicy, 200);
         self.trace.trace(6, "LE Set Scan Parameters Command returns status: 0x%02X" % status);
@@ -170,7 +170,7 @@ class Scanner:
         return prevTime;
 
     def __monitorReports(self):
-        
+
         prevTime = 0;
         while max(self.reports, self.directReports, self.counts/2) < self.expectedReports:
 
@@ -180,9 +180,9 @@ class Scanner:
                 if self.lastTime == 0:
                     self.lastTime = prevTime;
                 self.counts += 1;
-        
+
     def __monitorResponses(self):
-        
+
         prevTime = 0;
         while (max(self.reports, self.directReports, self.counts/2) < self.expectedReports) or \
               (max(self.responses, self.reports/5, self.counts) < self.expectedResponses):
@@ -193,7 +193,7 @@ class Scanner:
                 if self.lastTime == 0:
                     self.lastTime = prevTime;
                 self.counts += 1;
-        
+
     def __monitorReportTime(self):
         """
             Advertising with connectable high duty cycle directed advertising packages (ADV_DIRECT_IND, high duty cycle) is time limited.
@@ -208,7 +208,7 @@ class Scanner:
                 prevTime = self.__handleReport(prevTime);
             else:
                 self.lastTime = prevTime;
-        
+
     """
         Monitor advertising reports / responses
     """
@@ -220,16 +220,16 @@ class Scanner:
 
         self.firstTime = 0;
         self.lastTime = 0;
-        
+
         if not timeBased is None:
             self.__monitorReportTime();
         elif self.expectedResponses is None:
             self.__monitorReports();
         else:
             self.__monitorResponses();
-        
+
         self.clear();
-   
+
     """
         Qualify advertising reports received; count, from address and content
     """
@@ -252,7 +252,7 @@ class Scanner:
             self.trace.trace(7, "Received no %s Advertise reports." % self.reportType.name);
             success = data is None;
         return success and (self.reports >= count);
-    
+
     """
         Qualify directed advertising reports received; count, from address and content
     """

@@ -37,14 +37,14 @@ class GATTData:
             last += [ max([int(characteristic.attributes['handle'].value) for characteristic in characteristics]) ];
             last[-1] += 1;
         return first, max(last) if len(last) > 0 else first;
-    
+
     def __allInSet(self, setNo, elementType):
         sets = self.mydoc.getElementsByTagName('ServiceSet_%d' % setNo);
         return sets[0].getElementsByTagName(elementType);
-        
+
     def __shortServices(self, setNo, serviceType=None, uuid=None):
         services = { 'uuid': [], 'handle': [] };
-        
+
         alls = self.__allInSet(setNo, 'Service');
         for service in alls:
             if (serviceType is None) or (serviceType == service.attributes['type'].value):
@@ -54,10 +54,10 @@ class GATTData:
                     first, last = self.__handleRange( service );
                     services['handle'] += [ first ];
         return services;
- 
+
     def __services(self, setNo, serviceType=None, uuid=None):
         services = { 'uuids': [], 'handles': [] };
-        
+
         alls = self.__allInSet(setNo, 'Service');
         for service in alls:
             if (serviceType is None) or (serviceType == service.attributes['type'].value):
@@ -67,41 +67,41 @@ class GATTData:
                     first, last = self.__handleRange( service );
                     services['handles'] += [ [first, last] ];
         return services;
- 
+
     def allServices(self, setNo):
         return self.__services(setNo);
-   
+
     def primaryServices(self, setNo, uuid=None):
         return self.__services(setNo, 'Primary Service', uuid);
-    
+
     def secondaryServices(self, setNo, uuid=None):
         return self.__shortServices(setNo, 'Secondary Service', uuid);
-    
+
     def includedServices(self, setNo):
         includes = { 'uuids': [], 'handles': [] };
-        
+
         alls = self.__allInSet(setNo, 'Include');
         for include in alls:
             includes['uuids'] += [ int(include.attributes['uuid'].value, 16) ];
             includes['handles'] += [ [ int(include.attributes['first'].value), int(include.attributes['last'].value) ] ];
         return includes;
-    
+
     def descriptors(self, setNo, serviceHandle=None, permissionsMask=None, invertMask=False):
         descriptors = { 'uuid': [], 'handle': [] };
 
         alls = self.__allInSet(setNo, 'Service');
         for service in alls:
             _serviceHandle = int(service.attributes['handle'].value);
-            if (serviceHandle is None) or (serviceHandle == _serviceHandle): 
+            if (serviceHandle is None) or (serviceHandle == _serviceHandle):
                 for descriptor in service.getElementsByTagName('Descriptor'):
                     _permissions = int(descriptor.attributes['permissions'].value);
-                    if (permissionsMask is None) or ((_permissions & permissionsMask) == (0 if invertMask else permissionsMask)): 
+                    if (permissionsMask is None) or ((_permissions & permissionsMask) == (0 if invertMask else permissionsMask)):
                         descriptors['uuid'] += [ int(descriptor.attributes['uuid'].value, 16) ];
                         descriptors['handle'] += [ int(descriptor.attributes['handle'].value) ];
                 if not serviceHandle is None:
                     break;
         return descriptors;
-    
+
     def serviceCovering(self, setNo, handle):
         service = {};
 
@@ -122,7 +122,7 @@ class GATTData:
             if (serviceHandle is None) or (serviceHandle == _serviceHandle):
                 for characteristic in service.getElementsByTagName('Characteristic'):
                     _permissions = int(characteristic.attributes['permissions'].value);
-                    if (permissionsMask is None) or ((_permissions & permissionsMask) == (0 if invertMask else permissionsMask)): 
+                    if (permissionsMask is None) or ((_permissions & permissionsMask) == (0 if invertMask else permissionsMask)):
                         characteristics['uuid'] += [ int(characteristic.attributes['uuid'].value, 16) ];
                         characteristics['handle'] += [ int(characteristic.attributes['handle'].value) ];
                         characteristics['value_handle'] += [ int(characteristic.attributes['handle'].value)+1 ];
@@ -141,8 +141,8 @@ class GATTData:
                data = [ ord(char) for char in value ];
             else:
                data = [ int(value, 16) ];
-        return data;    
-    
+        return data;
+
     def characteristicValue(self, setNo, handle):
         value = None;
         alls = self.__allInSet(setNo, 'Characteristic');
@@ -169,7 +169,7 @@ class GATTData:
                 value = descriptor.firstChild.data.strip('\r\n\t');
                 break;
         return self.__toArray(value);
-        
+
     def descriptorString(self, setNo, handle):
         value = None;
         alls = self.__allInSet(setNo, 'Descriptor');
@@ -185,8 +185,8 @@ class GATTData:
             if _handle > handle:
                 j = i-1;
                 break;
-        return { 'uuid':         _characteristics['uuid'][j], 
-                 'handle':       _characteristics['handle'][j], 
-                 'value_handle': _characteristics['value_handle'][j], 
-                 'property':     _characteristics['property'][j], 
+        return { 'uuid':         _characteristics['uuid'][j],
+                 'handle':       _characteristics['handle'][j],
+                 'value_handle': _characteristics['value_handle'][j],
+                 'property':     _characteristics['property'][j],
                  'permission':   _characteristics['permission'][j] };

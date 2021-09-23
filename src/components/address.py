@@ -39,13 +39,13 @@ class Address:
 
     def isStaticRandom(self):
         return (self.address[5] & 0xC0) == 0xC0;
-        
+
     def isResolvablePrivate(self):
         return (self.address[5] & 0xC0) == 0x40;
-        
+
     def isNonResolvablePrivate(self):
         return (self.address[5] & 0xC0) == 0;
-        
+
     def __str__(self):
         result = '{5:02X}:{4:02X}:{3:02X}:{2:02X}:{1:02X}:{0:02X}'.format(*self.address);
         if self.type is None:

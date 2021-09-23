@@ -409,26 +409,26 @@ class MetaEvents(IntEnum):
     BT_HCI_EVT_LE_CIS_REQUEST               = 26
 
 def echo(transport, idx, message, to):
-    
+
     cmd = struct.pack('<HH', Commands.CMD_ECHO_REQ, len(message)) + message;
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, len(cmd), to);
-    
+
     if ( len(cmd) != len(packet) ):
         raise Exception("echo test failed: Response too short (Expected %i bytes got %i bytes)" % (len(cmd), len(packet)));
-    
+
     RespCmd, RespLen = struct.unpack('<HH', packet[:4]);
-    
+
     if ( RespCmd != Commands.CMD_ECHO_RSP ):
         raise Exception("echo test failed: Inappropriate command response received");
-    
+
     if ( RespLen != len(message) ):
         raise Exception("echo test failed: Response length corrupted (%i)" % RespLen);
-    
+
     if ( packet[4:] != message ):
         raise Exception("echo test failed: Message content corrupted (%s)" % packet[4:]);
-    
+
     return packet[4:];
 
 """
@@ -442,47 +442,47 @@ def echo(transport, idx, message, to):
     Complete event is sent to report that Inquiry Mode has ended.
 """
 def inquire(transport, idx, lap, length, NumRsp, to):
-    
+
     cmd = struct.pack('<HHH3B', Commands.CMD_INQUIRE_REQ, 7, HCICommands.BT_HCI_OP_INQUIRY, *lap);
     cmd += struct.pack('<BB', length, NumRsp);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("Inquire command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status, = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_INQUIRE_RSP ):
         raise Exception("Inquire command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("Inquire command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
     The Disconnect command is used to terminate an existing connection.
 """
 def disconnect(transport, idx, handle, reason, to):
-    
+
     cmd = struct.pack('<HHHHB', Commands.CMD_DISCONNECT_REQ, 5, HCICommands.BT_HCI_OP_DISCONNECT, handle, reason);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("Disconnect command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_DISCONNECT_RSP ):
         raise Exception("Disconnect command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("Disconnect command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -490,23 +490,23 @@ def disconnect(transport, idx, handle, reason, to):
     parameter.
 """
 def read_remote_version_information(transport, idx, handle, to):
-    
+
     cmd = struct.pack('<HHHH', Commands.CMD_READ_REMOTE_VERSION_INFORMATION_REQ, 4, HCICommands.BT_HCI_OP_READ_REMOTE_VERSION_INFO, handle);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("Read Remote Version Information command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_READ_REMOTE_VERSION_INFORMATION_RSP ):
         raise Exception("Read Remote Version Information command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("Read Remote Version Information command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -515,23 +515,23 @@ def read_remote_version_information(transport, idx, handle, to):
     Event\94 bit in the Event_Mask shall enable or disable all LE events in the LE Meta Event (see Section 7.7.65).
 """
 def set_event_mask(transport, idx, events, to):
-    
+
     cmd = struct.pack('<HHH8B', Commands.CMD_SET_EVENT_MASK_REQ, 10, HCICommands.BT_HCI_OP_SET_EVENT_MASK, *events);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("Set Event Mask command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_SET_EVENT_MASK_RSP ):
         raise Exception("Set Event Mask command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("Set Event Mask command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -543,23 +543,23 @@ def set_event_mask(transport, idx, events, to):
     parameters for which default values are defined in the specification.
 """
 def reset(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_RESET_REQ, 2, HCICommands.BT_HCI_OP_RESET);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("Reset command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_RESET_RSP ):
         raise Exception("Reset command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("Reset command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -567,23 +567,23 @@ def reset(transport, idx, to):
     Connection_Handle shall be a Connection_Handle for an ACL connection.
 """
 def read_transmit_power_level(transport, idx, handle, levelType, to):
-    
+
     cmd = struct.pack('<HHHHB', Commands.CMD_READ_TRANSMIT_POWER_LEVEL_REQ, 5, HCICommands.BT_HCI_OP_READ_TX_POWER_LEVEL, handle, levelType);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 8, to);
-    
+
     if ( 8 != len(packet) ):
         raise Exception("Read Transmit Power Level command failed: Response too short (Expected %i bytes got %i bytes)" % (8, len(packet)));
-    
+
     RespCmd, RespLen, status, handle, TxPowerLevel = struct.unpack('<HHBHb', packet);
-    
+
     if ( RespCmd != Commands.CMD_READ_TRANSMIT_POWER_LEVEL_RSP ):
         raise Exception("Read Transmit Power Level command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 4 ):
         raise Exception("Read Transmit Power Level command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, handle, TxPowerLevel;
 
 """
@@ -591,23 +591,23 @@ def read_transmit_power_level(transport, idx, handle, levelType, to):
     Controller to the Host.
 """
 def set_controller_to_host_flow_control(transport, idx, FlowEnable, to):
-    
+
     cmd = struct.pack('<HHHB', Commands.CMD_SET_CONTROLLER_TO_HOST_FLOW_CONTROL_REQ, 3, HCICommands.BT_HCI_OP_SET_CTL_TO_HOST_FLOW, FlowEnable);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("Set Controller To Host Flow Control command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_SET_CONTROLLER_TO_HOST_FLOW_CONTROL_RSP ):
         raise Exception("Set Controller To Host Flow Control command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("Set Controller To Host Flow Control command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -615,23 +615,23 @@ def set_controller_to_host_flow_control(transport, idx, FlowEnable, to):
     HCI ACL and synchronous Data Packets sent from the Controller to the Host.
 """
 def host_buffer_size(transport, idx, AclMtu, ScoMtu, AclPkts, ScoPkts, to):
-    
+
     cmd = struct.pack('<HHHHBHH', Commands.CMD_HOST_BUFFER_SIZE_REQ, 9, HCICommands.BT_HCI_OP_HOST_BUFFER_SIZE, AclMtu, ScoMtu, AclPkts, ScoPkts);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("Host Buffer Size command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_HOST_BUFFER_SIZE_RSP ):
         raise Exception("Host Buffer Size command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("Host Buffer Size command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -644,43 +644,43 @@ def host_number_of_completed_packets(transport, idx, NumHandles, HHandle, HCount
                       HCICommands.BT_HCI_OP_HOST_NUM_COMPLETED_PACKETS, NumHandles, *list(chain(*list(zip(HHandle, HCount)))));
 
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("Host Number Of Completed Packets command failed: Response too short (Expected %i bytes got %i bytes)" % (4, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HH', packet);
-    
+
     if ( RespCmd != Commands.CMD_HOST_NUMBER_OF_COMPLETED_PACKETS_RSP ):
         raise Exception("Host Number Of Completed Packets command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("Host Number Of Completed Packets command failed: Response length field corrupted (%i)" % RespLen);
-    
+
 
 """
     The Set_Event_Mask_Page_2 command is used to control which events are generated by the HCI for the Host. The
     Event_Mask_Page_2 is a logical extension to the Event_Mask parameter of the Set_Event_Mask command.
 """
 def set_event_mask_page_2(transport, idx, EventsPage2, to):
-    
+
     cmd = struct.pack('<HHH8B', Commands.CMD_SET_EVENT_MASK_PAGE_2_REQ, 10, HCICommands.BT_HCI_OP_SET_EVENT_MASK_PAGE_2, *EventsPage2);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("Set Event Mask Page 2 command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_SET_EVENT_MASK_PAGE_2_RSP ):
         raise Exception("Set Event Mask Page 2 command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("Set Event Mask Page 2 command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -689,23 +689,23 @@ def set_event_mask_page_2(transport, idx, EventsPage2, to):
     [Vol 2] Part C, Section 3.2.
 """
 def write_le_host_support(transport, idx, suppLe, simul, to):
-    
+
     cmd = struct.pack('<HHHBB', Commands.CMD_WRITE_LE_HOST_SUPPORT_REQ, 4, HCICommands.BT_HCI_OP_LE_WRITE_LE_HOST_SUPP, suppLe, simul);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("Write LE Host Support command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_WRITE_LE_HOST_SUPPORT_RSP ):
         raise Exception("Write LE Host Support command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("Write LE Host Support command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -714,23 +714,23 @@ def write_le_host_support(transport, idx, suppLe, simul, to):
     specified Connection_Handle.
 """
 def read_authenticated_payload_timeout(transport, idx, handle, to):
-    
+
     cmd = struct.pack('<HHHH', Commands.CMD_READ_AUTHENTICATED_PAYLOAD_TIMEOUT_REQ, 4, HCICommands.BT_HCI_OP_READ_AUTH_PAYLOAD_TIMEOUT, handle);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 9, to);
-    
+
     if ( 9 != len(packet) ):
         raise Exception("Read Authenticated Payload Timeout command failed: Response too short (Expected %i bytes got %i bytes)" % (9, len(packet)));
-    
+
     RespCmd, RespLen, status, handle, AuthPayloadTimeout = struct.unpack('<HHBHH', packet);
-    
+
     if ( RespCmd != Commands.CMD_READ_AUTHENTICATED_PAYLOAD_TIMEOUT_RSP ):
         raise Exception("Read Authenticated Payload Timeout command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 5 ):
         raise Exception("Read Authenticated Payload Timeout command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, handle, AuthPayloadTimeout;
 
 """
@@ -739,23 +739,23 @@ def read_authenticated_payload_timeout(transport, idx, handle, to):
     Connection_Handle.
 """
 def write_authenticated_payload_timeout(transport, idx, handle, AuthPayloadTimeout, to):
-    
+
     cmd = struct.pack('<HHHHH', Commands.CMD_WRITE_AUTHENTICATED_PAYLOAD_TIMEOUT_REQ, 6, HCICommands.BT_HCI_OP_WRITE_AUTH_PAYLOAD_TIMEOUT, handle, AuthPayloadTimeout);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 7, to);
-    
+
     if ( 7 != len(packet) ):
         raise Exception("Write Authenticated Payload Timeout command failed: Response too short (Expected %i bytes got %i bytes)" % (7, len(packet)));
-    
+
     RespCmd, RespLen, status, handle = struct.unpack('<HHBH', packet);
-    
+
     if ( RespCmd != Commands.CMD_WRITE_AUTHENTICATED_PAYLOAD_TIMEOUT_RSP ):
         raise Exception("Write Authenticated Payload Timeout command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 3 ):
         raise Exception("Write Authenticated Payload Timeout command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, handle;
 
 """
@@ -765,23 +765,23 @@ def write_authenticated_payload_timeout(transport, idx, handle, AuthPayloadTimeo
     implementation dependent.
 """
 def read_local_version_information(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_READ_LOCAL_VERSION_INFORMATION_REQ, 2, HCICommands.BT_HCI_OP_READ_LOCAL_VERSION_INFO);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 13, to);
-    
+
     if ( 13 != len(packet) ):
         raise Exception("Read Local Version Information command failed: Response too short (Expected %i bytes got %i bytes)" % (13, len(packet)));
-    
+
     RespCmd, RespLen, status, HCIVersion, HCIRevision, LMPVersion, manufacturer, LMPSubversion = struct.unpack('<HHBBHBHH', packet);
-    
+
     if ( RespCmd != Commands.CMD_READ_LOCAL_VERSION_INFORMATION_RSP ):
         raise Exception("Read Local Version Information command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 9 ):
         raise Exception("Read Local Version Information command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, HCIVersion, HCIRevision, LMPVersion, manufacturer, LMPSubversion;
 
 """
@@ -790,24 +790,24 @@ def read_local_version_information(transport, idx, to):
     that command is also supported.
 """
 def read_local_supported_commands(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_READ_LOCAL_SUPPORTED_COMMANDS_REQ, 2, HCICommands.BT_HCI_OP_READ_SUPPORTED_COMMANDS);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 69, to);
-    
+
     if ( 69 != len(packet) ):
         raise Exception("Read Local Supported Commands command failed: Response too short (Expected %i bytes got %i bytes)" % (69, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet[:5]);
     commands = struct.unpack('<64B', packet[5:]);
-    
+
     if ( RespCmd != Commands.CMD_READ_LOCAL_SUPPORTED_COMMANDS_RSP ):
         raise Exception("Read Local Supported Commands command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 65 ):
         raise Exception("Read Local Supported Commands command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, commands;
 
 """
@@ -815,24 +815,24 @@ def read_local_supported_commands(transport, idx, to):
     the LMP features. For details see [Vol 2] Part C, Link Manager Protocol Specification.
 """
 def read_local_supported_features(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_READ_LOCAL_SUPPORTED_FEATURES_REQ, 2, HCICommands.BT_HCI_OP_READ_LOCAL_FEATURES);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 13, to);
-    
+
     if ( 13 != len(packet) ):
         raise Exception("Read Local Supported Features command failed: Response too short (Expected %i bytes got %i bytes)" % (13, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet[:5]);
     features = struct.unpack('<8B', packet[5:]);
-    
+
     if ( RespCmd != Commands.CMD_READ_LOCAL_SUPPORTED_FEATURES_RSP ):
         raise Exception("Read Local Supported Features command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 9 ):
         raise Exception("Read Local Supported Features command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, features;
 
 """
@@ -843,15 +843,15 @@ def read_local_supported_features(transport, idx, to):
     the Controller. The Read_Buffer_Size command must be issued by the Host before it sends any data to the Controller.
 """
 def read_buffer_size(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_READ_BUFFER_SIZE_REQ, 2, HCICommands.BT_HCI_OP_READ_BUFFER_SIZE);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
     assert 5 == len(packet), f"Received invalid length packet {len(packet)}"
 
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_READ_BUFFER_SIZE_RSP ):
         raise Exception("Read Buffer Size command failed: Inappropriate command response received");
 
@@ -865,7 +865,7 @@ def read_buffer_size(transport, idx, to):
     assert 7 == len(packet), f"Received invalid length packet {len(packet)}"
 
     AclMaxLen, ScoMaxLen, AclMaxNum, ScoMaxNum = struct.unpack('<HBHH', packet);
-    
+
     return status, AclMaxLen, ScoMaxLen, AclMaxNum, ScoMaxNum
 
 """
@@ -874,70 +874,70 @@ def read_buffer_size(transport, idx, to):
     the public address shall be the same as the BD_ADDR.
 """
 def read_bd_addr(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_READ_BD_ADDR_REQ, 2, HCICommands.BT_HCI_OP_READ_BD_ADDR);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 11, to);
-    
+
     if ( 11 != len(packet) ):
         raise Exception("Read BD_ADDR command failed: Response too short (Expected %i bytes got %i bytes)" % (11, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet[:5]);
     BdaddrVal = struct.unpack('<6B', packet[5:]);
-    
+
     if ( RespCmd != Commands.CMD_READ_BD_ADDR_RSP ):
         raise Exception("Read BD_ADDR command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 7 ):
         raise Exception("Read BD_ADDR command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, BdaddrVal;
 
 """
     This command reads the Received Signal Strength Indication (RSSI) value from a Controller.
 """
 def read_rssi(transport, idx, handle, to):
-    
+
     cmd = struct.pack('<HHHH', Commands.CMD_READ_RSSI_REQ, 4, HCICommands.BT_HCI_OP_READ_RSSI, handle);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 8, to);
-    
+
     if ( 8 != len(packet) ):
         raise Exception("Read RSSI command failed: Response too short (Expected %i bytes got %i bytes)" % (8, len(packet)));
-    
+
     RespCmd, RespLen, status, handle, rssi = struct.unpack('<HHBHb', packet);
-    
+
     if ( RespCmd != Commands.CMD_READ_RSSI_RSP ):
         raise Exception("Read RSSI command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 4 ):
         raise Exception("Read RSSI command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, handle, rssi;
 
 """
     The LE_Set_Event_Mask command is used to control which LE events are generated by the HCI for the Host.
 """
 def le_set_event_mask(transport, idx, events, to):
-    
+
     cmd = struct.pack('<HHH8B', Commands.CMD_LE_SET_EVENT_MASK_REQ, 10, HCICommands.BT_HCI_OP_LE_SET_EVENT_MASK, *events);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Event Mask command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_EVENT_MASK_RSP ):
         raise Exception("LE Set Event Mask command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Event Mask command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -948,47 +948,47 @@ def le_set_event_mask(transport, idx, events, to):
     command must be issued by the Host before it sends any data to an LE Controller (see Section 4.1.1).
 """
 def le_read_buffer_size(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_READ_BUFFER_SIZE_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_BUFFER_SIZE);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 8, to);
-    
+
     if ( 8 != len(packet) ):
         raise Exception("LE Read Buffer Size command failed: Response too short (Expected %i bytes got %i bytes)" % (8, len(packet)));
-    
+
     RespCmd, RespLen, status, LeMaxLen, LeMaxNum = struct.unpack('<HHBHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_READ_BUFFER_SIZE_RSP ):
         raise Exception("LE Read Buffer Size command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 4 ):
         raise Exception("LE Read Buffer Size command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, LeMaxLen, LeMaxNum;
 
 """
     This command requests the list of the supported LE features for the Controller.
 """
 def le_read_local_supported_features(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_READ_LOCAL_SUPPORTED_FEATURES_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_LOCAL_FEATURES);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 13, to);
-    
+
     if ( 13 != len(packet) ):
         raise Exception("LE Read Local Supported Features command failed: Response too short (Expected %i bytes got %i bytes)" % (13, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet[:5]);
     features = struct.unpack('<8B', packet[5:]);
-    
+
     if ( RespCmd != Commands.CMD_LE_READ_LOCAL_SUPPORTED_FEATURES_RSP ):
         raise Exception("LE Read Local Supported Features command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 9 ):
         raise Exception("LE Read Local Supported Features command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, features;
 
 """
@@ -996,47 +996,47 @@ def le_read_local_supported_features(transport, idx, to):
     Part B, Section 1.3).
 """
 def le_set_random_address(transport, idx, BdaddrVal, to):
-    
+
     cmd = struct.pack('<HHH6B', Commands.CMD_LE_SET_RANDOM_ADDRESS_REQ, 8, HCICommands.BT_HCI_OP_LE_SET_RANDOM_ADDRESS, *BdaddrVal);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Random Address command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_RANDOM_ADDRESS_RSP ):
         raise Exception("LE Set Random Address command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Random Address command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
     The LE_Set_Advertising_Parameters command is used by the Host to set the advertising parameters.
 """
 def le_set_advertising_parameters(transport, idx, MinInterval, MaxInterval, paramType, OwnAddrType, DirectAddrType, AVal, ChannelMap, FilterPolicy, to):
-    
+
     cmd = struct.pack('<HHHHHBBB6B', Commands.CMD_LE_SET_ADVERTISING_PARAMETERS_REQ, 17, HCICommands.BT_HCI_OP_LE_SET_ADV_PARAM, MinInterval, MaxInterval, paramType, OwnAddrType, DirectAddrType, *AVal);
     cmd += struct.pack('<BB', ChannelMap, FilterPolicy);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Advertising Parameters command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_ADVERTISING_PARAMETERS_RSP ):
         raise Exception("LE Set Advertising Parameters command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Advertising Parameters command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -1044,69 +1044,69 @@ def le_set_advertising_parameters(transport, idx, MinInterval, MaxInterval, para
     advertising channel packets.
 """
 def le_read_advertising_channel_tx_power(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_READ_ADVERTISING_CHANNEL_TX_POWER_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_ADV_CHAN_TX_POWER);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 6, to);
-    
+
     if ( 6 != len(packet) ):
         raise Exception("LE Read Advertising Channel TX Power command failed: Response too short (Expected %i bytes got %i bytes)" % (6, len(packet)));
-    
+
     RespCmd, RespLen, status, TxPowerLevel = struct.unpack('<HHBb', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_READ_ADVERTISING_CHANNEL_TX_POWER_RSP ):
         raise Exception("LE Read Advertising Channel TX Power command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 2 ):
         raise Exception("LE Read Advertising Channel TX Power command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, TxPowerLevel;
 
 """
     The LE_Set_Advertising_Data command is used to set the data used in advertising packets that have a data field.
 """
 def le_set_advertising_data(transport, idx, dataLen, data, to):
-    
+
     cmd = struct.pack('<HHHB31B', Commands.CMD_LE_SET_ADVERTISING_DATA_REQ, 34, HCICommands.BT_HCI_OP_LE_SET_ADV_DATA, dataLen, *data);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Advertising Data command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_ADVERTISING_DATA_RSP ):
         raise Exception("LE Set Advertising Data command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Advertising Data command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
     This command is used to provide data used in Scanning Packets that have a data field.
 """
 def le_set_scan_response_data(transport, idx, dataLen, data, to):
-    
+
     cmd = struct.pack('<HHHB31B', Commands.CMD_LE_SET_SCAN_RESPONSE_DATA_REQ, 34, HCICommands.BT_HCI_OP_LE_SET_SCAN_RSP_DATA, dataLen, *data);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Scan Response Data command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_SCAN_RESPONSE_DATA_RSP ):
         raise Exception("LE Set Scan Response Data command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Scan Response Data command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -1114,23 +1114,23 @@ def le_set_scan_response_data(transport, idx, dataLen, data, to):
     manages the timing of advertisements as per the advertising parameters given in the LE_Set_Advertising_Parameters command.
 """
 def le_set_advertising_enable(transport, idx, enable, to):
-    
+
     cmd = struct.pack('<HHHB', Commands.CMD_LE_SET_ADVERTISING_ENABLE_REQ, 3, HCICommands.BT_HCI_OP_LE_SET_ADV_ENABLE, enable);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Advertising Enable command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_ADVERTISING_ENABLE_RSP ):
         raise Exception("LE Set Advertising Enable command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Advertising Enable command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -1138,70 +1138,70 @@ def le_set_advertising_enable(transport, idx, enable, to):
     scan to perform.
 """
 def le_set_scan_parameters(transport, idx, ScanType, interval, window, AddrType, FilterPolicy, to):
-    
+
     cmd = struct.pack('<HHHBHHBB', Commands.CMD_LE_SET_SCAN_PARAMETERS_REQ, 9, HCICommands.BT_HCI_OP_LE_SET_SCAN_PARAM, ScanType, interval, window, AddrType, FilterPolicy);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Scan Parameters command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_SCAN_PARAMETERS_RSP ):
         raise Exception("LE Set Scan Parameters command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Scan Parameters command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
     The LE_Set_Scan_Enable command is used to start scanning. Scanning is used to discover advertising devices nearby.
 """
 def le_set_scan_enable(transport, idx, enable, FilterDup, to):
-    
+
     cmd = struct.pack('<HHHBB', Commands.CMD_LE_SET_SCAN_ENABLE_REQ, 4, HCICommands.BT_HCI_OP_LE_SET_SCAN_ENABLE, enable, FilterDup);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Scan Enable command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_SCAN_ENABLE_RSP ):
         raise Exception("LE Set Scan Enable command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Scan Enable command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
     The LE_Create_Connection command is used to create a Link Layer connection to a connectable advertiser.
 """
 def le_create_connection(transport, idx, ScanInterval, ScanWindow, FilterPolicy, PeerAddrType, AVal, OwnAddrType, ConnIntervalMin, ConnIntervalMax, ConnLatency, SupervisionTimeout, MinCeLen, MaxCeLen, to):
-    
+
     cmd = struct.pack('<HHHHHBB6B', Commands.CMD_LE_CREATE_CONNECTION_REQ, 27, HCICommands.BT_HCI_OP_LE_CREATE_CONN, ScanInterval, ScanWindow, FilterPolicy, PeerAddrType, *AVal);
     cmd += struct.pack('<BHHHHHH', OwnAddrType, ConnIntervalMin, ConnIntervalMax, ConnLatency, SupervisionTimeout, MinCeLen, MaxCeLen);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Create Connection command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_CREATE_CONNECTION_RSP ):
         raise Exception("LE Create Connection command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Create Connection command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -1211,23 +1211,23 @@ def le_create_connection(transport, idx, ScanInterval, ScanWindow, FilterPolicy,
     commands, and before the LE Connection Complete or LE Enhanced Connection Complete events.
 """
 def le_create_connection_cancel(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_CREATE_CONNECTION_CANCEL_REQ, 2, HCICommands.BT_HCI_OP_LE_CREATE_CONN_CANCEL);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Create Connection Cancel command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_CREATE_CONNECTION_CANCEL_RSP ):
         raise Exception("LE Create Connection Cancel command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Create Connection Cancel command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -1235,69 +1235,69 @@ def le_create_connection_cancel(transport, idx, to):
     Controller.
 """
 def le_read_white_list_size(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_READ_WHITE_LIST_SIZE_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_WL_SIZE);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 6, to);
-    
+
     if ( 6 != len(packet) ):
         raise Exception("LE Read White List Size command failed: Response too short (Expected %i bytes got %i bytes)" % (6, len(packet)));
-    
+
     RespCmd, RespLen, status, WlSize = struct.unpack('<HHBB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_READ_WHITE_LIST_SIZE_RSP ):
         raise Exception("LE Read White List Size command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 2 ):
         raise Exception("LE Read White List Size command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, WlSize;
 
 """
     The LE_Clear_White_List command is used to clear the White List stored in the Controller.
 """
 def le_clear_white_list(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_CLEAR_WHITE_LIST_REQ, 2, HCICommands.BT_HCI_OP_LE_CLEAR_WL);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Clear White List command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_CLEAR_WHITE_LIST_RSP ):
         raise Exception("LE Clear White List command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Clear White List command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
     The LE_Add_Device_To_White_List command is used to add a single device to the White List stored in the Controller.
 """
 def le_add_device_to_white_list(transport, idx, AddrType, AVal, to):
-    
+
     cmd = struct.pack('<HHHB6B', Commands.CMD_LE_ADD_DEVICE_TO_WHITE_LIST_REQ, 9, HCICommands.BT_HCI_OP_LE_ADD_DEV_TO_WL, AddrType, *AVal);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Add Device To White List command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_ADD_DEVICE_TO_WHITE_LIST_RSP ):
         raise Exception("LE Add Device To White List command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Add Device To White List command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -1305,23 +1305,23 @@ def le_add_device_to_white_list(transport, idx, AddrType, AVal, to):
     Controller.
 """
 def le_remove_device_from_white_list(transport, idx, AddrType, AVal, to):
-    
+
     cmd = struct.pack('<HHHB6B', Commands.CMD_LE_REMOVE_DEVICE_FROM_WHITE_LIST_REQ, 9, HCICommands.BT_HCI_OP_LE_REM_DEV_FROM_WL, AddrType, *AVal);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Remove Device From White List command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_REMOVE_DEVICE_FROM_WHITE_LIST_RSP ):
         raise Exception("LE Remove Device From White List command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Remove Device From White List command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -1329,23 +1329,23 @@ def le_remove_device_from_white_list(transport, idx, AddrType, AVal, to):
     be issued on both the master and slave.
 """
 def le_connection_update(transport, idx, handle, ConnIntervalMin, ConnIntervalMax, ConnLatency, SupervisionTimeout, MinCeLen, MaxCeLen, to):
-    
+
     cmd = struct.pack('<HHHHHHHHHH', Commands.CMD_LE_CONNECTION_UPDATE_REQ, 16, HCICommands.BT_HCI_OP_LE_CONN_UPDATE, handle, ConnIntervalMin, ConnIntervalMax, ConnLatency, SupervisionTimeout, MinCeLen, MaxCeLen);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Connection Update command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_CONNECTION_UPDATE_RSP ):
         raise Exception("LE Connection Update command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Connection Update command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -1355,47 +1355,47 @@ def le_connection_update(transport, idx, handle, ConnIntervalMin, ConnIntervalMa
     Section 4.5.8.1).
 """
 def le_set_host_channel_classification(transport, idx, ChMap, to):
-    
+
     cmd = struct.pack('<HHH5B', Commands.CMD_LE_SET_HOST_CHANNEL_CLASSIFICATION_REQ, 7, HCICommands.BT_HCI_OP_LE_SET_HOST_CHAN_CLASSIF, *ChMap);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Host Channel Classification command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_HOST_CHANNEL_CLASSIFICATION_RSP ):
         raise Exception("LE Set Host Channel Classification command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Host Channel Classification command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
     The LE_Read_Channel_Map command returns the current Channel_Map for the specified Connection_Handle.
 """
 def le_read_channel_map(transport, idx, handle, to):
-    
+
     cmd = struct.pack('<HHHH', Commands.CMD_LE_READ_CHANNEL_MAP_REQ, 4, HCICommands.BT_HCI_OP_LE_READ_CHAN_MAP, handle);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 12, to);
-    
+
     if ( 12 != len(packet) ):
         raise Exception("LE Read Channel Map command failed: Response too short (Expected %i bytes got %i bytes)" % (12, len(packet)));
-    
+
     RespCmd, RespLen, status, handle = struct.unpack('<HHBH', packet[:7]);
     ChMap = struct.unpack('<5B', packet[7:]);
-    
+
     if ( RespCmd != Commands.CMD_LE_READ_CHANNEL_MAP_RSP ):
         raise Exception("LE Read Channel Map command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 8 ):
         raise Exception("LE Read Channel Map command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, handle, ChMap;
 
 """
@@ -1403,23 +1403,23 @@ def le_read_channel_map(transport, idx, handle, to):
     the features supported by the remote device. For details see [Vol 6] Part B, Section 4.6.
 """
 def le_read_remote_features(transport, idx, handle, to):
-    
+
     cmd = struct.pack('<HHHH', Commands.CMD_LE_READ_REMOTE_FEATURES_REQ, 4, HCICommands.BT_HCI_OP_LE_READ_REMOTE_FEATURES, handle);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Read Remote Features command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_READ_REMOTE_FEATURES_RSP ):
         raise Exception("LE Read Remote Features command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Read Remote Features command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -1427,25 +1427,25 @@ def le_read_remote_features(transport, idx, handle, to):
     in the command and returns the Encrypted_Data to the Host.
 """
 def le_encrypt(transport, idx, key, plaintext, to):
-    
+
     cmd = struct.pack('<HHH16B', Commands.CMD_LE_ENCRYPT_REQ, 34, HCICommands.BT_HCI_OP_LE_ENCRYPT, *key);
     cmd += struct.pack('<16B', *plaintext);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 21, to);
-    
+
     if ( 21 != len(packet) ):
         raise Exception("LE Encrypt command failed: Response too short (Expected %i bytes got %i bytes)" % (21, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet[:5]);
     EncData = struct.unpack('<16B', packet[5:]);
-    
+
     if ( RespCmd != Commands.CMD_LE_ENCRYPT_RSP ):
         raise Exception("LE Encrypt command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 17 ):
         raise Exception("LE Encrypt command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, EncData;
 
 """
@@ -1453,24 +1453,24 @@ def le_encrypt(transport, idx, key, plaintext, to):
     Random_Number shall be generated according to [Vol 2] Part H, Section 2 if the LE Feature (LE Encryption) is supported.
 """
 def le_rand(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_RAND_REQ, 2, HCICommands.BT_HCI_OP_LE_RAND);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 13, to);
-    
+
     if ( 13 != len(packet) ):
         raise Exception("LE Rand command failed: Response too short (Expected %i bytes got %i bytes)" % (13, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet[:5]);
     rand = struct.unpack('<8B', packet[5:]);
-    
+
     if ( RespCmd != Commands.CMD_LE_RAND_RSP ):
         raise Exception("LE Rand command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 9 ):
         raise Exception("LE Rand command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, rand;
 
 """
@@ -1478,23 +1478,23 @@ def le_rand(transport, idx, to):
     specified by the Connection_Handle, and once authenticated will encrypt the connection.
 """
 def le_start_encryption(transport, idx, handle, rand, ediv, ltk, to):
-    
+
     cmd = struct.pack('<HHHHQH16B', Commands.CMD_LE_START_ENCRYPTION_REQ, 30, HCICommands.BT_HCI_OP_LE_START_ENCRYPTION, handle, rand, ediv, *ltk);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Start Encryption command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_START_ENCRYPTION_RSP ):
         raise Exception("LE Start Encryption command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Start Encryption command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -1503,23 +1503,23 @@ def le_start_encryption(transport, idx, handle, rand, ediv, ltk, to):
     in [Vol 6] Part B, Section 5.1.3.
 """
 def le_long_term_key_request_reply(transport, idx, handle, ltk, to):
-    
+
     cmd = struct.pack('<HHHH16B', Commands.CMD_LE_LONG_TERM_KEY_REQUEST_REPLY_REQ, 20, HCICommands.BT_HCI_OP_LE_LTK_REQ_REPLY, handle, *ltk);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 7, to);
-    
+
     if ( 7 != len(packet) ):
         raise Exception("LE Long Term Key Request Reply command failed: Response too short (Expected %i bytes got %i bytes)" % (7, len(packet)));
-    
+
     RespCmd, RespLen, status, handle = struct.unpack('<HHBH', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_LONG_TERM_KEY_REQUEST_REPLY_RSP ):
         raise Exception("LE Long Term Key Request Reply command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 3 ):
         raise Exception("LE Long Term Key Request Reply command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, handle;
 
 """
@@ -1527,23 +1527,23 @@ def le_long_term_key_request_reply(transport, idx, handle, ltk, to):
     Controller if the Host cannot provide a Long Term Key for this Connection_Handle.
 """
 def le_long_term_key_request_negative_reply(transport, idx, handle, to):
-    
+
     cmd = struct.pack('<HHHH', Commands.CMD_LE_LONG_TERM_KEY_REQUEST_NEGATIVE_REPLY_REQ, 4, HCICommands.BT_HCI_OP_LE_LTK_REQ_NEG_REPLY, handle);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 7, to);
-    
+
     if ( 7 != len(packet) ):
         raise Exception("LE Long Term Key Request Negative Reply command failed: Response too short (Expected %i bytes got %i bytes)" % (7, len(packet)));
-    
+
     RespCmd, RespLen, status, handle = struct.unpack('<HHBH', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_LONG_TERM_KEY_REQUEST_NEGATIVE_REPLY_RSP ):
         raise Exception("LE Long Term Key Request Negative Reply command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 3 ):
         raise Exception("LE Long Term Key Request Negative Reply command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, handle;
 
 """
@@ -1553,24 +1553,24 @@ def le_long_term_key_request_negative_reply(transport, idx, handle, to):
     combinations.
 """
 def le_read_supported_states(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_READ_SUPPORTED_STATES_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_SUPP_STATES);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 13, to);
-    
+
     if ( 13 != len(packet) ):
         raise Exception("LE Read Supported States command failed: Response too short (Expected %i bytes got %i bytes)" % (13, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet[:5]);
     LeStates = struct.unpack('<8B', packet[5:]);
-    
+
     if ( RespCmd != Commands.CMD_LE_READ_SUPPORTED_STATES_RSP ):
         raise Exception("LE Read Supported States command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 9 ):
         raise Exception("LE Read Supported States command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, LeStates;
 
 """
@@ -1578,23 +1578,23 @@ def le_read_supported_states(transport, idx, to):
     generates the test reference packets.
 """
 def le_receiver_test(transport, idx, RxCh, to):
-    
+
     cmd = struct.pack('<HHHB', Commands.CMD_LE_RECEIVER_TEST_REQ, 3, HCICommands.BT_HCI_OP_LE_RX_TEST, RxCh);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Receiver Test command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_RECEIVER_TEST_RSP ):
         raise Exception("LE Receiver Test command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Receiver Test command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -1602,23 +1602,23 @@ def le_receiver_test(transport, idx, RxCh, to):
     shall transmit at maximum power.
 """
 def le_transmitter_test(transport, idx, TxCh, TestDataLen, PktPayload, to):
-    
+
     cmd = struct.pack('<HHHBBB', Commands.CMD_LE_TRANSMITTER_TEST_REQ, 5, HCICommands.BT_HCI_OP_LE_TX_TEST, TxCh, TestDataLen, PktPayload);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Transmitter Test command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_TRANSMITTER_TEST_RSP ):
         raise Exception("LE Transmitter Test command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Transmitter Test command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -1626,23 +1626,23 @@ def le_transmitter_test(transport, idx, TxCh, TestDataLen, PktPayload, to):
     as 0x0000. The Number_Of_Packets is an unsigned number and contains the number of received packets.
 """
 def le_test_end(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_TEST_END_REQ, 2, HCICommands.BT_HCI_OP_LE_TEST_END);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 7, to);
-    
+
     if ( 7 != len(packet) ):
         raise Exception("LE Test End command failed: Response too short (Expected %i bytes got %i bytes)" % (7, len(packet)));
-    
+
     RespCmd, RespLen, status, RxPktCount = struct.unpack('<HHBH', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_TEST_END_RSP ):
         raise Exception("LE Test End command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 3 ):
         raise Exception("LE Test End command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, RxPktCount;
 
 """
@@ -1650,23 +1650,23 @@ def le_test_end(transport, idx, to):
     This indicates that the Host has accepted the remote device\92s request to change connection parameters.
 """
 def le_remote_connection_parameter_request_reply(transport, idx, handle, IntervalMin, IntervalMax, latency, timeout, MinCeLen, MaxCeLen, to):
-    
+
     cmd = struct.pack('<HHHHHHHHHH', Commands.CMD_LE_REMOTE_CONNECTION_PARAMETER_REQUEST_REPLY_REQ, 16, HCICommands.BT_HCI_OP_LE_CONN_PARAM_REQ_REPLY, handle, IntervalMin, IntervalMax, latency, timeout, MinCeLen, MaxCeLen);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 7, to);
-    
+
     if ( 7 != len(packet) ):
         raise Exception("LE Remote Connection Parameter Request Reply command failed: Response too short (Expected %i bytes got %i bytes)" % (7, len(packet)));
-    
+
     RespCmd, RespLen, status, handle = struct.unpack('<HHBH', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_REMOTE_CONNECTION_PARAMETER_REQUEST_REPLY_RSP ):
         raise Exception("LE Remote Connection Parameter Request Reply command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 3 ):
         raise Exception("LE Remote Connection Parameter Request Reply command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, handle;
 
 """
@@ -1675,23 +1675,23 @@ def le_remote_connection_parameter_request_reply(transport, idx, handle, Interva
     rejection is given in the Reason parameter.
 """
 def le_remote_connection_parameter_request_negative_reply(transport, idx, handle, reason, to):
-    
+
     cmd = struct.pack('<HHHHB', Commands.CMD_LE_REMOTE_CONNECTION_PARAMETER_REQUEST_NEGATIVE_REPLY_REQ, 5, HCICommands.BT_HCI_OP_LE_CONN_PARAM_REQ_NEG_REPLY, handle, reason);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 7, to);
-    
+
     if ( 7 != len(packet) ):
         raise Exception("LE Remote Connection Parameter Request Negative Reply command failed: Response too short (Expected %i bytes got %i bytes)" % (7, len(packet)));
-    
+
     RespCmd, RespLen, status, handle = struct.unpack('<HHBH', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_REMOTE_CONNECTION_PARAMETER_REQUEST_NEGATIVE_REPLY_RSP ):
         raise Exception("LE Remote Connection Parameter Request Negative Reply command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 3 ):
         raise Exception("LE Remote Connection Parameter Request Negative Reply command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, handle;
 
 """
@@ -1700,23 +1700,23 @@ def le_remote_connection_parameter_request_negative_reply(transport, idx, handle
     Controller may use smaller or larger values based on local information.
 """
 def le_set_data_length(transport, idx, handle, TxOctets, TxTime, to):
-    
+
     cmd = struct.pack('<HHHHHH', Commands.CMD_LE_SET_DATA_LENGTH_REQ, 8, HCICommands.BT_HCI_OP_LE_SET_DATA_LEN, handle, TxOctets, TxTime);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 7, to);
-    
+
     if ( 7 != len(packet) ):
         raise Exception("LE Set Data Length command failed: Response too short (Expected %i bytes got %i bytes)" % (7, len(packet)));
-    
+
     RespCmd, RespLen, status, handle = struct.unpack('<HHBH', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_DATA_LENGTH_RSP ):
         raise Exception("LE Set Data Length command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 3 ):
         raise Exception("LE Set Data Length command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, handle;
 
 """
@@ -1725,23 +1725,23 @@ def le_set_data_length(transport, idx, handle, TxOctets, TxTime, to):
     maximum packet transmission time to be used for new connections (see [Vol 6] Part B, Section 4.5.10).
 """
 def le_read_suggested_default_data_length(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_READ_SUGGESTED_DEFAULT_DATA_LENGTH_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_DEFAULT_DATA_LEN);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 9, to);
-    
+
     if ( 9 != len(packet) ):
         raise Exception("LE Read Suggested Default Data Length command failed: Response too short (Expected %i bytes got %i bytes)" % (9, len(packet)));
-    
+
     RespCmd, RespLen, status, MaxTxOctets, MaxTxTime = struct.unpack('<HHBHH', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_READ_SUGGESTED_DEFAULT_DATA_LENGTH_RSP ):
         raise Exception("LE Read Suggested Default Data Length command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 5 ):
         raise Exception("LE Read Suggested Default Data Length command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, MaxTxOctets, MaxTxTime;
 
 """
@@ -1751,23 +1751,23 @@ def le_read_suggested_default_data_length(transport, idx, to):
     (see [Vol 6] Part B, Section 4.5.10).
 """
 def le_write_suggested_default_data_length(transport, idx, MaxTxOctets, MaxTxTime, to):
-    
+
     cmd = struct.pack('<HHHHH', Commands.CMD_LE_WRITE_SUGGESTED_DEFAULT_DATA_LENGTH_REQ, 6, HCICommands.BT_HCI_OP_LE_WRITE_DEFAULT_DATA_LEN, MaxTxOctets, MaxTxTime);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Write Suggested Default Data Length command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_WRITE_SUGGESTED_DEFAULT_DATA_LENGTH_RSP ):
         raise Exception("LE Write Suggested Default Data Length command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Write Suggested Default Data Length command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -1776,23 +1776,23 @@ def le_write_suggested_default_data_length(transport, idx, MaxTxOctets, MaxTxTim
     command shall not be used when Secure Connections is used over the BR/EDR transport.
 """
 def le_read_local_p_256_public_key_command(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_READ_LOCAL_P_256_PUBLIC_KEY_COMMAND_REQ, 2, HCICommands.BT_HCI_OP_LE_P256_PUBLIC_KEY);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Read Local P-256 Public Key Command command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_READ_LOCAL_P_256_PUBLIC_KEY_COMMAND_RSP ):
         raise Exception("LE Read Local P-256 Public Key Command command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Read Local P-256 Public Key Command command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -1802,23 +1802,23 @@ def le_read_local_p_256_public_key_command(transport, idx, to):
     generated using any keys used for Secure Connections over the BR/EDR transport.
 """
 def le_generate_dhkey_command(transport, idx, key, to):
-    
+
     cmd = struct.pack('<HHH64B', Commands.CMD_LE_GENERATE_DHKEY_COMMAND_REQ, 66, HCICommands.BT_HCI_OP_LE_GENERATE_DHKEY, *key);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Generate DHKey Command command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_GENERATE_DHKEY_COMMAND_RSP ):
         raise Exception("LE Generate DHKey Command command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Generate DHKey Command command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -1826,25 +1826,25 @@ def le_generate_dhkey_command(transport, idx, key, to):
     Resolvable Private Addresses in the Controller.
 """
 def le_add_device_to_resolving_list(transport, idx, PeerIdAddrType, AVal, PeerIrk, LocalIrk, to):
-    
+
     cmd = struct.pack('<HHHB6B', Commands.CMD_LE_ADD_DEVICE_TO_RESOLVING_LIST_REQ, 41, HCICommands.BT_HCI_OP_LE_ADD_DEV_TO_RL, PeerIdAddrType, *AVal);
     cmd += struct.pack('<16B', *PeerIrk);
     cmd += struct.pack('<16B', *LocalIrk);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Add Device To Resolving List command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_ADD_DEVICE_TO_RESOLVING_LIST_RSP ):
         raise Exception("LE Add Device To Resolving List command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Add Device To Resolving List command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -1852,23 +1852,23 @@ def le_add_device_to_resolving_list(transport, idx, PeerIdAddrType, AVal, PeerIr
     to resolve Resolvable Private Addresses in the Controller.
 """
 def le_remove_device_from_resolving_list(transport, idx, PeerIdAddrType, AVal, to):
-    
+
     cmd = struct.pack('<HHHB6B', Commands.CMD_LE_REMOVE_DEVICE_FROM_RESOLVING_LIST_REQ, 9, HCICommands.BT_HCI_OP_LE_REM_DEV_FROM_RL, PeerIdAddrType, *AVal);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Remove Device From Resolving List command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_REMOVE_DEVICE_FROM_RESOLVING_LIST_RSP ):
         raise Exception("LE Remove Device From Resolving List command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Remove Device From Resolving List command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -1876,23 +1876,23 @@ def le_remove_device_from_resolving_list(transport, idx, PeerIdAddrType, AVal, t
     Resolvable Private Addresses in the Controller.
 """
 def le_clear_resolving_list(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_CLEAR_RESOLVING_LIST_REQ, 2, HCICommands.BT_HCI_OP_LE_CLEAR_RL);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Clear Resolving List command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_CLEAR_RESOLVING_LIST_RSP ):
         raise Exception("LE Clear Resolving List command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Clear Resolving List command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -1901,23 +1901,23 @@ def le_clear_resolving_list(transport, idx, to):
     can change it at any time (e.g. because the memory used to store the list can also be used for other purposes).
 """
 def le_read_resolving_list_size(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_READ_RESOLVING_LIST_SIZE_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_RL_SIZE);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 6, to);
-    
+
     if ( 6 != len(packet) ):
         raise Exception("LE Read Resolving List Size command failed: Response too short (Expected %i bytes got %i bytes)" % (6, len(packet)));
-    
+
     RespCmd, RespLen, status, RlSize = struct.unpack('<HHBB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_READ_RESOLVING_LIST_SIZE_RSP ):
         raise Exception("LE Read Resolving List Size command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 2 ):
         raise Exception("LE Read Resolving List Size command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, RlSize;
 
 """
@@ -1926,24 +1926,24 @@ def le_read_resolving_list_size(transport, idx, to):
     the command is called.
 """
 def le_read_peer_resolvable_address(transport, idx, PeerIdAddrType, AVal, to):
-    
+
     cmd = struct.pack('<HHHB6B', Commands.CMD_LE_READ_PEER_RESOLVABLE_ADDRESS_REQ, 9, HCICommands.BT_HCI_OP_LE_READ_PEER_RPA, PeerIdAddrType, *AVal);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 11, to);
-    
+
     if ( 11 != len(packet) ):
         raise Exception("LE Read Peer Resolvable Address command failed: Response too short (Expected %i bytes got %i bytes)" % (11, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet[:5]);
     PeerRpaVal = struct.unpack('<6B', packet[5:]);
-    
+
     if ( RespCmd != Commands.CMD_LE_READ_PEER_RESOLVABLE_ADDRESS_RSP ):
         raise Exception("LE Read Peer Resolvable Address command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 7 ):
         raise Exception("LE Read Peer Resolvable Address command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, list(PeerRpaVal);
 
 """
@@ -1951,24 +1951,24 @@ def le_read_peer_resolvable_address(transport, idx, PeerIdAddrType, AVal, to):
     the corresponding peer Identity Address. The local\92s resolvable address being used may change after the command is called.
 """
 def le_read_local_resolvable_address(transport, idx, PeerIdAddrType, AVal, to):
-    
+
     cmd = struct.pack('<HHHB6B', Commands.CMD_LE_READ_LOCAL_RESOLVABLE_ADDRESS_REQ, 9, HCICommands.BT_HCI_OP_LE_READ_LOCAL_RPA, PeerIdAddrType, *AVal);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 11, to);
-    
+
     if ( 11 != len(packet) ):
         raise Exception("LE Read Local Resolvable Address command failed: Response too short (Expected %i bytes got %i bytes)" % (11, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet[:5]);
     LocalRpaVal = struct.unpack('<6B', packet[5:]);
-    
+
     if ( RespCmd != Commands.CMD_LE_READ_LOCAL_RESOLVABLE_ADDRESS_RSP ):
         raise Exception("LE Read Local Resolvable Address command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 7 ):
         raise Exception("LE Read Local Resolvable Address command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, list(LocalRpaVal);
 
 """
@@ -1977,23 +1977,23 @@ def le_read_local_resolvable_address(transport, idx, PeerIdAddrType, AVal, to):
     Resolvable Private Address.
 """
 def le_set_address_resolution_enable(transport, idx, enable, to):
-    
+
     cmd = struct.pack('<HHHB', Commands.CMD_LE_SET_ADDRESS_RESOLUTION_ENABLE_REQ, 3, HCICommands.BT_HCI_OP_LE_SET_ADDR_RES_ENABLE, enable);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Address Resolution Enable command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_ADDRESS_RESOLUTION_ENABLE_RSP ):
         raise Exception("LE Set Address Resolution Enable command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Address Resolution Enable command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -2001,23 +2001,23 @@ def le_set_address_resolution_enable(transport, idx, enable, to):
     Address before a new resolvable private address is generated and starts being used.
 """
 def le_set_resolvable_private_address_timeout(transport, idx, RpaTimeout, to):
-    
+
     cmd = struct.pack('<HHHH', Commands.CMD_LE_SET_RESOLVABLE_PRIVATE_ADDRESS_TIMEOUT_REQ, 4, HCICommands.BT_HCI_OP_LE_SET_RPA_TIMEOUT, RpaTimeout);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Resolvable Private Address Timeout command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_RESOLVABLE_PRIVATE_ADDRESS_TIMEOUT_RSP ):
         raise Exception("LE Set Resolvable Private Address Timeout command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Resolvable Private Address Timeout command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -2026,23 +2026,23 @@ def le_set_resolvable_private_address_timeout(transport, idx, RpaTimeout, to):
     and supportedMaxRxTime, see [Vol 6] Part B, Section 4.5.10).
 """
 def le_read_maximum_data_length(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_READ_MAXIMUM_DATA_LENGTH_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_MAX_DATA_LEN);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 13, to);
-    
+
     if ( 13 != len(packet) ):
         raise Exception("LE Read Maximum Data Length command failed: Response too short (Expected %i bytes got %i bytes)" % (13, len(packet)));
-    
+
     RespCmd, RespLen, status, MaxTxOctets, MaxTxTime, MaxRxOctets, MaxRxTime = struct.unpack('<HHBHHHH', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_READ_MAXIMUM_DATA_LENGTH_RSP ):
         raise Exception("LE Read Maximum Data Length command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 9 ):
         raise Exception("LE Read Maximum Data Length command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, MaxTxOctets, MaxTxTime, MaxRxOctets, MaxRxTime;
 
 """
@@ -2050,23 +2050,23 @@ def le_read_maximum_data_length(transport, idx, to):
     Connection_Handle.
 """
 def le_read_phy(transport, idx, handle, to):
-    
+
     cmd = struct.pack('<HHHH', Commands.CMD_LE_READ_PHY_REQ, 4, HCICommands.BT_HCI_OP_LE_READ_PHY, handle);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 9, to);
-    
+
     if ( 9 != len(packet) ):
         raise Exception("LE Read PHY command failed: Response too short (Expected %i bytes got %i bytes)" % (9, len(packet)));
-    
+
     RespCmd, RespLen, status, handle, TxPhy, RxPhy = struct.unpack('<HHBHBB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_READ_PHY_RSP ):
         raise Exception("LE Read PHY command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 5 ):
         raise Exception("LE Read PHY command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, handle, TxPhy, RxPhy;
 
 """
@@ -2074,23 +2074,23 @@ def le_read_phy(transport, idx, handle, to):
     be used for all subsequent connections over the LE transport.
 """
 def le_set_default_phy(transport, idx, AllPhys, TxPhys, RxPhys, to):
-    
+
     cmd = struct.pack('<HHHBBB', Commands.CMD_LE_SET_DEFAULT_PHY_REQ, 5, HCICommands.BT_HCI_OP_LE_SET_DEFAULT_PHY, AllPhys, TxPhys, RxPhys);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Default PHY command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_DEFAULT_PHY_RSP ):
         raise Exception("LE Set Default PHY command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Default PHY command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -2099,47 +2099,47 @@ def le_set_default_phy(transport, idx, AllPhys, TxPhys, RxPhys, to):
     that the current PHY is preferable.
 """
 def le_set_phy(transport, idx, handle, AllPhys, TxPhys, RxPhys, PhyOpts, to):
-    
+
     cmd = struct.pack('<HHHHBBBH', Commands.CMD_LE_SET_PHY_REQ, 9, HCICommands.BT_HCI_OP_LE_SET_PHY, handle, AllPhys, TxPhys, RxPhys, PhyOpts);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set PHY command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_PHY_RSP ):
         raise Exception("LE Set PHY command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set PHY command failed: Response length field corrupted (%i)" % RespLen);
-    
-    return status;    
+
+    return status;
 
 """
     This command is used to start a test where the DUT receives test reference packets at a fixed interval. The tester
     generates the test reference packets.
 """
 def le_enhanced_receiver_test(transport, idx, RxCh, phy, ModIndex, to):
-    
+
     cmd = struct.pack('<HHHBBB', Commands.CMD_LE_ENHANCED_RECEIVER_TEST_REQ, 5, HCICommands.BT_HCI_OP_LE_ENH_RX_TEST, RxCh, phy, ModIndex);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Enhanced Receiver Test command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_ENHANCED_RECEIVER_TEST_RSP ):
         raise Exception("LE Enhanced Receiver Test command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Enhanced Receiver Test command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -2147,49 +2147,49 @@ def le_enhanced_receiver_test(transport, idx, RxCh, phy, ModIndex, to):
     shall transmit at maximum power.
 """
 def le_enhanced_transmitter_test(transport, idx, TxCh, TestDataLen, PktPayload, phy, to):
-    
+
     cmd = struct.pack('<HHHBBBB', Commands.CMD_LE_ENHANCED_TRANSMITTER_TEST_REQ, 6, HCICommands.BT_HCI_OP_LE_ENH_TX_TEST, TxCh, TestDataLen, PktPayload, phy);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Enhanced Transmitter Test command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_ENHANCED_TRANSMITTER_TEST_RSP ):
         raise Exception("LE Enhanced Transmitter Test command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Enhanced Transmitter Test command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
     The LE_Set_Extended_Advertising_Parameters command is used by the Host to set the advertising parameters.
 """
 def le_set_extended_advertising_parameters(transport, idx, handle, props, PrimMinInterval, PrimMaxInterval, PrimChannelMap, OwnAddrType, PeerAddrType, AVal, FilterPolicy, TxPower, PrimAdvPhy, SecAdvMaxSkip, SecAdvPhy, sid, ScanReqNotifyEnable, to):
-    
+
     cmd = struct.pack('<HHHBH3B', Commands.CMD_LE_SET_EXTENDED_ADVERTISING_PARAMETERS_REQ, 27, HCICommands.BT_HCI_OP_LE_SET_EXT_ADV_PARAM, handle, props, *PrimMinInterval);
     cmd += struct.pack('<3B', *PrimMaxInterval);
     cmd += struct.pack('<BBB6B', PrimChannelMap, OwnAddrType, PeerAddrType, *AVal);
     cmd += struct.pack('<BbBBBBB', FilterPolicy, TxPower, PrimAdvPhy, SecAdvMaxSkip, SecAdvPhy, sid, ScanReqNotifyEnable);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Extended Advertising Parameters command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_EXTENDED_ADVERTISING_PARAMETERS_RSP ):
         raise Exception("LE Set Extended Advertising Parameters command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Extended Advertising Parameters command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -2199,46 +2199,46 @@ def le_set_extended_advertising_parameters(transport, idx, handle, props, PrimMi
     set is enabled or disabled.
 """
 def le_set_extended_advertising_data(transport, idx, handle, op, FragPref, dataLen, data, to):
-    
+
     cmd = struct.pack('<HHHBBBB251B', Commands.CMD_LE_SET_EXTENDED_ADVERTISING_DATA_REQ, 257, HCICommands.BT_HCI_OP_LE_SET_EXT_ADV_DATA, handle, op, FragPref, dataLen, *data);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Extended Advertising Data command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_EXTENDED_ADVERTISING_DATA_RSP ):
         raise Exception("LE Set Extended Advertising Data command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Extended Advertising Data command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
-    
+
 """
 def le_set_extended_scan_response_data(transport, idx, handle, op, FragPref, dataLen, data, to):
-    
+
     cmd = struct.pack('<HHHBBBB251B', Commands.CMD_LE_SET_EXTENDED_SCAN_RESPONSE_DATA_REQ, 257, HCICommands.BT_HCI_OP_LE_SET_EXT_SCAN_RSP_DATA, handle, op, FragPref, dataLen, *data);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Extended Scan Response Data command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_EXTENDED_SCAN_RESPONSE_DATA_RSP ):
         raise Exception("LE Set Extended Scan Response Data command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Extended Scan Response Data command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -2254,20 +2254,20 @@ def le_set_extended_advertising_enable(transport, idx, enable, SetNum, SHandle, 
                       HCICommands.BT_HCI_OP_LE_SET_EXT_ADV_ENABLE, enable, SetNum, *list(chain(*list(zip(SHandle, SDuration, SMaxExtAdvEvts)))))
 
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Extended Advertising Enable command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_EXTENDED_ADVERTISING_ENABLE_RSP ):
         raise Exception("LE Set Extended Advertising Enable command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Extended Advertising Enable command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -2275,10 +2275,10 @@ def le_set_extended_advertising_enable(transport, idx, enable, SetNum, SHandle, 
     for use as advertisement data or scan response data in an advertising event or as periodic advertisement data.
 """
 def le_read_maximum_advertising_data_length(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_READ_MAXIMUM_ADVERTISING_DATA_LENGTH_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_MAX_ADV_DATA_LEN);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
     assert 5 == len(packet), f"Received invalid length packet {len(packet)}"
 
@@ -2286,7 +2286,7 @@ def le_read_maximum_advertising_data_length(transport, idx, to):
 
     if ( RespCmd != Commands.CMD_LE_READ_MAXIMUM_ADVERTISING_DATA_LENGTH_RSP ):
         raise Exception("LE Read Maximum Advertising Data Length command failed: Inappropriate command response received");
-    
+
     if RespLen == 1:
         # Unsupported command.
         return status
@@ -2306,15 +2306,15 @@ def le_read_maximum_advertising_data_length(transport, idx, to):
     purposes.
 """
 def le_read_number_of_supported_advertising_sets(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_READ_NUMBER_OF_SUPPORTED_ADVERTISING_SETS_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_NUM_ADV_SETS);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
     assert 5 == len(packet), f"Received invalid length packet {len(packet)}"
 
     RespCmd, RespLen, status = struct.unpack('<HHB', packet)
-    
+
     if ( RespCmd != Commands.CMD_LE_READ_NUMBER_OF_SUPPORTED_ADVERTISING_SETS_RSP ):
         raise Exception("LE Read Number of Supported Advertising Sets command failed: Inappropriate command response received");
 
@@ -2334,69 +2334,69 @@ def le_read_number_of_supported_advertising_sets(transport, idx, to):
     The LE_Remove_Advertising_Set command is used to remove an advertising set from the Controller.
 """
 def le_remove_advertising_set(transport, idx, handle, to):
-    
+
     cmd = struct.pack('<HHHB', Commands.CMD_LE_REMOVE_ADVERTISING_SET_REQ, 3, HCICommands.BT_HCI_OP_LE_REMOVE_ADV_SET, handle);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Remove Advertising Set command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_REMOVE_ADVERTISING_SET_RSP ):
         raise Exception("LE Remove Advertising Set command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Remove Advertising Set command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
     The LE_Clear_Advertising_Sets command is used to remove all existing advertising sets from the Controller.
 """
 def le_clear_advertising_sets(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_CLEAR_ADVERTISING_SETS_REQ, 2, HCICommands.BT_HCI_OP_CLEAR_ADV_SETS);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Clear Advertising Sets command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_CLEAR_ADVERTISING_SETS_RSP ):
         raise Exception("LE Clear Advertising Sets command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Clear Advertising Sets command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
     The LE_Set_Periodic_Advertising_Parameters command is used by the Host to set the parameters for periodic advertising.
 """
 def le_set_periodic_advertising_parameters(transport, idx, handle, MinInterval, MaxInterval, props, to):
-    
+
     cmd = struct.pack('<HHHBHHH', Commands.CMD_LE_SET_PERIODIC_ADVERTISING_PARAMETERS_REQ, 9, HCICommands.BT_HCI_OP_LE_SET_PER_ADV_PARAM, handle, MinInterval, MaxInterval, props);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Periodic Advertising Parameters command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_PERIODIC_ADVERTISING_PARAMETERS_RSP ):
         raise Exception("LE Set Periodic Advertising Parameters command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Periodic Advertising Parameters command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -2407,23 +2407,23 @@ def le_set_periodic_advertising_parameters(transport, idx, handle, MinInterval, 
     then the Controller shall return the error code Command Disallowed (0x0C).
 """
 def le_set_periodic_advertising_data(transport, idx, handle, op, dataLen, data, to):
-    
+
     cmd = struct.pack('<HHHBBB251B', Commands.CMD_LE_SET_PERIODIC_ADVERTISING_DATA_REQ, 256, HCICommands.BT_HCI_OP_LE_SET_PER_ADV_DATA, handle, op, dataLen, *data);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Periodic Advertising Data command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_PERIODIC_ADVERTISING_DATA_RSP ):
         raise Exception("LE Set Periodic Advertising Data command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Periodic Advertising Data command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -2431,23 +2431,23 @@ def le_set_periodic_advertising_data(transport, idx, handle, op, dataLen, data, 
     advertising for the advertising set specified by the Advertising_Handle parameter (ordinary advertising is not affected).
 """
 def le_set_periodic_advertising_enable(transport, idx, enable, handle, to):
-    
+
     cmd = struct.pack('<HHHBB', Commands.CMD_LE_SET_PERIODIC_ADVERTISING_ENABLE_REQ, 4, HCICommands.BT_HCI_OP_LE_SET_PER_ADV_ENABLE, enable, handle);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Periodic Advertising Enable command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_PERIODIC_ADVERTISING_ENABLE_RSP ):
         raise Exception("LE Set Periodic Advertising Enable command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Periodic Advertising Enable command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -2455,49 +2455,49 @@ def le_set_periodic_advertising_enable(transport, idx, enable, handle, to):
     channels.
 """
 def le_set_extended_scan_parameters(transport, idx, OwnAddrType, FilterPolicy, phys, PType, PInterval, PWindow, to):
-    
+
     cmd = struct.pack('<HHHBBB' + 'BHH' * phys, Commands.CMD_LE_SET_EXTENDED_SCAN_PARAMETERS_REQ, 5 + 5 * phys,
                       HCICommands.BT_HCI_OP_LE_SET_EXT_SCAN_PARAM, OwnAddrType, FilterPolicy, phys,
                       *list(chain(*list(zip(PType, PInterval, PWindow)))))
 
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Extended Scan Parameters command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_EXTENDED_SCAN_PARAMETERS_RSP ):
         raise Exception("LE Set Extended Scan Parameters command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Extended Scan Parameters command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
     The LE_Set_Extended_Scan_Enable command is used to enable or disable scanning.
 """
 def le_set_extended_scan_enable(transport, idx, enable, FilterDup, duration, period, to):
-    
+
     cmd = struct.pack('<HHHBBHH', Commands.CMD_LE_SET_EXTENDED_SCAN_ENABLE_REQ, 8, HCICommands.BT_HCI_OP_LE_SET_EXT_SCAN_ENABLE, enable, FilterDup, duration, period);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Extended Scan Enable command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_EXTENDED_SCAN_ENABLE_RSP ):
         raise Exception("LE Set Extended Scan Enable command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Extended Scan Enable command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -2505,26 +2505,26 @@ def le_set_extended_scan_enable(transport, idx, enable, FilterDup, duration, per
     LE_Extended_Create_Connection command can be used in place of LE_Create_Connection command.
 """
 def le_extended_create_connection(transport, idx, FilterPolicy, OwnAddrType, PeerAddrType, AVal, phys, PInterval, PWindow, PConnIntervalMin, PConnIntervalMax, PConnLatency, PSupervisionTimeout, PMinCeLen, PMaxCeLen, to):
-    
+
     cmd = struct.pack('<HHHBBB6BB' + 'HHHHHHHH' * phys, Commands.CMD_LE_EXTENDED_CREATE_CONNECTION_REQ, 12 + 16 * phys,
                       HCICommands.BT_HCI_OP_LE_EXT_CREATE_CONN, FilterPolicy, OwnAddrType, PeerAddrType, *AVal, phys,
                       *list(chain(*list(zip(PInterval, PWindow, PConnIntervalMin, PConnIntervalMax, PConnLatency, PSupervisionTimeout, PMinCeLen, PMaxCeLen)))))
 
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Extended Create Connection command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_EXTENDED_CREATE_CONNECTION_RSP ):
         raise Exception("LE Extended Create Connection command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Extended Create Connection command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -2532,24 +2532,24 @@ def le_extended_create_connection(transport, idx, FilterPolicy, OwnAddrType, Pee
     begin receiving periodic advertising packets.
 """
 def le_periodic_advertising_create_sync(transport, idx, FilterPolicy, sid, AddrType, AVal, skip, SyncTimeout, unused, to):
-    
+
     cmd = struct.pack('<HHHBBB6B', Commands.CMD_LE_PERIODIC_ADVERTISING_CREATE_SYNC_REQ, 16, HCICommands.BT_HCI_OP_LE_PER_ADV_CREATE_SYNC, FilterPolicy, sid, AddrType, *AVal);
     cmd += struct.pack('<HHB', skip, SyncTimeout, unused);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Periodic Advertising Create Sync command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_PERIODIC_ADVERTISING_CREATE_SYNC_RSP ):
         raise Exception("LE Periodic Advertising Create Sync command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Periodic Advertising Create Sync command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -2557,23 +2557,23 @@ def le_periodic_advertising_create_sync(transport, idx, FilterPolicy, sid, AddrT
     while it is pending.
 """
 def le_periodic_advertising_create_sync_cancel(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_PERIODIC_ADVERTISING_CREATE_SYNC_CANCEL_REQ, 2, HCICommands.BT_HCI_OP_LE_PER_ADV_CREATE_SYNC_CANCEL);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Periodic Advertising Create Sync Cancel command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_PERIODIC_ADVERTISING_CREATE_SYNC_CANCEL_RSP ):
         raise Exception("LE Periodic Advertising Create Sync Cancel command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Periodic Advertising Create Sync Cancel command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -2581,23 +2581,23 @@ def le_periodic_advertising_create_sync_cancel(transport, idx, to):
     Sync_Handle parameter.
 """
 def le_periodic_advertising_terminate_sync(transport, idx, handle, to):
-    
+
     cmd = struct.pack('<HHHH', Commands.CMD_LE_PERIODIC_ADVERTISING_TERMINATE_SYNC_REQ, 4, HCICommands.BT_HCI_OP_LE_PER_ADV_TERMINATE_SYNC, handle);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Periodic Advertising Terminate Sync command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_PERIODIC_ADVERTISING_TERMINATE_SYNC_RSP ):
         raise Exception("LE Periodic Advertising Terminate Sync command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Periodic Advertising Terminate Sync command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -2606,24 +2606,24 @@ def le_periodic_advertising_terminate_sync(transport, idx, handle, to):
     on the list, the Controller shall return the error code Invalid HCI Command Parameters (0x12).
 """
 def le_add_device_to_periodic_advertiser_list(transport, idx, AddrType, AVal, sid, to):
-    
+
     cmd = struct.pack('<HHHB6B', Commands.CMD_LE_ADD_DEVICE_TO_PERIODIC_ADVERTISER_LIST_REQ, 10, HCICommands.BT_HCI_OP_LE_ADD_DEV_TO_PER_ADV_LIST, AddrType, *AVal);
     cmd += struct.pack('<B', sid);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Add Device To Periodic Advertiser List command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_ADD_DEVICE_TO_PERIODIC_ADVERTISER_LIST_RSP ):
         raise Exception("LE Add Device To Periodic Advertiser List command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Add Device To Periodic Advertiser List command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -2631,24 +2631,24 @@ def le_add_device_to_periodic_advertiser_list(transport, idx, AddrType, AVal, si
     Advertisers stored in the Controller. Removals from the Periodic Advertisers List take effect immediately.
 """
 def le_remove_device_from_periodic_advertiser_list(transport, idx, AddrType, AVal, sid, to):
-    
+
     cmd = struct.pack('<HHHB6B', Commands.CMD_LE_REMOVE_DEVICE_FROM_PERIODIC_ADVERTISER_LIST_REQ, 10, HCICommands.BT_HCI_OP_LE_REM_DEV_FROM_PER_ADV_LIST, AddrType, *AVal);
     cmd += struct.pack('<B', sid);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Remove Device From Periodic Advertiser List command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_REMOVE_DEVICE_FROM_PERIODIC_ADVERTISER_LIST_RSP ):
         raise Exception("LE Remove Device From Periodic Advertiser List command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Remove Device From Periodic Advertiser List command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -2656,23 +2656,23 @@ def le_remove_device_from_periodic_advertiser_list(transport, idx, AddrType, AVa
     Controller.
 """
 def le_clear_periodic_advertiser_list(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_CLEAR_PERIODIC_ADVERTISER_LIST_REQ, 2, HCICommands.BT_HCI_OP_LE_CLEAR_PER_ADV_LIST);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Clear Periodic Advertiser List command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_CLEAR_PERIODIC_ADVERTISER_LIST_RSP ):
         raise Exception("LE Clear Periodic Advertiser List command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Clear Periodic Advertiser List command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -2681,18 +2681,18 @@ def le_clear_periodic_advertiser_list(transport, idx, to):
     change it at any time (e.g., because the memory used to store the list can also be used for other purposes).
 """
 def le_read_periodic_advertiser_list_size(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_READ_PERIODIC_ADVERTISER_LIST_SIZE_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_PER_ADV_LIST_SIZE);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
     assert 5 == len(packet), f"Received invalid length packet {len(packet)}"
 
     RespCmd, RespLen, status = struct.unpack('<HHB', packet)
-    
+
     if ( RespCmd != Commands.CMD_LE_READ_PERIODIC_ADVERTISER_LIST_SIZE_RSP ):
         raise Exception("LE Read Periodic Advertiser List Size command failed: Inappropriate command response received");
-    
+
     if RespLen == 1:
         # Unsupported command.
         return status
@@ -2709,23 +2709,23 @@ def le_read_periodic_advertiser_list_size(transport, idx, to):
     The LE_Read_Transmit_Power command is used to read the minimum and maximum transmit powers supported by the Controller.
 """
 def le_read_transmit_power(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_READ_TRANSMIT_POWER_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_TX_POWER);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 7, to);
-    
+
     if ( 7 != len(packet) ):
         raise Exception("LE Read Transmit Power command failed: Response too short (Expected %i bytes got %i bytes)" % (7, len(packet)));
-    
+
     RespCmd, RespLen, status, MinTxPower, MaxTxPower = struct.unpack('<HHBbb', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_READ_TRANSMIT_POWER_RSP ):
         raise Exception("LE Read Transmit Power command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 3 ):
         raise Exception("LE Read Transmit Power command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status, MinTxPower, MaxTxPower;
 
 """
@@ -2733,7 +2733,7 @@ def le_read_transmit_power(transport, idx, to):
     Level and RSSI calculation.
 """
 def le_read_rf_path_compensation(transport, idx, to):
-    
+
     cmd = struct.pack('<HHH', Commands.CMD_LE_READ_RF_PATH_COMPENSATION_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_RF_PATH_COMP);
     transport.send(idx, cmd);
 
@@ -2741,7 +2741,7 @@ def le_read_rf_path_compensation(transport, idx, to):
     assert 5 == len(packet), f"Received invalid length packet {len(packet)}"
 
     RespCmd, RespLen, status = struct.unpack('<HHB', packet)
-    
+
     if ( RespCmd != Commands.CMD_LE_READ_RF_PATH_COMPENSATION_RSP ):
         raise Exception("LE Read RF Path Compensation command failed: Inappropriate command response received");
 
@@ -2766,23 +2766,23 @@ def le_read_rf_path_compensation(transport, idx, to):
     transceiver output and the RF Path Compensation Value is -1.5 (dB), the radiative Tx Power Level is +4+(-1.5) = 2.5 (dBm).
 """
 def le_write_rf_path_compensation(transport, idx, TxPathComp, RxPathComp, to):
-    
+
     cmd = struct.pack('<HHHhh', Commands.CMD_LE_WRITE_RF_PATH_COMPENSATION_REQ, 6, HCICommands.BT_HCI_OP_LE_WRITE_RF_PATH_COMP, TxPathComp, RxPathComp);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Write RF Path Compensation command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_WRITE_RF_PATH_COMPENSATION_RSP ):
         raise Exception("LE Write RF Path Compensation command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Write RF Path Compensation command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
@@ -2790,95 +2790,95 @@ def le_write_rf_path_compensation(transport, idx, TxPathComp, RxPathComp, to):
     resolving list. The effect of this setting is specified in [Vol 6] Part B, Section 4.7.
 """
 def le_set_privacy_mode(transport, idx, IdAddrType, AVal, mode, to):
-    
+
     cmd = struct.pack('<HHHB6B', Commands.CMD_LE_SET_PRIVACY_MODE_REQ, 10, HCICommands.BT_HCI_OP_LE_SET_PRIVACY_MODE, IdAddrType, *AVal);
     cmd += struct.pack('<B', mode);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Set Privacy Mode command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_SET_PRIVACY_MODE_RSP ):
         raise Exception("LE Set Privacy Mode command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Set Privacy Mode command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
     The Write_BD_ADDR command is used to set the Public address of the Device.
 """
 def write_bd_addr(transport, idx, BdaddrVal, to):
-    
+
     cmd = struct.pack('<HHH6B', Commands.CMD_WRITE_BD_ADDR_REQ, 8, HCICommands.BT_HCI_OP_VS_WRITE_BD_ADDR, *BdaddrVal);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("Write BD_ADDR command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_WRITE_BD_ADDR_RSP ):
         raise Exception("Write BD_ADDR command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("Write BD_ADDR command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
     Flush the events queue
 """
 def flush_events(transport, idx, to):
-    
+
     cmd = struct.pack('<HH', Commands.CMD_FLUSH_EVENTS_REQ, 0);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 4, to);
-    
+
     if ( 4 != len(packet) ):
         raise Exception("Flush Events command failed: Response too short (Expected %i bytes got %i bytes)" % (4, len(packet)));
-    
+
     RespCmd, RespLen = struct.unpack('<HH', packet);
-    
+
     if ( RespCmd != Commands.CMD_FLUSH_EVENTS_RSP ):
         raise Exception("Flush Events command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 0 ):
         raise Exception("Flush Events command failed: Response length field corrupted (%i)" % RespLen);
-    
+
 
 """
     Check whether an event is available in the events queue
 """
 def has_event(transport, idx, to):
-    
+
     while to >= 0:
         start_t = transport.last_t
 
         cmd = struct.pack('<HH', Commands.CMD_HAS_EVENT_REQ, 0);
         transport.send(idx, cmd);
-        
+
         packet = transport.recv(idx, 5, 100);
-    
+
         if ( 5 != len(packet) ):
             raise Exception("Has Event command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
         RespCmd, RespLen, count = struct.unpack('<HHB', packet);
-        
+
         if ( RespCmd != Commands.CMD_HAS_EVENT_RSP ):
             raise Exception("Has Event command failed: Inappropriate command response received");
-    
+
         if ( RespLen != 1 ):
             raise Exception("Has Event command failed: Response length field corrupted (%i)" % RespLen);
-        
+
         if count > 0:
             break;
 
@@ -2893,16 +2893,16 @@ def has_event(transport, idx, to):
     Get event(s) from the events queue
 """
 def get_event(transport, idx, to, multiple=False):
-    
+
     cmd = struct.pack('<HHB', Commands.CMD_GET_EVENT_REQ, 1, 1 if multiple else 0);
     transport.send(idx, cmd);
-    
+
     nBytes = 3 if multiple else 10;
     packet = transport.recv(idx, nBytes, to);
-    
+
     if nBytes != len(packet):
         raise Exception("Get Event command failed: Response too short (Expected %i bytes got %i bytes)" % (nBytes, len(packet)));
-    
+
     if multiple:
         RespCmd, count = struct.unpack('<HB', packet);
         if RespCmd != Commands.CMD_GET_EVENT_RSP:
@@ -2916,7 +2916,7 @@ def get_event(transport, idx, to, multiple=False):
 
             if RespLen != (6 + eventLen):
                 raise Exception("Get Event command failed: Response length field corrupted (%i)" % RespLen);
-    
+
             events += [Event(event, data, time)];
             count -= 1;
 
@@ -2924,106 +2924,106 @@ def get_event(transport, idx, to, multiple=False):
     else:
         RespCmd, RespLen, time, event, eventLen = struct.unpack('<HHIBB', packet[:10]);
         data = "" if RespLen <= 6 else transport.recv(idx, RespLen - 6, to);
-    
+
         if RespCmd != Commands.CMD_GET_EVENT_RSP:
             raise Exception("Get Event command failed: Inappropriate command response received");
-    
+
         if RespLen != 6 + eventLen:
             raise Exception("Get Event command failed: Response length field corrupted (%i)" % RespLen);
-    
+
         return Event(event, data, time);
 
 """
     Flush the Data queue
 """
 def le_data_flush(transport, idx, to):
-    
+
     cmd = struct.pack('<HH', Commands.CMD_LE_DATA_FLUSH_REQ, 0);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 4, to);
-    
+
     if ( 4 != len(packet) ):
         raise Exception("LE Data Flush command failed: Response too short (Expected %i bytes got %i bytes)" % (4, len(packet)));
-    
+
     RespCmd, RespLen = struct.unpack('<HH', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_DATA_FLUSH_RSP ):
         raise Exception("LE Data Flush command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 0 ):
         raise Exception("LE Data Flush command failed: Response length field corrupted (%i)" % RespLen);
-    
+
 
 """
     Check whether data is available in the data queue
 """
 def le_data_ready(transport, idx, to):
-    
+
     while to >= 0:
         cmd = struct.pack('<HH', Commands.CMD_LE_DATA_READY_REQ, 0);
         transport.send(idx, cmd);
-        
+
         packet = transport.recv(idx, 5, 100);
-        
+
         if ( 5 != len(packet) ):
             raise Exception("LE Data Ready command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-        
+
         RespCmd, RespLen, empty = struct.unpack('<HHB', packet);
-        
+
         if ( RespCmd != Commands.CMD_LE_DATA_READY_RSP ):
             raise Exception("LE Data Ready command failed: Inappropriate command response received");
-        
+
         if ( RespLen != 1 ):
             raise Exception("LE Data Ready command failed: Response length field corrupted (%i)" % RespLen);
-        
+
         if empty != 1:
             break;
-        
+
         to -= 100;
         if to >= 0:
             transport.wait(100);
-        
+
     return empty != 1;
 
 """
     Write Data packet
 """
 def le_data_write(transport, idx, handle, PbFlags, BcFlags, data, to):
-    
+
     handle &= 0x0fff;
     handle |= (PbFlags | (BcFlags << 2)) << 12;
     cmd = struct.pack('<HHHH' + str(len(data)) + 'B', Commands.CMD_LE_DATA_WRITE_REQ, 4 + len(data), handle, len(data), *data);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 5, to);
-    
+
     if ( 5 != len(packet) ):
         raise Exception("LE Data Write command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
-    
+
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
-    
+
     if ( RespCmd != Commands.CMD_LE_DATA_WRITE_RSP ):
         raise Exception("LE Data Write command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 1 ):
         raise Exception("LE Data Write command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     return status;
 
 """
     Read Data packet
 """
 def le_data_read(transport, idx, to):
-    
+
     cmd = struct.pack('<HH', Commands.CMD_LE_DATA_READ_REQ, 0);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 12, to);
-    
+
     if ( 12 != len(packet) ):
         raise Exception("LE Data Read command failed: Response too short (Expected %i bytes got %i bytes)" % (12, len(packet)));
-    
+
     RespCmd, RespLen, time, handle, dataLen = struct.unpack('<HHIHH', packet[:12]);
     if RespLen > 8:
         packet = transport.recv(idx, RespLen - 8, to);
@@ -3031,37 +3031,37 @@ def le_data_read(transport, idx, to):
         data = struct.unpack('<' + str(dataLen) + 'B', packet);
     else:
         data = [];
-    
+
     if ( RespCmd != Commands.CMD_LE_DATA_READ_RSP ):
         raise Exception("LE Data Read command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 8 + dataLen ):
         raise Exception("LE Data Read command failed: Response length field corrupted (%i)" % RespLen);
-    
+
     PbFlags = (handle >> 12) & 0x03;
     BcFlags = (handle >> 14) & 0x03;
     handle &= 0x0fff;
-    
+
     return time, handle, PbFlags, BcFlags, data;
 
 """
     Switch GATT Service Set
 """
 def switch_gatt_service_set(transport, idx, serviceSet, to):
-    
+
     cmd = struct.pack('<HHB', Commands.CMD_GATT_SERVICE_SET_REQ, 1, serviceSet);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 4, to);
-    
+
     if ( 4 != len(packet) ):
         raise Exception("Switch GATT Service Set command failed: Response too short (Expected %i bytes got %i bytes)" % (4, len(packet)));
-    
+
     RespCmd, RespLen = struct.unpack('<HH', packet);
-    
+
     if ( RespCmd != Commands.CMD_GATT_SERVICE_SET_RSP ):
         raise Exception("Switch GATT Service Set command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 0 ):
         raise Exception("Switch GATT Service Set command failed: Response length field corrupted (%i)" % RespLen);
 
@@ -3069,20 +3069,20 @@ def switch_gatt_service_set(transport, idx, serviceSet, to):
     Invoke GATT Service Set Notifications
 """
 def gatt_service_notify(transport, idx, to):
-    
+
     cmd = struct.pack('<HH', Commands.CMD_GATT_SERVICE_NOTIFY_REQ, 0);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 4, to);
-    
+
     if ( 4 != len(packet) ):
         raise Exception("Invoke GATT Service Set Notifications command failed: Response too short (Expected %i bytes got %i bytes)" % (4, len(packet)));
-    
+
     RespCmd, RespLen = struct.unpack('<HH', packet);
-    
+
     if ( RespCmd != Commands.CMD_GATT_SERVICE_NOTIFY_RSP ):
         raise Exception("Invoke GATT Service Set Notifications command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 0 ):
         raise Exception("Invoke GATT Service Set Notifications command failed: Response length field corrupted (%i)" % RespLen);
 
@@ -3090,20 +3090,20 @@ def gatt_service_notify(transport, idx, to):
     Invoke GATT Service Set Indications
 """
 def gatt_service_indicate(transport, idx, to):
-    
+
     cmd = struct.pack('<HH', Commands.CMD_GATT_SERVICE_INDICATE_REQ, 0);
     transport.send(idx, cmd);
-    
+
     packet = transport.recv(idx, 4, to);
-    
+
     if ( 4 != len(packet) ):
         raise Exception("Invoke GATT Service Set Indications command failed: Response too short (Expected %i bytes got %i bytes)" % (4, len(packet)));
-    
+
     RespCmd, RespLen = struct.unpack('<HH', packet);
-    
+
     if ( RespCmd != Commands.CMD_GATT_SERVICE_INDICATE_RSP ):
         raise Exception("Invoke GATT Service Set Indications command failed: Inappropriate command response received");
-    
+
     if ( RespLen != 0 ):
         raise Exception("Invoke GATT Service Set Indications command failed: Response length field corrupted (%i)" % RespLen);
 
@@ -3163,7 +3163,7 @@ def le_iso_data_ready(transport, idx, to):
     Write ISO Data packet
 """
 def le_iso_data_write(transport, idx, handle, PbFlags, TsFlag, data, to):
-    
+
     handle &= 0x0fff
     handle |= ((PbFlags | (TsFlag << 2)) << 12) & 0x7fff
 
@@ -3373,7 +3373,7 @@ def le_accept_cis_request(transport, idx, ConnectionHandle, to):
     Connection_Handle.
 """
 def le_reject_cis_request(transport, idx, ConnectionHandle, Reason, to):
-    
+
     ConnectionHandle &= 0x0fff
 
     cmd = struct.pack('<HHHHB', Commands.CMD_LE_REJECT_CIS_REQUEST_REQ, 5, HCICommands.BT_HCI_OP_LE_REJECT_CIS_REQUEST,
@@ -3431,7 +3431,7 @@ def le_setup_iso_data_path(transport, idx, ConnectionHandle, DataPathDirection, 
     Connection_Handle parameter.
 """
 def le_remove_iso_data_path(transport, idx, ConnectionHandle, DataPathDirection, to):
-    
+
     ConnectionHandle &= 0x0fff
 
     cmd = struct.pack('<HHHHB',

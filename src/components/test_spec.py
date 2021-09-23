@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 class TestSpec():
-    
+
     def __init__(self, name = "", number_devices = 2, description = "", test_private =""):
         self.name = name;
         self.number_devices = number_devices;

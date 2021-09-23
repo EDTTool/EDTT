@@ -17,7 +17,7 @@ from components.scanner import *;
 from components.initiator import *;
 from components.preambles import *;
 from components.addata import *;
-from components.attdata import *; 
+from components.attdata import *;
 from components.smpdata import *;
 from components.pairing import *;
 from components.gattdata import *;
@@ -184,7 +184,7 @@ def __discoverServices(transport, initiator, first, last, uuid, trace):
         for _first, _last, _uuid in zip(reply['first_handle'], reply['last_handle'], reply['value']):
             services['handles'] += [ [ _first, _last ] ];
             services['uuids'] += [ toNumber(_uuid) ];
-            
+
         handle = reply['last_handle'][-1] + 1;
         if handle > last:
             break;
@@ -229,8 +229,8 @@ def secondaryServicesByType(transport, initiator, trace):
                 """
                 success, _service = __discoverServices(transport, initiator, _handle, _handle, uuid, trace);
                 if success:
-                    services['uuid'] += _service['uuids']; 
-            
+                    services['uuid'] += _service['uuids'];
+
         handle = reply['handle'][-1] + 1;
         if handle > 0xFFFF:
             break;
@@ -264,8 +264,8 @@ def includedServicesByType(transport, initiator, trace):
                 """
                 success, _service = __discoverServices(transport, initiator, toNumber(_value[:2]), toNumber(_value[2:4]), 0x2800, trace);
                 if success:
-                    services['uuids'] += _service['uuids']; 
-            
+                    services['uuids'] += _service['uuids'];
+
         handle = reply['handle'][-1] + 1;
         if handle > 0xFFFF:
             break;
@@ -428,7 +428,7 @@ def readBlob(transport, initiator, handle, mtuSize, trace):
                 break;
         else:
             break;
-         
+
     return success, value if success else reply['error'];
 
 """
@@ -578,7 +578,7 @@ def writeLong(transport, initiator, handle, data, mtuSize, trace):
     return success, reply;
 
 """
-    Receive Notification... 
+    Receive Notification...
 """
 def notification(transport, initiator, trace):
     attData = ATTData();
@@ -593,7 +593,7 @@ def notification(transport, initiator, trace):
     return success, reply;
 
 """
-    Receive Indication and issue Indication Confirmation... 
+    Receive Indication and issue Indication Confirmation...
 """
 def indication(transport, initiator, trace):
     attData = ATTData();
@@ -611,7 +611,7 @@ def indication(transport, initiator, trace):
 
     return success, reply;
 
-""" 
+"""
     Obtain the value handle for a Characteristic given its UUID
 """
 def valueHandle(characteristics, uuid):
@@ -635,7 +635,7 @@ def filterCharacteristics(characteristics, uuid):
 """
 def peerAddress(transport, upperTester, trace):
     success, address = False, Address( None, None );
-    
+
     try:
         ownAddress = Address( ExtendedAddressType.PUBLIC );
         scanner = Scanner(transport, upperTester, trace, ScanType.PASSIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1);
@@ -652,7 +652,7 @@ def peerAddress(transport, upperTester, trace):
         if success:
             address = scanner.reportAddress;
 
-    except Exception as e: 
+    except Exception as e:
         trace.trace(3, "Failed to obtain peer Address: %s" % str(e));
         success = False;
 
@@ -727,7 +727,7 @@ def gap_gat_bv_01_c(transport, upperTester, trace):
             success, characteristics = characteristicsByType(transport, initiator, service["handles"][0], trace);
             if success:
                 for c_uuid, c_handle, c_property, c_vhandle in zip(characteristics["uuid"], characteristics["handle"], \
-                                                                   characteristics["property"], characteristics["value_handle"]): 
+                                                                   characteristics["property"], characteristics["value_handle"]):
                     trace.trace(6, "Characteristic %s handle %02X value-handle %02X properties %s" % \
                                    (attData.uuid(c_uuid), c_handle, c_vhandle, attData.property(c_property)));
 
@@ -778,7 +778,7 @@ def gap_gat_bv_02_c(transport, upperTester, trace):
         """
         success, characteristic = characteristicByType(transport, initiator, service["handles"][0], 0x2A02, False, trace);
         if success:
-            flag = characteristic["value"][0]            
+            flag = characteristic["value"][0]
             trace.trace(6,"Peripheral Privacy Flag: %d" % flag);
         else:
             trace.trace(6,"Peripheral Privacy Flag: Not present!");
@@ -877,7 +877,7 @@ def gap_gat_bv_05_c(transport, upperTester, trace):
             setName = 'Rødgrød & Blåbær med fløde'.encode('UTF-8');
             data = [ ord(_) for _ in setName ];
             success, reply = writeCharacteristic(transport, initiator, handle, data, trace);
-            
+
             if success:
                 success, gotName = readStringCharacteristic(transport, initiator, handle, trace);
                 trace.trace(6,"Device Name: %s" % gotName);
@@ -911,13 +911,13 @@ def gap_gat_bx_01_c(transport, upperTester, trace):
 
                 success, characteristics = characteristicsByType(transport, initiator, handles, trace);
                 for c_uuid, c_handle, c_property, c_vhandle in zip(characteristics["uuid"], characteristics["handle"], \
-                                                                   characteristics["property"], characteristics["value_handle"]): 
+                                                                   characteristics["property"], characteristics["value_handle"]):
                     trace.trace(6, "    Characteristic %s handle %02X value-handle %02X properties %s" % \
                                    (attData.uuid(c_uuid), c_handle, c_vhandle, attData.property(c_property)));
 
             success = initiator.disconnect(0x13) and success;
 
-    except Exception as e: 
+    except Exception as e:
         trace.trace(3, "Discover All Services test failed: %s" % str(e));
         success = False;
 
@@ -969,11 +969,11 @@ def gatt_sr_gac_bv_01_c(transport, upperTester, lowerTester, trace):
             """
             for _uuid, _handle, _value_handle in zip(characteristics['uuid'], characteristics['handle'], characteristics['value_handle']):
                 _value = gattData.characteristicValue(sset, _handle);
-                if len(_value) > mtuSize-1:                 
+                if len(_value) > mtuSize-1:
                     trace.trace(6, "Read Characteristic %s handle #%d length %d" % (attData.uuid(_uuid), _value_handle, len(_value)));
                     ok, reply = readCharacteristic(transport, initiator, _value_handle, trace);
                     success = success and ok and reply == _value[:mtuSize-1];
-        
+
             success = initiator.disconnect(0x13) and success;
 
     return success;
@@ -1003,7 +1003,7 @@ def gatt_sr_gad_bv_01_c(transport, upperTester, lowerTester, trace):
                 trace.trace(6, "Verified Service Set: %s" % success);
             else:
                 trace.trace(6, "Unable to discover Primary Services!");
-        
+
         success = initiator.disconnect(0x13) and success;
 
     return success;
@@ -1037,7 +1037,7 @@ def gatt_sr_gad_bv_02_c(transport, upperTester, lowerTester, trace):
                 success = success and found;
                 success = success and (services == gattData.primaryServices(sset, uuid));
                 trace.trace(6, "Verified Services: %s" % success);
-        
+
         success = initiator.disconnect(0x13) and success;
 
     return success;
@@ -1103,12 +1103,12 @@ def gatt_sr_gad_bv_04_c(transport, upperTester, lowerTester, trace):
                 found, characteristics = characteristicsByType(transport, initiator, handles, trace);
                 if found:
                     for c_uuid, c_handle, c_property, c_vhandle in zip(characteristics["uuid"], characteristics["handle"], \
-                                                                       characteristics["property"], characteristics["value_handle"]): 
+                                                                       characteristics["property"], characteristics["value_handle"]):
                         trace.trace(6, "    Characteristic %s handle 0x%02X value-handle 0x%02X properties %s" % \
                                        (attData.uuid(c_uuid), c_handle, c_vhandle, attData.property(c_property)));
                     success = success and (characteristics == _characteristics)
                 else:
-                    success = success and len(_characteristics["uuid"]) == 0; 
+                    success = success and len(_characteristics["uuid"]) == 0;
                 trace.trace(6, "Characteristics for Service %s Verified: %s" % (attData.uuid(uuid), success));
 
         success = initiator.disconnect(0x13) and success;
@@ -1143,12 +1143,12 @@ def gatt_sr_gad_bv_05_c(transport, upperTester, lowerTester, trace):
                 found, characteristics = characteristicsByType(transport, initiator, handles, trace);
                 if found:
                     for c_uuid, c_handle, c_property, c_vhandle in zip(characteristics["uuid"], characteristics["handle"], \
-                                                                       characteristics["property"], characteristics["value_handle"]): 
+                                                                       characteristics["property"], characteristics["value_handle"]):
                         trace.trace(6, "    Characteristic %s handle 0x%02X value-handle 0x%02X properties %s" % \
                                        (attData.uuid(c_uuid), c_handle, c_vhandle, attData.property(c_property)));
                     success = success and (characteristics == _characteristics)
                 else:
-                    success = success and len(_characteristics["uuid"]) == 0; 
+                    success = success and len(_characteristics["uuid"]) == 0;
                 trace.trace(6, "Characteristics for Service %s Verified: %s" % (attData.uuid(uuid), success));
 
         success = initiator.disconnect(0x13) and success;
@@ -1181,7 +1181,7 @@ def gatt_sr_gad_bv_06_c(transport, upperTester, lowerTester, trace):
 
                 found, descriptors = discoverDescriptors(transport, initiator, handles, trace);
                 if found:
-                    for c_uuid, c_handle in zip(descriptors["uuid"], descriptors["handle"]): 
+                    for c_uuid, c_handle in zip(descriptors["uuid"], descriptors["handle"]):
                         trace.trace(6, "    Descriptor %s handle 0x%02X" % (attData.uuid(c_uuid), c_handle));
                     success = success and (descriptors == _descriptors)
                 else:
@@ -1209,13 +1209,13 @@ def gatt_sr_gar_bv_01_c(transport, upperTester, lowerTester, trace):
         """
         characteristics = gattData.characteristics(sset, None, ATTPermission.ATT_PERM_READ);
         for c_uuid, c_handle, c_property, c_vhandle in zip(characteristics["uuid"], characteristics["handle"], \
-                                                           characteristics["property"], characteristics["value_handle"]): 
+                                                           characteristics["property"], characteristics["value_handle"]):
             trace.trace(6, "Characteristic %s handle 0x%02X value-handle 0x%02X properties %s" % \
                            (attData.uuid(c_uuid), c_handle, c_vhandle, attData.property(c_property)));
             success, data = readCharacteristic(transport, initiator, c_vhandle, trace);
             trace.trace(6, "   Characteristic Value: %s" % formatArray(data));
             match = data == gattData.characteristicValue(sset, c_handle);
-            success = success and match;                        
+            success = success and match;
             trace.trace(6, "   Characteristic Value Verified: %s" % success);
 
         success = initiator.disconnect(0x13) and success;
@@ -1240,7 +1240,7 @@ def gatt_sr_gar_bi_01_c(transport, upperTester, lowerTester, trace):
         services = gattData.allServices(sset);
         for uuid, handles in zip(services["uuids"], services["handles"]):
             trace.trace(6, "Service %s covers handles [%02d, %02d]" % (attData.uuid(uuid), handles[0], handles[1]));
-            
+
             if handles[0] > (prevLast+1):
                 ok, data = readCharacteristic(transport, initiator, (handles[0] + prevLast)//2, trace);
                 success = success and not ok and data == ATTError.ATT_ERROR_INVALID_HANDLE;
@@ -1268,7 +1268,7 @@ def gatt_sr_gar_bi_02_c(transport, upperTester, lowerTester, trace):
         """
         characteristics = gattData.characteristics(sset, None, ATTPermission.ATT_PERM_ANY_READ, True);
         for c_uuid, c_handle, c_property, c_vhandle in zip(characteristics["uuid"], characteristics["handle"], \
-                                                           characteristics["property"], characteristics["value_handle"]): 
+                                                           characteristics["property"], characteristics["value_handle"]):
             trace.trace(6, "Characteristic %s handle 0x%02X value-handle 0x%02X properties %s" % \
                            (attData.uuid(c_uuid), c_handle, c_vhandle, attData.property(c_property)));
             ok, data = readCharacteristic(transport, initiator, c_vhandle, trace);
@@ -1297,7 +1297,7 @@ def gatt_sr_gar_bi_03_c(transport, upperTester, lowerTester, trace):
         characteristics = gattData.characteristics(sset, None, ATTPermission.ATT_PERM_READ_AUTHOR);
         for c_uuid, c_handle, c_property, c_permission, c_vhandle in zip(characteristics["uuid"], characteristics["handle"], \
                                                                          characteristics["property"], characteristics["permission"], \
-                                                                         characteristics["value_handle"]): 
+                                                                         characteristics["value_handle"]):
             trace.trace(6, "Characteristic %s handle 0x%02X value-handle 0x%02X properties %s permissions %s" % \
                            (attData.uuid(c_uuid), c_handle, c_vhandle, attData.property(c_property), attData.permission(c_permission)));
             ok, data = readCharacteristic(transport, initiator, c_vhandle, trace);
@@ -1326,14 +1326,14 @@ def gatt_sr_gar_bi_04_c(transport, upperTester, lowerTester, trace):
         characteristics = gattData.characteristics(sset, None, ATTPermission.ATT_PERM_READ_AUTHEN);
         for c_uuid, c_handle, c_property, c_permission, c_vhandle in zip(characteristics["uuid"], characteristics["handle"], \
                                                                          characteristics["property"], characteristics["permission"], \
-                                                                         characteristics["value_handle"]): 
+                                                                         characteristics["value_handle"]):
             trace.trace(6, "Characteristic %s handle 0x%02X value-handle 0x%02X properties %s permissions %s" % \
                            (attData.uuid(c_uuid), c_handle, c_vhandle, attData.property(c_property), attData.permission(c_permission)));
             ok, data = readCharacteristic(transport, initiator, c_vhandle, trace);
             success = success and not ok and data == ATTError.ATT_ERROR_INSUFFICIENT_AUTHENTICATION;
             trace.trace(6, "Attempted to read Characteristic @ handle 0x%02X - %s" % (c_vhandle, attData.error(data)));
             found = True;
-        
+
         if not found:
             trace.trace(6, "Didn't find any characteristics that require Authentication for reading...");
         success = success and found;
@@ -1371,9 +1371,9 @@ def gatt_sr_gar_bv_03_c(transport, upperTester, lowerTester, trace):
                     trace.trace(6, "    Characteristic %s handle 0x%02X value %s" % (attData.uuid(uuid), c_handle, formatArray(c_value)));
                     e_value = gattData.characteristicValue(sset, c_handle-1);
                     match = (c_value == e_value) if len(e_value) < mtuSize-3 else (c_value == e_value[:mtuSize-4]);
-                    success = success and match;                        
+                    success = success and match;
                     trace.trace(6, "    Characteristic Value Verified: %s" % success);
-       
+
         success = initiator.disconnect(0x13) and success;
 
     return success;
@@ -1402,7 +1402,7 @@ def gatt_sr_gar_bi_06_c(transport, upperTester, lowerTester, trace):
                 continue;
             success = success and not found and reply['error'] == ATTError.ATT_ERROR_READ_NOT_PERMITTED;
             trace.trace(6, "Reply: %s" % attData.error(reply['error']));
-       
+
         success = initiator.disconnect(0x13) and success;
 
     return success;
@@ -1425,7 +1425,7 @@ def gatt_sr_gar_bi_07_c(transport, upperTester, lowerTester, trace):
             found, reply = characteristicByType(transport, initiator, [ 0x0001, 0xFFFF ], _uuid, False, trace);
             success = success and not found and reply['error'] == ATTError.ATT_ERROR_ATTRIBUTE_NOT_FOUND;
             trace.trace(6, "Reply: %s" % attData.error(reply['error']));
-       
+
         success = initiator.disconnect(0x13) and success;
 
     return success;
@@ -1451,7 +1451,7 @@ def gatt_sr_gar_bi_09_c(transport, upperTester, lowerTester, trace):
             found, reply = characteristicByType(transport, initiator, [_handle, 0xFFFF], _uuid, False, trace);
             success = success and not found and reply['error'] == ATTError.ATT_ERROR_INSUFFICIENT_AUTHORIZATION;
             trace.trace(6, "Reply: %s" % attData.error(reply['error']));
-       
+
         success = initiator.disconnect(0x13) and success;
 
     return success;
@@ -1477,7 +1477,7 @@ def gatt_sr_gar_bi_10_c(transport, upperTester, lowerTester, trace):
             found, reply = characteristicByType(transport, initiator, [_handle, 0xFFFF], _uuid, False, trace);
             success = success and not found and reply['error'] == ATTError.ATT_ERROR_INSUFFICIENT_AUTHENTICATION;
             trace.trace(6, "Reply: %s" % attData.error(reply['error']));
-       
+
         success = initiator.disconnect(0x13) and success;
 
     return success;
@@ -1503,7 +1503,7 @@ def gatt_sr_gar_bi_11_c(transport, upperTester, lowerTester, trace):
             found, reply = characteristicByType(transport, initiator, [_handle, 0xFFFF], _uuid, False, trace);
             success = success and not found and reply['error'] == ATTError.ATT_ERROR_INSUFFICIENT_ENCRYPTION;
             trace.trace(6, "Reply: %s" % attData.error(reply['error']));
-       
+
         success = initiator.disconnect(0x13) and success;
 
     return success;
@@ -1540,13 +1540,13 @@ def gatt_sr_gar_bv_04_c(transport, upperTester, lowerTester, trace):
                 trace.trace(6, "Read Characteristic %s [#%d]" % (attData.uuid(_uuid), _handle));
                 found, reply = readCharacteristic(transport, initiator, _value_handle, trace);
                 success = success and found and reply == gattData.characteristicValue(sset, _handle)[:mtuSize-1];
-                if found:                
+                if found:
                     trace.trace(6, "Data: %s" % formatArray(reply));
                 found, reply = readBlob(transport, initiator, _value_handle, mtuSize, trace);
                 success = success and found and reply == gattData.characteristicValue(sset, _handle);
                 if found:
                     trace.trace(6, "Data: %s" % formatArray(reply));
-       
+
         success = initiator.disconnect(0x13) and success;
 
     return success;
@@ -1573,7 +1573,7 @@ def gatt_sr_gar_bi_12_c(transport, upperTester, lowerTester, trace):
             success = success and not found and reply == ATTError.ATT_ERROR_READ_NOT_PERMITTED;
             if not found:
                 trace.trace(6, "Reply: %s" % attData.error(reply));
-       
+
         success = initiator.disconnect(0x13) and success;
 
     return success;
@@ -1600,7 +1600,7 @@ def gatt_sr_gar_bi_13_c(transport, upperTester, lowerTester, trace):
             success = success and not found and reply['error'] == ATTError.ATT_ERROR_INVALID_OFFSET;
             if not found:
                 trace.trace(6, "Reply: %s" % attData.error(reply['error']));
-       
+
         success = initiator.disconnect(0x13) and success;
 
     return success;
@@ -1623,7 +1623,7 @@ def gatt_sr_gar_bi_14_c(transport, upperTester, lowerTester, trace):
         services = gattData.allServices(sset);
         for uuid, handles in zip(services["uuids"], services["handles"]):
             trace.trace(6, "Service %s covers [%02d, %02d]" % (attData.uuid(uuid), handles[0], handles[1]));
-            
+
             if handles[0] > (prevLast+1):
                 trace.trace(6, "Read Blob @[#%d]" % ((handles[0] + prevLast)//2));
                 found, reply = __readBlob(transport, initiator, (handles[0] + prevLast)//2, 0, trace);
@@ -1631,7 +1631,7 @@ def gatt_sr_gar_bi_14_c(transport, upperTester, lowerTester, trace):
                 if not found:
                     trace.trace(6, "Reply: %s" % attData.error(reply['error']));
             prevLast = handles[1];
-      
+
         success = initiator.disconnect(0x13) and success;
 
     return success;
@@ -1657,7 +1657,7 @@ def gatt_sr_gar_bi_15_c(transport, upperTester, lowerTester, trace):
             found, reply = readBlob(transport, initiator, _value_handle, mtuSize, trace);
             success = success and not found and (reply == ATTError.ATT_ERROR_INSUFFICIENT_AUTHORIZATION);
             trace.trace(6, "Reply: %s" % attData.error(reply));
-      
+
         success = initiator.disconnect(0x13) and success;
 
     return success;
@@ -1683,7 +1683,7 @@ def gatt_sr_gar_bi_16_c(transport, upperTester, lowerTester, trace):
             found, reply = readBlob(transport, initiator, _value_handle, mtuSize, trace);
             success = success and not found and (reply == ATTError.ATT_ERROR_INSUFFICIENT_AUTHENTICATION);
             trace.trace(6, "Reply: %s" % attData.error(reply));
-      
+
         success = initiator.disconnect(0x13) and success;
 
     return success;
@@ -1709,7 +1709,7 @@ def gatt_sr_gar_bi_17_c(transport, upperTester, lowerTester, trace):
             found, reply = readBlob(transport, initiator, _value_handle, mtuSize, trace);
             success = success and not found and (reply == ATTError.ATT_ERROR_INSUFFICIENT_ENCRYPTION);
             trace.trace(6, "Reply: %s" % attData.error(reply));
-      
+
         success = initiator.disconnect(0x13) and success;
 
     return success;
@@ -1739,7 +1739,7 @@ def gatt_sr_gar_bv_05_c(transport, upperTester, lowerTester, trace):
                 _size += len(_value);
                 _handles += [ _value_handle ];
                 _values += _value;
-        
+
         trace.trace(6, "Read Multiple Characteristics @[%s]" % formatArray(_handles));
         found, values = readMultipleCharacteristics(transport, initiator, _handles, trace);
         success = success and found and values == _values;
@@ -1771,7 +1771,7 @@ def gatt_sr_gar_bi_18_c(transport, upperTester, lowerTester, trace):
                 _size += len(_value);
                 _handles += [ _value_handle ];
                 _values += _value;
-        
+
         trace.trace(6, "Read Multiple Characteristics @[%s]" % formatArray(_handles));
         found, values = readMultipleCharacteristics(transport, initiator, _handles, trace);
         success = success and not found and values == ATTError.ATT_ERROR_READ_NOT_PERMITTED;
@@ -1833,7 +1833,7 @@ def gatt_sr_gar_bi_20_c(transport, upperTester, lowerTester, trace):
         _handles = [];
         for _handle, _value_handle in zip(characteristics['handle'], characteristics['value_handle']):
             _handles += [ _value_handle ];
-        
+
         trace.trace(6, "Read Multiple Characteristics @[%s]" % formatArray(_handles));
         found, values = readMultipleCharacteristics(transport, initiator, _handles, trace);
         success = success and not found and values == ATTError.ATT_ERROR_INSUFFICIENT_AUTHORIZATION;
@@ -1863,7 +1863,7 @@ def gatt_sr_gar_bi_21_c(transport, upperTester, lowerTester, trace):
         _handles = [];
         for _handle, _value_handle in zip(characteristics['handle'], characteristics['value_handle']):
             _handles += [ _value_handle ];
-        
+
         trace.trace(6, "Read Multiple Characteristics @[%s]" % formatArray(_handles));
         found, values = readMultipleCharacteristics(transport, initiator, _handles, trace);
         success = success and not found and values == ATTError.ATT_ERROR_INSUFFICIENT_AUTHENTICATION;
@@ -1893,7 +1893,7 @@ def gatt_sr_gar_bi_22_c(transport, upperTester, lowerTester, trace):
         _handles = [];
         for _handle, _value_handle in zip(characteristics['handle'], characteristics['value_handle']):
             _handles += [ _value_handle ];
-        
+
         trace.trace(6, "Read Multiple Characteristics @[%s]" % formatArray(_handles));
         found, values = readMultipleCharacteristics(transport, initiator, _handles, trace);
         success = success and not found and values == ATTError.ATT_ERROR_INSUFFICIENT_ENCRYPTION;
@@ -1927,7 +1927,7 @@ def gatt_sr_gar_bv_06_c(transport, upperTester, lowerTester, trace):
             match = data == gattData.descriptorValue(sset, _handle);
             if not match:
                 trace.trace(6, "    GATT Database  Value: %s" % formatArray(gattData.descriptorValue(sset, _handle)));
-            success = success and match;                        
+            success = success and match;
 
         success = initiator.disconnect(0x13) and success;
 
@@ -1963,7 +1963,7 @@ def gatt_sr_gar_bv_07_c(transport, upperTester, lowerTester, trace):
                 trace.trace(6, "Read Descriptor %s [#%d]" % (attData.uuid(_uuid), _handle));
                 found, reply = readCharacteristic(transport, initiator, _handle, trace);
                 success = success and found and reply == gattData.descriptorValue(sset, _handle)[:mtuSize-1];
-                if found:                
+                if found:
                     trace.trace(6, "Data: %s" % formatArray(reply));
                 found, reply = readBlob(transport, initiator, _handle, mtuSize, trace);
                 success = success and found and reply == gattData.descriptorValue(sset, _handle);
@@ -2036,7 +2036,7 @@ def gatt_sr_gaw_bv_03_c(transport, upperTester, lowerTester, trace):
                 ok, reply = writeCharacteristic(transport, initiator, _value_handle, _value[::-1], trace);
                 success = success and ok;
                 if not ok:
-                    trace.trace(6, "Write failed: %s" % attData.error(reply['error'])); 
+                    trace.trace(6, "Write failed: %s" % attData.error(reply['error']));
                 else:
                     if (_permission & ATTPermission.ATT_PERM_READ) == ATTPermission.ATT_PERM_READ:
                         ok, value = readCharacteristic(transport, initiator, _value_handle, trace);
@@ -2068,13 +2068,13 @@ def gatt_sr_gaw_bi_02_c(transport, upperTester, lowerTester, trace):
         services = gattData.allServices(sset);
         for uuid, handles in zip(services["uuids"], services["handles"]):
             trace.trace(6, "Service %s covers [%02d, %02d]" % (attData.uuid(uuid), handles[0], handles[1]));
-            
+
             if handles[0] > (prevLast+1):
                 trace.trace(6, "Write Characteristic @[#%d]" % ((handles[0] + prevLast)//2));
                 ok, reply = writeCharacteristic(transport, initiator, (handles[0] + prevLast)//2, [ 0x00 ], trace);
                 success = success and not ok and reply['error'] == ATTError.ATT_ERROR_INVALID_HANDLE;
                 if not ok:
-                    trace.trace(6, "Write failed: %s" % attData.error(reply['error'])); 
+                    trace.trace(6, "Write failed: %s" % attData.error(reply['error']));
             prevLast = handles[1];
 
         success = initiator.disconnect(0x13) and success;
@@ -2104,7 +2104,7 @@ def gatt_sr_gaw_bi_03_c(transport, upperTester, lowerTester, trace):
                 ok, reply = writeCharacteristic(transport, initiator, _value_handle, _value[::-1], trace);
                 success = success and not ok and reply['error'] == ATTError.ATT_ERROR_WRITE_NOT_PERMITTED;
                 if not ok:
-                    trace.trace(6, "Write failed: %s" % attData.error(reply['error'])); 
+                    trace.trace(6, "Write failed: %s" % attData.error(reply['error']));
 
         success = initiator.disconnect(0x13) and success;
 
@@ -2134,7 +2134,7 @@ def gatt_sr_gaw_bi_04_c(transport, upperTester, lowerTester, trace):
                 success = success and not ok and reply['error'] == ATTError.ATT_ERROR_INSUFFICIENT_AUTHORIZATION;
                 if not ok:
                     trace.trace(6, "Write failed: %s" % attData.error(reply['error']));
-                else: 
+                else:
                     ok, reply = writeCharacteristic(transport, initiator, _value_handle, _value, trace);
 
         success = initiator.disconnect(0x13) and success;
@@ -2195,7 +2195,7 @@ def gatt_sr_gaw_bi_06_c(transport, upperTester, lowerTester, trace):
                 ok, reply = writeCharacteristic(transport, initiator, _value_handle, _value[::-1], trace);
                 success = success and not ok and reply['error'] == ATTError.ATT_ERROR_INSUFFICIENT_ENCRYPTION;
                 if not ok:
-                    trace.trace(6, "Write failed: %s" % attData.error(reply['error'])); 
+                    trace.trace(6, "Write failed: %s" % attData.error(reply['error']));
                 else:
                     ok, reply = writeCharacteristic(transport, initiator, _value_handle, _value, trace);
 
@@ -2230,7 +2230,7 @@ def gatt_sr_gaw_bv_05_c(transport, upperTester, lowerTester, trace):
                 success = success and ok;
                 if not ok:
                     trace.trace(6, "Write Long failed: %s" % attData.error(reply['error']));
-                else: 
+                else:
                     if (_permission & ATTPermission.ATT_PERM_READ) == ATTPermission.ATT_PERM_READ:
                         ok, value = readBlob(transport, initiator, _value_handle, mtuSize, trace);
                         success = success and ok and value == _value[::-1];
@@ -2261,13 +2261,13 @@ def gatt_sr_gaw_bi_07_c(transport, upperTester, lowerTester, trace):
         services = gattData.allServices(sset);
         for uuid, handles in zip(services["uuids"], services["handles"]):
             trace.trace(6, "Service %s covers [%02d, %02d]" % (attData.uuid(uuid), handles[0], handles[1]));
-            
+
             if handles[0] > (prevLast+1):
                 trace.trace(6, "Write Long Characteristic @[#%d]" % ((handles[0] + prevLast)//2));
                 ok, reply = writeLong(transport, initiator, (handles[0] + prevLast)//2, [ 0x00 ], mtuSize, trace);
                 success = success and not ok and reply['error'] == ATTError.ATT_ERROR_INVALID_HANDLE;
                 if not ok:
-                    trace.trace(6, "Write failed: %s" % attData.error(reply['error'])); 
+                    trace.trace(6, "Write failed: %s" % attData.error(reply['error']));
             prevLast = handles[1];
 
         success = initiator.disconnect(0x13) and success;
@@ -2297,7 +2297,7 @@ def gatt_sr_gaw_bi_08_c(transport, upperTester, lowerTester, trace):
                 ok, reply = writeLong(transport, initiator, _value_handle, _value[::-1], mtuSize, trace);
                 success = success and not ok and reply['error'] == ATTError.ATT_ERROR_WRITE_NOT_PERMITTED;
                 if not ok:
-                    trace.trace(6, "Write failed: %s" % attData.error(reply['error'])); 
+                    trace.trace(6, "Write failed: %s" % attData.error(reply['error']));
                 else:
                     ok, reply = writeLong(transport, initiator, _value_handle, _value, mtuSize, trace);
 
@@ -2334,7 +2334,7 @@ def gatt_sr_gaw_bi_09_c(transport, upperTester, lowerTester, trace):
                     success = success and not ok and reply['error'] == ATTError.ATT_ERROR_INVALID_OFFSET;
                     if not ok:
                         trace.trace(6, "Reply: %s" % attData.error(reply['error']));
-       
+
         success = initiator.disconnect(0x13) and success;
 
     return success;
@@ -2392,7 +2392,7 @@ def gatt_sr_gaw_bi_12_c(transport, upperTester, lowerTester, trace):
             success = success and not ok and reply['error'] == ATTError.ATT_ERROR_INSUFFICIENT_AUTHENTICATION;
             if not ok:
                 trace.trace(6, "Write failed: %s" % attData.error(reply['error']));
-            else: 
+            else:
                 ok, reply = writeLong(transport, initiator, _value_handle, _value, mtuSize, trace);
 
         success = initiator.disconnect(0x13) and success;
@@ -2422,7 +2422,7 @@ def gatt_sr_gaw_bi_13_c(transport, upperTester, lowerTester, trace):
             success = success and not ok and reply['error'] == ATTError.ATT_ERROR_INSUFFICIENT_ENCRYPTION;
             if not ok:
                 trace.trace(6, "Write failed: %s" % attData.error(reply['error']));
-            else: 
+            else:
                 ok, reply = writeLong(transport, initiator, _value_handle, _value, mtuSize, trace);
 
         success = initiator.disconnect(0x13) and success;
@@ -2450,9 +2450,9 @@ def gatt_sr_gaw_bv_08_c(transport, upperTester, lowerTester, trace):
             if len(_value) < mtuSize-3:
                 trace.trace(6, "Write Descriptor @[#%d]" % _handle);
                 ok, reply = writeCharacteristic(transport, initiator, _handle, _value[::-1], trace);
-                success = success and ok;                        
+                success = success and ok;
                 if not ok:
-                    trace.trace(6, "Write failed: %s" % attData.error(reply['error'])); 
+                    trace.trace(6, "Write failed: %s" % attData.error(reply['error']));
                 else:
                     ok, reply = writeCharacteristic(transport, initiator, _handle, _value, trace);
                     success = success and ok;
@@ -2482,9 +2482,9 @@ def gatt_sr_gaw_bv_09_c(transport, upperTester, lowerTester, trace):
             if len(_value) > mtuSize-5:
                 trace.trace(6, "Write Descriptor @[#%d]" % _handle);
                 ok, reply = writeLong(transport, initiator, _handle, _value[::-1], mtuSize, trace);
-                success = success and ok;                        
+                success = success and ok;
                 if not ok:
-                    trace.trace(6, "Write failed: %s" % attData.error(reply['error'])); 
+                    trace.trace(6, "Write failed: %s" % attData.error(reply['error']));
                 else:
                     ok, reply = writeLong(transport, initiator, _handle, _value, mtuSize, trace);
                     success = success and ok;
@@ -2509,7 +2509,7 @@ def gatt_sr_gaw_bv_11_c(transport, upperTester, lowerTester, trace):
             Issue a WRITE EXECUTE command without any pending PREPARED WRITES
         """
         ok, reply = __writeExecute(transport, initiator, trace);
-        success = success and ok;            
+        success = success and ok;
 
         success = initiator.disconnect(0x13) and success;
 
@@ -2539,7 +2539,7 @@ def gatt_sr_gaw_bi_32_c(transport, upperTester, lowerTester, trace):
                 ok, reply = writeCharacteristic(transport, initiator, _value_handle, _value + [ 0x00, 0x00 ], trace);
                 success = success and not ok and reply['error'] == ATTError.ATT_ERROR_INVALID_ATTRIBUTE_VALUE_LENGTH;
                 if not ok:
-                    trace.trace(6, "Write failed: %s" % attData.error(reply['error'])); 
+                    trace.trace(6, "Write failed: %s" % attData.error(reply['error']));
 
         success = initiator.disconnect(0x13) and success;
 
@@ -2569,7 +2569,7 @@ def gatt_sr_gaw_bi_33_c(transport, upperTester, lowerTester, trace):
                 ok, reply = writeLong(transport, initiator, _value_handle, _value + [ 0x00, 0x00 ], mtuSize, trace);
                 success = success and not ok and reply['error'] == ATTError.ATT_ERROR_INVALID_ATTRIBUTE_VALUE_LENGTH;
                 if not ok:
-                    trace.trace(6, "Write failed: %s" % attData.error(reply['error'])); 
+                    trace.trace(6, "Write failed: %s" % attData.error(reply['error']));
 
         success = initiator.disconnect(0x13) and success;
 
@@ -2855,7 +2855,7 @@ def gatt_sr_gpa_bv_04_c(transport, upperTester, lowerTester, trace):
                                                                     characteristics['value_handle'], characteristics['property']):
                     trace.trace(6, "Characteristic %s handle 0x%02X value handle 0x%02X properties %s" % \
                                    (attData.uuid(_uuid), _handle, _value_handle, attData.property(_property)));
-                
+
                 _characteristics = gattData.characteristics(sset);
                 _characteristics.pop("permission");
 
@@ -3104,7 +3104,7 @@ def gatt_sr_gpa_bv_12_c(transport, upperTester, lowerTester, trace):
 
     return success;
 
-__tests__ = { 
+__tests__ = {
     "GAP/GAT/BV-01-C":       [ gap_gat_bv_01_c,       'Mandatory Characteristics' ],
 #   "GAP/GAT/BV-02-C":       [ gap_gat_bv_02_c,       'Peripheral Privacy Flag Characteristic' ],
 #   "GAP/GAT/BV-03-C":       [ gap_gat_bv_03_c,       'Reconnection Address Characteristic' ],
@@ -3199,8 +3199,8 @@ def preamble(transport, trace):
     trace.trace(4, "preamble Standby " + ("PASS" if success else "FAIL"));
     success, upperIRK, upperRandomAddress = preamble_device_address_set(transport, 0, trace);
     trace.trace(4, "preamble Device Address Set " + ("PASS" if success else "FAIL"));
-    ok = ok and success;            
-    return ok;          
+    ok = ok and success;
+    return ok;
 
 """
     Run a test given its test_spec
@@ -3208,7 +3208,7 @@ def preamble(transport, trace):
 def run_a_test(args, transport, trace, test_spec):
     try:
         success = preamble(transport, trace);
-    except Exception as e: 
+    except Exception as e:
         trace.trace(3, "Preamble generated exception: %s" % str(e));
         success = False;
 
@@ -3219,7 +3219,7 @@ def run_a_test(args, transport, trace, test_spec):
             success = success and test_f(transport, 0, 1, trace);
         else:
             success = success and test_f(transport, 0, trace);
-    except Exception as e: 
+    except Exception as e:
         import traceback
         traceback.print_exc()
         trace.trace(3, "Test generated exception: %s" % str(e));
