@@ -104,19 +104,19 @@ class ATTData:
       #
       # encode ATT_EXCH_MTU_REQUEST, <mtu>
       #       where <mtu> 2 octets
-      # 
+      #
         if   ( opcode == ATTOpcode.ATT_EXCH_MTU_REQUEST ):
             self.data = [ opcode ] + toArray( args[0], 2 );
       #
       # encode ATT_FIND_INFORMATION_REQUEST, <start_handle>, <end_handle>
       #       where <start_handle> 2 octets; <end_handle> 2 octets
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_FIND_INFORMATION_REQUEST ):
             self.data = [ opcode ] + toArray( args[0], 2 ) + toArray( args[1], 2 );
       #
       # encode ATT_FIND_BY_TYPE_VALUE_REQUEST, <start_handle>, <end_handle>, <attribute_type>, <attribute_values>...
       #       where <start_handle> 2 octets; <end_handle> 2 octets; <attribute_type> 2 octets UUID; <attribute_values> 1 octet each
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_FIND_BY_TYPE_VALUE_REQUEST ):
             self.data = [ opcode ] + toArray( args[0], 2 ) + toArray( args[1], 2 ) + toArray( args[2], 2 );
             for arg in args[3:]:
@@ -124,25 +124,25 @@ class ATTData:
       #
       # encode ATT_READ_BY_TYPE_REQUEST, <start_handle>, <end_handle>, <attribute_group_type>
       #       where <start_handle> 2 octets; <end_handle> 2 octets; <attribute_group_type> 2 or 16 octets UUID
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_READ_BY_TYPE_REQUEST ):
             self.data = [ opcode ] + toArray( args[0], 2 ) + toArray( args[1], 2 ) + toArray( args[2], 2 if args[2] <= 0xFFFF else 16);
       #
       # encode ATT_READ_REQUEST, <attribute_handle>
       #       where <attribute_handle> 2 octets
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_READ_REQUEST ):
             self.data = [ opcode ] + toArray( args[0], 2 );
       #
       # encode ATT_READ_BLOB_REQUEST, <attribute_handle>, <value_offset>
       #       where <attribute_handle> 2 octets; <value_offset> 2 octets
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_READ_BLOB_REQUEST ):
             self.data = [ opcode ] + toArray( args[0], 2 ) + toArray( args[1], 2 );
       #
       # encode ATT_READ_MULTIPLE_REQUEST, <handles>...
       #       where <handles> 2 octets each
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_READ_MULTIPLE_REQUEST ):
             self.data = [ opcode ];
             for arg in args[0]:
@@ -150,13 +150,13 @@ class ATTData:
       #
       # encode ATT_READ_BY_GROUP_TYPE_REQUEST, <start_handle>, <end_handle>, <attribute_group_type>
       #       where <start_handle> 2 octets; <end_handle> 2 octets; <attribute_group_type> 2 or 16 octets UUID
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_READ_BY_GROUP_TYPE_REQUEST ):
             self.data = [ opcode ] + toArray( args[0], 2 ) + toArray( args[1], 2 ) + toArray( args[2], 2 if args[2] <= 0xFFFF else 16);
       #
       # encode ATT_WRITE_REQUEST, <attribute_handle>, <values>...
       #       where <attribute_handle> 2 octets; <values> 1 octet each
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_WRITE_REQUEST ):
             self.data = [ opcode ] + toArray( args[0], 2 );
             for arg in args[1:]:
@@ -164,7 +164,7 @@ class ATTData:
       #
       # encode ATT_PREPARE_WRITE_REQUEST, <attribute_handle>, <value_offset>, <values>...
       #       where <attribute_handle> 2 octets; <value_offset> 2 octets; <values> 1 octet each
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_PREPARE_WRITE_REQUEST ):
             self.data = [ opcode ] + toArray( args[0], 2 ) + toArray( args[1], 2 );
             for arg in args[2:]:
@@ -172,18 +172,18 @@ class ATTData:
       #
       # encode ATT_EXECUTE_WRITE_REQUEST, <flags>
       #       where <flags> 1 octet
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_EXECUTE_WRITE_REQUEST ):
             self.data = [ opcode, args[0] ];
       #
       # encode ATT_HANDLE_VALUE_CONFIRMATION
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_HANDLE_VALUE_CONFIRMATION ):
             self.data = [ opcode ];
       #
       # encode ATT_WRITE_COMMAND, <attribute_handle>, <values>...
       #       where <attribute_handle> 2 octets; <values> 1 octet each
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_WRITE_COMMAND ):
             self.data = [ opcode ] + toArray( args[0], 2 );
             for arg in args[1:]:
@@ -191,7 +191,7 @@ class ATTData:
       #
       # encode ATT_SIGNED_WRITE_COMMAND, <attribute_handle>, <signature>, <values>...
       #       where <attribute_handle> 2 octets; <signature> 12 octets; <values> 1 octet each
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_SIGNED_WRITE_COMMAND ):
             self.data = [ opcode ] + toArray( args[0], 2 ) + args[2:] + toArray( args[1], 12 );
       #
@@ -207,7 +207,7 @@ class ATTData:
         if len(self.data) > 0:
             self.data = toArray( len(self.data), 2 ) + toArray( ATT_CID, 2 ) + self.data;
         return self.data;
-                
+
     def decode(self, data):
         self.data = data[:];
         size = toNumber( data[:2] );
@@ -237,7 +237,7 @@ class ATTData:
             result["handle"] = [];
             result["uuid"] = [];
             length = 4 if data[5] == 1 else 18;
-            
+
             n = 6;
             while n < size+3:
                 result["handle"] += [ toNumber( data[n:n+2] ) ];
@@ -253,7 +253,7 @@ class ATTData:
             n = 5;
             while n < size+3:
                 result["handle"] += [ toNumber( data[n:n+2] ) ];
-                n += 2;       
+                n += 2;
       #
       # decode ATT_READ_BY_TYPE_RESPONSE: <length>, { <handle>, <value>... }
       #       where <length> 1 octet holding the number of octets in each { <handle>, <value>... } set
@@ -262,7 +262,7 @@ class ATTData:
         elif ( opcode == ATTOpcode.ATT_READ_BY_TYPE_RESPONSE ):
             result["handle"] = [];
             result["value"] = [];
-             
+
             n = 6;
             while n < size+3:
                 result["handle"] += [ toNumber( data[n:n+2] ) ];
@@ -294,7 +294,7 @@ class ATTData:
             result["first_handle"] = [];
             result["last_handle"] = [];
             result["value"] = [];
-             
+
             n = 6;
             while n < size+3:
                 result["first_handle"] += [ toNumber( data[n:n+2] ) ];
@@ -302,11 +302,11 @@ class ATTData:
                 result["value"] += [ data[n+4:n+data[5]] ];
                 n += data[5];
       #
-      # decode ATT_WRITE_RESPONSE: 
-      #       where 
+      # decode ATT_WRITE_RESPONSE:
+      #       where
       #
       #  elif ( opcode == ATTOpcode.ATT_WRITE_RESPONSE ):
-            
+
       #
       # decode ATT_PREPARE_WRITE_RESPONSE: <handle>, <offset>, <value>...
       #       where <handle> 2 octets; <offset> 2 octets; <value> 1 octet each
@@ -316,11 +316,11 @@ class ATTData:
             result["offset"] = toNumber( data[7:9] );
             result["value"] = data[9:];
       #
-      # decode ATT_EXECUTE_WRITE_RESPONSE: 
-      #       where 
+      # decode ATT_EXECUTE_WRITE_RESPONSE:
+      #       where
       #
       #  elif ( opcode == ATTOpcode.ATT_EXECUTE_WRITE_RESPONSE ):
-      
+
       #
       # decode ATT_HANDLE_VALUE_NOTIFICATION: <handle>, <value>...
       #       where <handle> 2 octets; <value> 1 octet each
@@ -349,7 +349,7 @@ class ATTData:
         result = result.split('.')[1];
         result = '_'.join([_.lower().capitalize() if _ != 'ATT' else _ for _ in result.split('_')]);
         return result;
-        
+
     def __hexByteArray(self, start, end):
         result = '';
         for n in range(start, min(len(self.data), end)):
@@ -377,11 +377,11 @@ class ATTData:
       #       where <request_opcode> 1 octet; <attribute_handle> 2 octets; <error_code> 1 octet
       #
         if   ( opcode == ATTOpcode.ATT_ERROR_RESPONSE ):
-            result += ' request=%s handle=0x%04X error=%s' % (self.__opcodeName(self.data[5]), toNumber(self.data[6:8]), self.__errorText(self.data[8])); 
+            result += ' request=%s handle=0x%04X error=%s' % (self.__opcodeName(self.data[5]), toNumber(self.data[6:8]), self.__errorText(self.data[8]));
       #
       # ATT_EXCH_MTU_REQUEST: <mtu>
       #       where <mtu> 2 octets
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_EXCH_MTU_REQUEST ):
             result += ' mtu=%d' % toNumber(self.data[5:7]);
       #
@@ -393,7 +393,7 @@ class ATTData:
       #
       # ATT_FIND_INFORMATION_REQUEST: <start_handle>, <end_handle>
       #       where <start_handle> 2 octets; <end_handle> 2 octets
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_FIND_INFORMATION_REQUEST ):
             result += ' start=0x%04X end=0x%04X' % (toNumber(self.data[5:7]), toNumber(self.data[7:9]));
       #
@@ -412,7 +412,7 @@ class ATTData:
       #
       # ATT_FIND_BY_TYPE_VALUE_REQUEST: <start_handle>, <end_handle>, <attribute_type>, <attribute_values>...
       #       where <start_handle> 2 octets; <end_handle> 2 octets; <attribute_type> 2 octets UUID; <attribute_values> 1 octet each
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_FIND_BY_TYPE_VALUE_REQUEST ):
             result += ' start=0x%04X end=0x%04X type=0x%04X values: %s' % (toNumber(self.data[5:7]), toNumber(self.data[7:9]), toNumber(self.data[9:11]), self.__hexByteArray(11,size+4));
       #
@@ -424,7 +424,7 @@ class ATTData:
       #
       # ATT_READ_BY_TYPE_REQUEST: <start_handle>, <end_handle>, <attribute_group_type>
       #       where <start_handle> 2 octets; <end_handle> 2 octets; <attribute_group_type> 2 or 16 octets UUID
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_READ_BY_TYPE_REQUEST ):
             result += ' start=0x%04X end=0x%04X' % (toNumber(self.data[5:7]), toNumber(self.data[7:9]));
             if size > 7:
@@ -445,7 +445,7 @@ class ATTData:
       #
       # ATT_READ_REQUEST: <attribute_handle>
       #       where <attribute_handle> 2 octets
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_READ_REQUEST ):
             result += ' handle=0x%04X' % toNumber(self.data[5:7]);
       #
@@ -457,7 +457,7 @@ class ATTData:
       #
       # ATT_READ_BLOB_REQUEST: <attribute_handle>, <value_offset>
       #       where <attribute_handle> 2 octets; <value_offset> 2 octets
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_READ_BLOB_REQUEST ):
             result += ' handle=0x%04X offset=0x%04X' % (toNumber(self.data[5:7]), toNumber(self.data[7:9]));
       #
@@ -469,7 +469,7 @@ class ATTData:
       #
       # ATT_READ_MULTIPLE_REQUEST: <handles>...
       #       where <handles> 2 octets each
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_READ_MULTIPLE_REQUEST ):
             result += ' handles: %s' % self.__hexWordArray(5, size+4);
       #
@@ -481,7 +481,7 @@ class ATTData:
       #
       # ATT_READ_BY_GROUP_TYPE_REQUEST: <start_handle>, <end_handle>, <attribute_group_type>
       #       where <start_handle> 2 octets; <end_handle> 2 octets; <attribute_group_type> 2 or 16 octets UUID
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_READ_BY_GROUP_TYPE_REQUEST ):
             result += ' start=0x%04X end=0x%04X' % (toNumber(self.data[5:7]), toNumber(self.data[7:9]));
             if size > 7:
@@ -497,25 +497,25 @@ class ATTData:
             n, indent = 6, len(result);
             while n < size+3:
                 if n > 6:
-                    result += '\n%*s' % (indent, ' '); 
+                    result += '\n%*s' % (indent, ' ');
                 result += ' { handle=0x%04X end group=0x%04X values: %s }' % (toNumber(self.data[n:n+2]), toNumber(self.data[n+2:n+4]), self.__hexByteArray(n+4, n+self.data[5]));
                 n += self.data[5];
       #
       # ATT_WRITE_REQUEST: <attribute_handle>, <values>...
       #       where <attribute_handle> 2 octets; <values> 1 octet each
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_WRITE_REQUEST ):
             result += ' handle=0x%04X values: %s' % (toNumber(self.data[5:7]), self.__hexByteArray(7, size+4));
       #
-      # ATT_WRITE_RESPONSE: 
-      #       where 
+      # ATT_WRITE_RESPONSE:
+      #       where
       #
         elif ( opcode == ATTOpcode.ATT_WRITE_RESPONSE ):
             pass;
       #
       # ATT_PREPARE_WRITE_REQUEST: <attribute_handle>, <value_offset>, <values>...
       #       where <attribute_handle> 2 octets; <value_offset> 2 octets; <values> 1 octet each
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_PREPARE_WRITE_REQUEST ):
             result += ' handle=0x%04X offset=0x%04X values: %s' % (toNumber(self.data[5:7]), toNumber(self.data[7:9]), self.__hexByteArray(9, size+4));
       #
@@ -527,12 +527,12 @@ class ATTData:
       #
       # ATT_EXECUTE_WRITE_REQUEST: <flags>
       #       where <flags> 1 octet
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_EXECUTE_WRITE_REQUEST ):
             result += ' flags=0x%02X' % self.data[5];
       #
-      # ATT_EXECUTE_WRITE_RESPONSE: 
-      #       where 
+      # ATT_EXECUTE_WRITE_RESPONSE:
+      #       where
       #
         elif ( opcode == ATTOpcode.ATT_EXECUTE_WRITE_RESPONSE ):
             pass;
@@ -550,29 +550,29 @@ class ATTData:
             result += ' handle=0x%04X values: %s' % (toNumber(self.data[5:7]), self.__hexByteArray(7, size+4));
       #
       # ATT_HANDLE_VALUE_CONFIRMATION:
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_HANDLE_VALUE_CONFIRMATION ):
             pass;
       #
       # ATT_WRITE_COMMAND: <attribute_handle>, <values>...
       #       where <attribute_handle> 2 octets; <values> 1 octet each
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_WRITE_COMMAND ):
             result += ' handle=0x%04X values: %s' % (toNumber(self.data[5:7]), self.__hexByteArray(7, size+4));
       #
       # ATT_SIGNED_WRITE_COMMAND: <attribute_handle>, <signature>, <values>...
       #       where <attribute_handle> 2 octets; <signature> 12 octets; <values> 1 octet each
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_SIGNED_WRITE_COMMAND ):
             result += ' handle=0x%04X signature=0x%024X values: %s' % (toNumber(self.data[5:7]), toNumber(self.data[7:19]), self.__hexByteArray(19, size+4));
       #
       # ATT_INVALID_REQUEST:
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_INVALID_REQUEST ):
             result += ' ' + self.__hexByteArray(5, size+4);
       #
       # ATT_INVALID_COMMAND:
-      # 
+      #
         elif ( opcode == ATTOpcode.ATT_INVALID_COMMAND ):
             result += ' ' + self.__hexByteArray(5, size+4);
 

@@ -88,7 +88,7 @@ def run_tests(args, xtra_args, transport, trace):
 
     test_mod = try_to_import(args.test, "test", "tests.");
     test_specs = test_mod.get_tests_specs();
-    nameLen = max([ len(test_specs[key].name) for key in test_specs ]); 
+    nameLen = max([ len(test_specs[key].name) for key in test_specs ]);
 
     t = args.case
 
@@ -140,7 +140,7 @@ def run_tests(args, xtra_args, transport, trace):
         trace.trace(2, "\nSummary:\n\nStatus   Count\n%s" % ('='*14));
         if passed > 0:
             trace.trace(2, "PASS%10d" % passed);
-        
+
         if failed > 0:
             trace.trace(2, "FAIL%10d" % failed);
         trace.trace(2, "%s\nTotal%9d" % ('='*14, total));
@@ -169,7 +169,7 @@ def main():
     transport = None;
     try:
         (args, xtra_args) = parse_arguments();
-        
+
         random.seed(args.seed);
 
         trace = Trace(args.verbose);

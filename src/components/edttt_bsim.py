@@ -8,7 +8,7 @@
 #   send(idx, message)
 #   recv(idx, number_bytes, timeout)
 #   wait(time)
-#   close() 
+#   close()
 #   get_time()
 #   n_devices : Number of devices it is connected to
 
@@ -168,7 +168,7 @@ class EDTTT:
       while ( len(packet) < nbytes):
         packet += self.ll_read(nbytes - received_nbytes);
         #print "Got so far " + str(len(packet)) + " bytes"
-        #print 'packet: "' + repr(packet) + '"' 
+        #print 'packet: "' + repr(packet) + '"'
       return packet;
 
     def recv(self, idx, number_bytes, to=None):
@@ -192,7 +192,7 @@ class EDTTT:
         #print '"' + repr(header[1:])+ '"'
         #print "length = " + str(len(header[1:]))
         self.last_t = struct.unpack('<Q',header[1:])[0];
-        #print "last_t updated to " + str(self.last_t) 
+        #print "last_t updated to " + str(self.last_t)
 
         packet=b""
         if header[0] == 0x00: #correct reception => packet follows

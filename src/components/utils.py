@@ -182,7 +182,7 @@ def showCommands(commands, trace):
             if ( i ):
                trace.trace(8, fmt % CommandTexts[n][i] + ' ' + txt);
             else:
-               trace.trace(8, fmt % (n, CommandTexts[n][i] + ' ' + txt)); 
+               trace.trace(8, fmt % (n, CommandTexts[n][i] + ' ' + txt));
             fmt = '   %s';
 
 def showFeatures(features, trace):
@@ -204,7 +204,7 @@ def showFeatures(features, trace):
             if ( i ):
                 trace.trace(8, fmt % FeatureTexts[n][i] + ' ' + txt);
             else:
-                trace.trace(8, fmt % (n, FeatureTexts[n][i] + ' ' + txt)); 
+                trace.trace(8, fmt % (n, FeatureTexts[n][i] + ' ' + txt));
             fmt = '   %s';
 
 def showLEFeatures(features, trace):
@@ -213,7 +213,7 @@ def showLEFeatures(features, trace):
         [ 'LE 2M PHY', 'Stable Modulation Index - Transmitter', 'Stable Modulation Index - Receiver', 'LE Coded PHY', 'LE Extended Advertising', 'LE Periodic Advertising', 'Channel Selection Algorithm #2', 'LE Power Class 1' ],
         [ 'Minimum Number of Used Channels Procedure', 'Reserved for Future Use', 'Reserved for Future Use', 'Reserved for Future Use', 'Reserved for Future Use', 'Reserved for Future Use', 'Reserved for Future Use', 'Reserved for Future Use' ],
     ];
-        
+
     for n in range(len(LEFeatureTexts)):
         fmt = '%2i %s';
         for i in range(8):
@@ -221,7 +221,7 @@ def showLEFeatures(features, trace):
             if ( i ):
                 trace.trace(8, fmt % LEFeatureTexts[n][i] + ' ' + txt);
             else:
-                trace.trace(8, fmt % (n, LEFeatureTexts[n][i] + ' ' + txt)); 
+                trace.trace(8, fmt % (n, LEFeatureTexts[n][i] + ' ' + txt));
             fmt = '   %s';
 
 def showLEStates(states, trace):
@@ -292,7 +292,7 @@ def showEventMask(eventMask, trace):
     else:
         txt = 'No events specified';
     trace.trace(8, txt);
-    
+
 def showLEEventMask(eventMask, trace):
     """
         0x0000000000000000 ~ No LE events specified.

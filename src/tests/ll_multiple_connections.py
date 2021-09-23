@@ -18,9 +18,9 @@ def ll_multiple_connections(transport, trace):
     try:
         """
             Scan interval should be three times the average Advertise interval. Scan window should be the maximum possible.
-        """ 
+        """
         ownAddress = Address( ExtendedAddressType.PUBLIC );
-        rawPeerAddress = 0x456789ABCDEF        
+        rawPeerAddress = 0x456789ABCDEF
         peerAddress = Address( SimpleAddressType.PUBLIC, rawPeerAddress );
         advertiser = Advertiser(transport, 0, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
         advertiser.responseData = [ 0x04, 0x09 ] + [ ord(char) for char in "IUT" ];
@@ -29,29 +29,29 @@ def ll_multiple_connections(transport, trace):
         scanner1 = Scanner(transport, 1, trace, ScanType.PASSIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1);
         ownAddress = Address( ExtendedAddressType.PUBLIC );
         scanner2 = Scanner(transport, 2, trace, ScanType.PASSIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1);
-        
+
         trace.trace(1, '-'*80);
-        
+
         success = advertiser.enable();
-            
-        trace.trace(1, "\nUsing initiator address: %s\n" % formatAddress( toArray(rawPeerAddress, 6), SimpleAddressType.PUBLIC)); 
+
+        trace.trace(1, "\nUsing initiator address: %s\n" % formatAddress( toArray(rawPeerAddress, 6), SimpleAddressType.PUBLIC));
         success = success and preamble_set_public_address( transport, 1, rawPeerAddress, trace );
         success = success and preamble_set_public_address( transport, 2, rawPeerAddress, trace );
-        
+
         success = success and scanner1.enable();
         scanner1.monitor();
         success = success and scanner1.disable();
         success = success and scanner1.qualifyReports( 1 );
-        
+
         initiatorAddress = Address( ExtendedAddressType.PUBLIC );
         initiator1 = Initiator(transport, 1, 0, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, 0x123456789ABC ));
         connected = initiator1.connect();
         success = success and connected;
 
-        initiatorAddress = Address( ExtendedAddressType.PUBLIC );        
+        initiatorAddress = Address( ExtendedAddressType.PUBLIC );
         initiator2 = Initiator(transport, 2, 0, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, 0x123456789ABC ));
-            
-        if connected:          
+
+        if connected:
             print("\nStarting slave advertising...");
             success = advertiser.enable();
 
@@ -64,19 +64,19 @@ def ll_multiple_connections(transport, trace):
             print("\nStarting master 2 connection...");
             connected = initiator2.connect();
             success = success and connected;
-            
+
             print("\nDisconnecting...");
             disconnected = initiator1.disconnect(0x3E);
             success = success and disconnected;
             disconnected = initiator2.disconnect(0x3E);
             success = success and disconnected;
 
-    except Exception as e: 
+    except Exception as e:
         trace.trace(1, "Connection Request test failed: %s" % str(e));
         success = False;
-    
+
     trace.trace(3, "Connection Request test " + ("PASSED" if success else "FAILED"));
-    return success    
+    return success
 
 
 _spec = {};
@@ -101,8 +101,8 @@ def main(transport, trace):
     print(("preamble Standby Master 1 " + ("PASS" if preamble_standby(transport, 1, trace) else "FAIL")));
     print(("preamble Standby Master 2 " + ("PASS" if preamble_standby(transport, 2, trace) else "FAIL")));
     print(("preamble Device Address Set Slave "    + ("PASS" if preamble_device_address_set(transport, 0, trace) else "FAIL")));
-    print(("preamble Device Address Set Master 1 " + ("PASS" if preamble_device_address_set(transport, 1, trace) else "FAIL")));    
-    print(("preamble Device Address Set Master 2 " + ("PASS" if preamble_device_address_set(transport, 2, trace) else "FAIL")));    
+    print(("preamble Device Address Set Master 1 " + ("PASS" if preamble_device_address_set(transport, 1, trace) else "FAIL")));
+    print(("preamble Device Address Set Master 2 " + ("PASS" if preamble_device_address_set(transport, 2, trace) else "FAIL")));
     print();
     success = ll_multiple_connections(transport, trace);
     return (0 if success else 1)

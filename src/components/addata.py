@@ -44,10 +44,10 @@ class ADType(IntEnum):
     LE_SUPPORTED_FEATURES   =  39 # «LE Supported Features» Core Specification Supplement, Part A, Section 1.19
     CHANNEL_MAP_UPDATE      =  40 # «Channel Map Update Indication» Core Specification Supplement, Part A, Section 1.20
     INFO_DATA_3D            =  61 # ​​«3D Information Data» ​3D Synchronization Profile, v1.0 or later
-    MANUFACTURER_DATA       = 255 # «Manufacturer Specific Data» Bluetooth Core Specification : Vol. 3, Part C, section 8.1.4 (v2.1 + EDR, 3.0 + HS and 4.0) Vol. 3, Part C, sections 11.1.4 and 18.11 (v4.0) Core Specification Supplement, Part A, section 1.4​ 
+    MANUFACTURER_DATA       = 255 # «Manufacturer Specific Data» Bluetooth Core Specification : Vol. 3, Part C, section 8.1.4 (v2.1 + EDR, 3.0 + HS and 4.0) Vol. 3, Part C, sections 11.1.4 and 18.11 (v4.0) Core Specification Supplement, Part A, section 1.4​
 
 class ADRole(IntEnum):
-    ONLY_PERIPHERAL         =   0 # Only Peripheral Role supported 
+    ONLY_PERIPHERAL         =   0 # Only Peripheral Role supported
     ONLY_CENTRAL            =   1 # Only Central Role supported
     PERIPHERAL_PREFERRED    =   2 # Peripheral and Central Role supported, Peripheral Role preferred for connection establishment
     CENTRAL_PREFERRED       =   3 # Peripheral and Central Role supported, Central Role preferred for connection establishment
@@ -325,7 +325,7 @@ class ADData:
             self.data = [ 2, adType, args[0] if args[0] >= 0 else 256+args[0] ];
       #
       # ADType.FLAGS, <flags>           where <flags> [ 0, 31 ]
-      # ADType.SEC_MANAGER_OBF, <flags> where <flags> [ 0, 15 ]  
+      # ADType.SEC_MANAGER_OBF, <flags> where <flags> [ 0, 15 ]
       # ADType.DEVICE_ROLE, <role>      where <role>  [ 0, 3 ]
       #
         elif ( adType == ADType.FLAGS or adType == ADType.SEC_MANAGER_OBF or adType == ADType.DEVICE_ROLE ):
@@ -372,7 +372,7 @@ class ADData:
         elif ( adType == ADType.DEVICE_CLASS ):
             self.data = [ 4, adType ] + toArray(args[0], 3);
       #
-      # ADType.PAIR_HASH_C,    <hash_value> 
+      # ADType.PAIR_HASH_C,    <hash_value>
       # ADType.PAIR_RANDOM_R,  <random_value>
       # ADType.SEC_MANAGER_TK, <tk_value>
       #
@@ -464,7 +464,7 @@ class ADData:
         size = len(data);
 
         n = 0;
-        while n < size:        
+        while n < size:
             length = data[n];
             length -= 1; n += 1
             if length > 0:
@@ -478,7 +478,7 @@ class ADData:
                         result[adType] = data[n] if data[n] < 128 else data[n]-256;
                   #
                   # ADType.FLAGS, <flags>           where <flags> [ 0, 31 ]
-                  # ADType.SEC_MANAGER_OBF, <flags> where <flags> [ 0, 15 ]  
+                  # ADType.SEC_MANAGER_OBF, <flags> where <flags> [ 0, 15 ]
                   # ADType.DEVICE_ROLE, <role>      where <role>  [ 0, 3 ]
                   #
                     elif ( adType == ADType.FLAGS or adType == ADType.SEC_MANAGER_OBF or adType == ADType.DEVICE_ROLE ):
@@ -523,7 +523,7 @@ class ADData:
                     elif ( adType == ADType.DEVICE_CLASS ):
                         result[adType] = toNumber( data[n:n+length] );
                   #
-                  # ADType.PAIR_HASH_C,    <hash_value> 
+                  # ADType.PAIR_HASH_C,    <hash_value>
                   # ADType.PAIR_RANDOM_R,  <random_value>
                   # ADType.SEC_MANAGER_TK, <tk_value>
                   #
@@ -597,16 +597,16 @@ class ADData:
                             for scheme, code in __schemeNames__.items():
                                 if codePoint == code[-1]:
                                     name = scheme + ':' + name;
-                                    break; 
+                                    break;
                         result[adType] = name;
                     else:
                         result[adType] = data[n:n+length];
-                    n += length; 
+                    n += length;
                 else:
                     adType = data[n];
                     n += 1;
                     result[adType] = data[n:n+length];
-                    n += length; 
+                    n += length;
 
         return result;
 
