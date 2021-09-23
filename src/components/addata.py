@@ -17,18 +17,18 @@ class ADType(IntEnum):
     COMPLETE_LOCAL_NAME     =   9 # «Complete Local Name» Bluetooth Core Specification : Vol. 3, Part C, section 8.1.2 (v2.1 + EDR, 3.0 + HS and 4.0) Vol. 3, Part C, sections 11.1.2 and 18.4 (v4.0) Core Specification Supplement, Part A, section 1.2
     TX_POWER_LEVEL          =  10 # «Tx Power Level» Bluetooth Core Specification : Vol. 3, Part C, section 8.1.5 (v2.1 + EDR, 3.0 + HS and 4.0) Vol. 3, Part C, sections 11.1.5 and 18.3 (v4.0) Core Specification Supplement, Part A, section 1.5
     DEVICE_CLASS            =  13 # «Class of Device» Bluetooth Core Specification : Vol. 3, Part C, section 8.1.6 (v2.1 + EDR, 3.0 + HS and 4.0) Vol. 3, Part C, sections 11.1.5 and 18.5 (v4.0) Core Specification Supplement, Part A, section 1.6
-    PAIR_HASH_C             =  14 # «Simple Pairing Hash C» Bluetooth Core Specification : Vol. 3, Part C, section 8.1.6 (v2.1 + EDR, 3.0 + HS and 4.0) Vol. 3, Part C, sections 11.1.5 and 18.5 (v4.0) ​
+    PAIR_HASH_C             =  14 # «Simple Pairing Hash C» Bluetooth Core Specification : Vol. 3, Part C, section 8.1.6 (v2.1 + EDR, 3.0 + HS and 4.0) Vol. 3, Part C, sections 11.1.5 and 18.5 (v4.0)
     PAIR_RANDOM_R           =  15 # «Simple Pairing Randomizer R» Bluetooth Core Specification : Vol. 3, Part C, section 8.1.6 (v2.1 + EDR, 3.0 + HS and 4.0) Vol. 3, Part C, sections 11.1.5 and 18.5 (v4.0)
     SEC_MANAGER_TK          =  16 # «Security Manager TK Value» Bluetooth Core Specification : Vol. 3, Part C, sections 11.1.7 and 18.6 (v4.0) Core Specification Supplement, Part A, section 1.8
     SEC_MANAGER_OBF         =  17 # «Security Manager Out of Band Flags» Bluetooth Core Specification : Vol. 3, Part C, sections 11.1.6 and 18.7 (v4.0) Core Specification Supplement, Part A, section 1.7
-    SLAVE_CONNECT_INT       =  18 # «Slave Connection Interval Range» Bluetooth Core Specification : Vol. 3, Part C, sections 11.1.8 and 18.8 (v4.0) Core Specification Supplement, Part A, section 1.9
+    PERIPHERAL_CONNECT_INT  =  18 # «Peripheral Connection Interval Range» Bluetooth Core Specification : Vol. 3, Part C, sections 11.1.8 and 18.8 (v4.0) Core Specification Supplement, Part A, section 1.9
     SS_UUIDS_16             =  20 # «List of 16 - bit Service Solicitation UUIDs» Bluetooth Core Specification : Vol. 3, Part C, sections 11.1.9 and 18.9 (v4.0) Core Specification Supplement, Part A, section 1.10
     SS_UUIDS_128            =  21 # «List of 128 - bit Service Solicitation UUIDs» Bluetooth Core Specification : Vol. 3, Part C, sections 11.1.9 and 18.9 (v4.0) Core Specification Supplement, Part A, section 1.10
     SERVICE_DATA_16         =  22 # «Service Data» Bluetooth Core Specification : Vol. 3, Part C, sections 11.1.10 and 18.10 (v4.0)
     PUBLIC_ADDRESS          =  23 # «Public Target Address» Bluetooth Core Specification : Core Specification Supplement, Part A, section 1.13
     RANDOM_ADDRESS          =  24 # «Random Target Address» Bluetooth Core Specification : Core Specification Supplement, Part A, section 1.14
     APPEARANCE              =  25 # «Appearance» Bluetooth Core Specification : Core Specification Supplement, Part A, section 1.12
-    ADVERTISE_INT           =  26 # ​«Advertising Interval» ​Bluetooth Core Specification : Core Specification Supplement, Part A, section 1.15​​​​
+    ADVERTISE_INT           =  26 # ​«Advertising Interval» ​Bluetooth Core Specification : Core Specification Supplement, Part A, section 1.15
     DEVICE_ADDRESS          =  27 # «​LE Bluetooth Device Address» ​Core Specification Supplement, Part A, section 1.16
     DEVICE_ROLE             =  28 # «​LE Role» ​Core Specification Supplement, Part A, section 1.17
     PAIR_HASH_C256          =  29 # «​Simple Pairing Hash C - 256» ​Core Specification Supplement, Part A, section 1.6
@@ -37,14 +37,14 @@ class ADType(IntEnum):
     SERVICE_DATA_32         =  32 # ​«Service Data - 32 - bit UUID» ​Core Specification Supplement, Part A, section 1.11
     SERVICE_DATA_128        =  33 # ​«Service Data - 128 - bit UUID» ​Core Specification Supplement, Part A, section 1.11
     SEC_CONNECT_CONFIRM     =  34 # ​«​LE Secure Connections Confirmation Value» ​Core Specification Supplement Part A, Section 1.6
-    SEC_CONNECT_RANDOM      =  35 # ​​«​LE Secure Connections Random Value» ​Core Specification Supplement Part A, Section 1.6​
+    SEC_CONNECT_RANDOM      =  35 # ​​«​LE Secure Connections Random Value» ​Core Specification Supplement Part A, Section 1.6
     URI                     =  36 # ​​​«​URI» ​Bluetooth Core Specification : Core Specification Supplement, Part A, section 1.18
     INDOOR_POSITION         =  37 # ​«Indoor Positioning» ​Indoor Posiioning Service v1.0 or later
-    DISCOVERY_DATA          =  38 # ​«Transport Discovery Data» ​Transport Discovery Service v1.0 or later​
+    DISCOVERY_DATA          =  38 # ​«Transport Discovery Data» ​Transport Discovery Service v1.0 or later
     LE_SUPPORTED_FEATURES   =  39 # «LE Supported Features» Core Specification Supplement, Part A, Section 1.19
     CHANNEL_MAP_UPDATE      =  40 # «Channel Map Update Indication» Core Specification Supplement, Part A, Section 1.20
     INFO_DATA_3D            =  61 # ​​«3D Information Data» ​3D Synchronization Profile, v1.0 or later
-    MANUFACTURER_DATA       = 255 # «Manufacturer Specific Data» Bluetooth Core Specification : Vol. 3, Part C, section 8.1.4 (v2.1 + EDR, 3.0 + HS and 4.0) Vol. 3, Part C, sections 11.1.4 and 18.11 (v4.0) Core Specification Supplement, Part A, section 1.4​
+    MANUFACTURER_DATA       = 255 # «Manufacturer Specific Data» Bluetooth Core Specification : Vol. 3, Part C, section 8.1.4 (v2.1 + EDR, 3.0 + HS and 4.0) Vol. 3, Part C, sections 11.1.4 and 18.11 (v4.0) Core Specification Supplement, Part A, section 1.4
 
 class ADRole(IntEnum):
     ONLY_PERIPHERAL         =   0 # Only Peripheral Role supported
@@ -379,9 +379,9 @@ class ADData:
         elif ( adType == ADType.PAIR_HASH_C or adType == ADType.PAIR_RANDOM_R or adType == ADType.SEC_MANAGER_TK ):
             self.data = [ 17, adType ] + toArray(args[0], 16);
       #
-      # ADType.SLAVE_CONNECT_INT, <min_interval>, <max_interval>
+      # ADType.PERIPHERAL_CONNECT_INT, <min_interval>, <max_interval>
       #
-        elif ( adType == ADType.SLAVE_CONNECT_INT ):
+        elif ( adType == ADType.PERIPHERAL_CONNECT_INT ):
             self.data = [ 5, adType ] + toArray(args[0], 2) + toArray(args[1], 2);
       #
       # ADType.SERVICE_DATA_16, <service_uuid>, [<service_data>...]
@@ -530,9 +530,9 @@ class ADData:
                     elif ( adType == ADType.PAIR_HASH_C or adType == ADType.PAIR_RANDOM_R or adType == ADType.SEC_MANAGER_TK ):
                         result[adType] = toNumber( data[n:n+length] );
                   #
-                  # ADType.SLAVE_CONNECT_INT, <min_interval>, <max_interval>
+                  # ADType.PERIPHERAL_CONNECT_INT, <min_interval>, <max_interval>
                   #
-                    elif ( adType == ADType.SLAVE_CONNECT_INT ):
+                    elif ( adType == ADType.PERIPHERAL_CONNECT_INT ):
                         result[adType] = [];
                         for i in range(n, n+length, 2):
                             result[adType] += [ toNumber( data[i:i+2] ) ];

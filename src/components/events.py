@@ -74,10 +74,10 @@ class CmdOpcodes(IntEnum):
     BT_HCI_OP_LE_SET_SCAN_ENABLE            = 0x200C
     BT_HCI_OP_LE_CREATE_CONN                = 0x200D
     BT_HCI_OP_LE_CREATE_CONN_CANCEL         = 0x200E
-    BT_HCI_OP_LE_READ_WL_SIZE               = 0x200F
-    BT_HCI_OP_LE_CLEAR_WL                   = 0x2010
-    BT_HCI_OP_LE_ADD_DEV_TO_WL              = 0x2011
-    BT_HCI_OP_LE_REM_DEV_FROM_WL            = 0x2012
+    BT_HCI_OP_LE_READ_FAL_SIZE              = 0x200F
+    BT_HCI_OP_LE_CLEAR_FAL                  = 0x2010
+    BT_HCI_OP_LE_ADD_DEV_TO_FAL             = 0x2011
+    BT_HCI_OP_LE_REM_DEV_FROM_FAL           = 0x2012
     BT_HCI_OP_LE_CONN_UPDATE                = 0x2013
     BT_HCI_OP_LE_SET_HOST_CHAN_CLASSIF      = 0x2014
     BT_HCI_OP_LE_READ_CHAN_MAP              = 0x2015
@@ -173,7 +173,7 @@ class ErrorCodes(IntEnum):
     BT_HCI_ERR_BAD_CONNECTION_INTERVAL      = 0x16
     BT_HCI_ERR_BAD_CONNECTION_LATENCY       = 0x17
     BT_HCI_ERR_BAD_SUPERVISION_TIMEOUT      = 0x18
-    BT_HCI_ERR_BAD_MASTER_CLOCK_ACCURACY    = 0x19
+    BT_HCI_ERR_BAD_CENTRAL_CLOCK_ACCURACY   = 0x19
     BT_HCI_ERR_BAD_CONNECTION_ROLE          = 0x1A
     BT_HCI_ERR_BAD_ADDRESS_TYPE             = 0x1B
     BT_HCI_ERR_BAD_ADV_REPORT_EVENT         = 0x1C
@@ -256,10 +256,10 @@ class Event:
                        CmdOpcodes.BT_HCI_OP_LE_SET_SCAN_PARAM:             'Command Complete Event for LE Set Scan Parameters status 0x{2:02X}',
                        CmdOpcodes.BT_HCI_OP_LE_SET_SCAN_ENABLE:            'Command Complete Event for LE Set Scan Enable status 0x{2:02X}',
                        CmdOpcodes.BT_HCI_OP_LE_CREATE_CONN_CANCEL:         'Command Complete Event for LE Create Connection Cancel status 0x{2:02X}',
-                       CmdOpcodes.BT_HCI_OP_LE_READ_WL_SIZE:               'Command Complete Event for LE Read White List Size status 0x{2:02X} list size {3:d}',
-                       CmdOpcodes.BT_HCI_OP_LE_CLEAR_WL:                   'Command Complete Event for LE Clear White List status 0x{2:02X}',
-                       CmdOpcodes.BT_HCI_OP_LE_ADD_DEV_TO_WL:              'Command Complete Event for LE Add Device To White List status 0x{2:02X}',
-                       CmdOpcodes.BT_HCI_OP_LE_REM_DEV_FROM_WL:            'Command Complete Event for LE Remove Device From White List status 0x{2:02X}',
+                       CmdOpcodes.BT_HCI_OP_LE_READ_FAL_SIZE:              'Command Complete Event for LE Read White List Size status 0x{2:02X} list size {3:d}',
+                       CmdOpcodes.BT_HCI_OP_LE_CLEAR_FAL:                  'Command Complete Event for LE Clear White List status 0x{2:02X}',
+                       CmdOpcodes.BT_HCI_OP_LE_ADD_DEV_TO_FAL:             'Command Complete Event for LE Add Device To White List status 0x{2:02X}',
+                       CmdOpcodes.BT_HCI_OP_LE_REM_DEV_FROM_FAL:           'Command Complete Event for LE Remove Device From White List status 0x{2:02X}',
                        CmdOpcodes.BT_HCI_OP_LE_SET_HOST_CHAN_CLASSIF:      'Command Complete Event for LE Set Host Channel Classification status 0x{2:02X}',
                        CmdOpcodes.BT_HCI_OP_LE_READ_CHAN_MAP:              'Command Complete Event for LE Read Channel Map status 0x{2:02X} handle {3:d} channel map 0x{4:010X}',
                        CmdOpcodes.BT_HCI_OP_LE_ENCRYPT:                    'Command Complete Event for LE Encrypt status 0x{2:02X}',
@@ -449,9 +449,9 @@ class Event:
         if not (0x000A <= timeout <= 0x0C80):
             self.errors.add(ErrorCodes.BT_HCI_ERR_BAD_SUPERVISION_TIMEOUT);
 
-    def __checkMasterClockAccuracy(self, accuracy):
+    def __checkCentralClockAccuracy(self, accuracy):
         if not (0 <= accuracy <= 7):
-            self.errors.add(ErrorCodes.BT_HCI_ERR_BAD_MASTER_CLOCK_ACCURACY);
+            self.errors.add(ErrorCodes.BT_HCI_ERR_BAD_CENTRAL_CLOCK_ACCURACY);
 
     def __checkConnectionRole(self, role):
         if not (0 <= role <= 1):
@@ -918,7 +918,7 @@ class Event:
             self.__checkConnectionInterval(interval);
             self.__checkConnectionLatency(latency);
             self.__checkSupervisionTimeout(timeout);
-            self.__checkMasterClockAccuracy(accuracy);
+            self.__checkCentralClockAccuracy(accuracy);
         else:
             status = handle = role = addressType = interval = latency = timeout = accuracy = 0;
             address = None;
@@ -1031,7 +1031,7 @@ class Event:
                 self.__checkConnectionInterval(interval);
                 self.__checkConnectionLatency(latency);
                 self.__checkSupervisionTimeout(timeout);
-                self.__checkMasterClockAccuracy(accuracy);
+                self.__checkCentralClockAccuracy(accuracy);
         else:
             status = handle = role = addressType = interval = latency = timeout = accuracy = 0;
             peerAddress = localResolvableAddress = peerResolvableAddress = None;
@@ -1105,7 +1105,7 @@ class Event:
             self.__checkAddressType(addressType);
             self.__checkPhy(phy);
             self.__checkPeriodicAdvInterval(interval);
-            self.__checkMasterClockAccuracy(accuracy);
+            self.__checkCentralClockAccuracy(accuracy);
         else:
             status = handle = sid = addressType = phy = interval = accuracy = 0;
             address = None;
@@ -1297,7 +1297,7 @@ class Event:
                        CmdOpcodes.BT_HCI_OP_LE_READ_BUFFER_SIZE:          __leReadBufferSize,
                        CmdOpcodes.BT_HCI_OP_LE_READ_LOCAL_FEATURES: 	  __leReadLocalSupportedFeatures,
                        CmdOpcodes.BT_HCI_OP_LE_READ_ADV_CHAN_TX_POWER: 	  __leReadAdvChannelTXPower,
-                       CmdOpcodes.BT_HCI_OP_LE_READ_WL_SIZE:              __leReadListSize,
+                       CmdOpcodes.BT_HCI_OP_LE_READ_FAL_SIZE:             __leReadListSize,
                        CmdOpcodes.BT_HCI_OP_LE_READ_CHAN_MAP:             __leReadChannelMap,
                        CmdOpcodes.BT_HCI_OP_LE_ENCRYPT:                   __leEncrypt,
                        CmdOpcodes.BT_HCI_OP_LE_RAND:                      __leRand,

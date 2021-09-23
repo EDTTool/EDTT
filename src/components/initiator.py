@@ -310,7 +310,7 @@ class Initiator:
             if initiatorConnected:
                 self.handles[0] = handle; self.prevInterval = interval;
                 self.RPAs[0] = localRPA[ : ];
-                self.trace.trace(7, "%s is %s" % ('UpperTester' if self.initiator == 0 else 'LowerTester', 'MASTER' if role == 0 else 'SLAVE'));
+                self.trace.trace(7, "%s is %s" % ('UpperTester' if self.initiator == 0 else 'LowerTester', 'CENTRAL' if role == 0 else 'PERIPHERAL'));
                 """
                     Check for LE Connection Complete Event | LE Enhanced Connection Complete Event in peer...
                 """
@@ -319,7 +319,7 @@ class Initiator:
                     if peerConnected:
                         self.handles[1] = handle;
                         self.RPAs[1] = localRPA[ : ];
-                        self.trace.trace(7, "%s is %s" % ('UpperTester' if self.peer == 0 else 'LowerTester', 'MASTER' if role == 0 else 'SLAVE'));
+                        self.trace.trace(7, "%s is %s" % ('UpperTester' if self.peer == 0 else 'LowerTester', 'CENTRAL' if role == 0 else 'PERIPHERAL'));
                 else:
                     peerConnected = True;
             """
@@ -384,7 +384,7 @@ class Initiator:
         if self.updInitiatorRequest:
             if not self.peer is None:
                 # NOTE: Wait upto 3 intervals for Connection Parameter Response to be dispatched on air
-                # FIXME: Using 10 intervals to pass incorrect LL/CON/MAS/BV-27-C implementation, where TST is generating the LL_REJECT_EXT_IND
+                # FIXME: Using 10 intervals to pass incorrect LL/CON/CEN/BV-27-C implementation, where TST is generating the LL_REJECT_EXT_IND
                 #        instead of controller detecting the Different Transaction Collision.
                 #        Zephyr controller as tester will not generate Connection Parameter Request if it is in Channel Map procedure
                 #        and waiting for instant to pass.

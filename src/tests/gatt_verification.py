@@ -830,7 +830,7 @@ def gap_gat_bv_04_c(transport, upperTester, trace):
             trace.trace(6,"Peripheral Preferred Connection Parameters:");
             trace.trace(6,"Minimum Connection Interval: %d" % toNumber( data[0:2] ));
             trace.trace(6,"Maximum Connection Interval: %d" % toNumber( data[2:4] ));
-            trace.trace(6,"              Slave Latency: %d" % toNumber( data[4:6] ));
+            trace.trace(6,"         Peripheral Latency: %d" % toNumber( data[4:6] ));
             trace.trace(6,"Connection Supervision Timeout Multiplier: %d" % toNumber( data[6:8] ));
         else:
             trace.trace(6,"Peripheral Preferred Connection Parameters: Not present!");

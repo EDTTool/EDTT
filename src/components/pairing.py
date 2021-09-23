@@ -499,7 +499,7 @@ class Pairing:
         txData = smpData.encode( SMPOpcode.SMP_ENCRYPTION_INFORMATION, ltk );
         success = self.__request( self.initiator.initiator, txData );
         while success:
-            txData = smpData.encode( SMPOpcode.SMP_MASTER_IDENTIFICATION, ediv, rand );
+            txData = smpData.encode( SMPOpcode.SMP_CENTRAL_IDENTIFICATION, ediv, rand );
             success = self.__request( self.initiator.initiator, txData );
             if not success:
                 break;
@@ -523,7 +523,7 @@ class Pairing:
         txData = smpData.encode( SMPOpcode.SMP_ENCRYPTION_INFORMATION, ltk );
         success = self.__request( self.initiator.peer, txData );
         while success:
-            txData = smpData.encode( SMPOpcode.SMP_MASTER_IDENTIFICATION, ediv, rand );
+            txData = smpData.encode( SMPOpcode.SMP_CENTRAL_IDENTIFICATION, ediv, rand );
             success = self.__request( self.initiator.peer, txData );
             if not success:
                 break;
@@ -546,7 +546,7 @@ class Pairing:
 
         LTKs, EDIVs, RANDs, IRKs, address, addressType = 0, 0, 0, 0, 0, 0;
 
-        mask  = (1<<SMPOpcode.SMP_ENCRYPTION_INFORMATION) | (1<<SMPOpcode.SMP_MASTER_IDENTIFICATION);
+        mask  = (1<<SMPOpcode.SMP_ENCRYPTION_INFORMATION) | (1<<SMPOpcode.SMP_CENTRAL_IDENTIFICATION);
         mask |= (1<<SMPOpcode.SMP_IDENTITY_INFORMATION) | (1<<SMPOpcode.SMP_IDENTITY_ADDRESS_INFORMATION);
         recv = 0;
         success = True;
@@ -562,7 +562,7 @@ class Pairing:
             if   reply["opcode"] == SMPOpcode.SMP_ENCRYPTION_INFORMATION:
                success = True;
                LTKs = reply["ltk"];
-            elif reply["opcode"] == SMPOpcode.SMP_MASTER_IDENTIFICATION:
+            elif reply["opcode"] == SMPOpcode.SMP_CENTRAL_IDENTIFICATION:
                success = True;
                EDIVs = reply["ediv"];
                RANDs = reply["rand"];
@@ -590,7 +590,7 @@ class Pairing:
 
         LTKm, EDIVm, RANDm, IRKm, address, addressType = 0, 0, 0, 0, 0, 0;
 
-        mask  = (1<<SMPOpcode.SMP_ENCRYPTION_INFORMATION) | (1<<SMPOpcode.SMP_MASTER_IDENTIFICATION);
+        mask  = (1<<SMPOpcode.SMP_ENCRYPTION_INFORMATION) | (1<<SMPOpcode.SMP_CENTRAL_IDENTIFICATION);
         mask |= (1<<SMPOpcode.SMP_IDENTITY_INFORMATION) | (1<<SMPOpcode.SMP_IDENTITY_ADDRESS_INFORMATION);
         recv = 0;
         success = True;
@@ -606,7 +606,7 @@ class Pairing:
             if   reply["opcode"] == SMPOpcode.SMP_ENCRYPTION_INFORMATION:
                success = True;
                LTKm = reply["ltk"];
-            elif reply["opcode"] == SMPOpcode.SMP_MASTER_IDENTIFICATION:
+            elif reply["opcode"] == SMPOpcode.SMP_CENTRAL_IDENTIFICATION:
                success = True;
                EDIVm = reply["ediv"];
                RANDm = reply["rand"];
