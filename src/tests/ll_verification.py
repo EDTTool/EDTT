@@ -3058,7 +3058,7 @@ def ll_con_sla_bv_42_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-77-C [Slave Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 1M PHY]
+    LL/CON/SLA/BV-77-C [Slave Packet Data Length Update - Responding to Packet Data Length Update Procedure; LE 1M PHY]
 
     Last modified: 09-08-2019
     Reviewed and verified: 09-08-2019 Henrik Eriksen (Note: Requires that CONFIG_BT_CTLR_DATA_LENGTH_MAX=60 is set in the prj.conf file for the ptt_app.)
@@ -3096,10 +3096,12 @@ def ll_con_sla_bv_77_c(transport, upperTester, lowerTester, trace):
                                        random.choice(timeValues), random.choice(timeValues), random.choice(timeValues), random.choice(timeValues) ] ):
 
             success = setDataLength(transport, upperTester, initiator.handles[1], txOctets, txTime, trace) and success;
+            requested = success;
+            success = success or (not success and ((txOctets > maxPacketLength) or (txTime > maxPacketTime)));
 
             changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and ((cmaxTxTime == max(txTime, 328)) or (cmaxTxTime == min(txTime, 328))));
 
-            if changed:
+            if requested and changed:
                 gotEvent, handle, cmaxTxOctets, cmaxTxTime, maxRxOctets, maxRxTime = hasDataLengthChangedEvent(transport, upperTester, trace);
                 success = success and gotEvent;
                 gotEvent = hasDataLengthChangedEvent(transport, lowerTester, trace)[0];
@@ -3167,10 +3169,12 @@ def ll_con_sla_bv_78_c(transport, upperTester, lowerTester, trace):
                                     [ maxPacketTime, maxPacketTime, maxPacketTime, 328, 328, 328, 2120, 2120, 2120, 2120, 2120, 2120 ]):
 
             success = setDataLength(transport, upperTester, initiator.handles[1], txOctets, txTime, trace) and success;
+            requested = success;
+            success = success or (not success and ((txOctets > maxPacketLength) or (txTime > maxPacketTime)));
 
             changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and ((cmaxTxTime == max(txTime, 328)) or (cmaxTxTime == min(txTime, 328))));
 
-            if changed:
+            if requested and changed:
                 gotEvent, handle, cmaxTxOctets, cmaxTxTime, maxRxOctets, maxRxTime = hasDataLengthChangedEvent(transport, upperTester, trace);
                 if not gotEvent:
                     trace.trace(7, "Missing Data Length Changed event from upperTester!");
@@ -3210,7 +3214,7 @@ def ll_con_sla_bv_78_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-80-C [Slave Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 2M PHY]
+    LL/CON/SLA/BV-80-C [Slave Packet Data Length Update - Responding to Packet Data Length Update Procedure; LE 2M PHY]
 
     Last modified: 09-08-2019
     Reviewed and verified: 09-08-2019 Henrik Eriksen (Note: Requires that CONFIG_BT_CTLR_DATA_LENGTH_MAX=60 is set in the prj.conf file for the ptt_app.)
@@ -3255,10 +3259,12 @@ def ll_con_sla_bv_80_c(transport, upperTester, lowerTester, trace):
                                        random.choice(timeValues), random.choice(timeValues), random.choice(timeValues), random.choice(timeValues) ] ):
 
             success = setDataLength(transport, upperTester, initiator.handles[1], txOctets, txTime, trace) and success;
+            requested = success;
+            success = success or (not success and ((txOctets > maxPacketLength) or (txTime > maxPacketTime)));
 
             changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and ((cmaxTxTime == max(txTime, 328)) or (cmaxTxTime == min(txTime, 328))));
 
-            if changed:
+            if requested and changed:
                 gotEvent, handle, cmaxTxOctets, cmaxTxTime, maxRxOctets, maxRxTime = hasDataLengthChangedEvent(transport, upperTester, trace);
                 success = success and gotEvent;
                 gotEvent = hasDataLengthChangedEvent(transport, lowerTester, trace)[0];
@@ -3336,10 +3342,12 @@ def ll_con_sla_bv_81_c(transport, upperTester, lowerTester, trace):
                                     [ maxPacketTime, maxPacketTime, maxPacketTime, 328, 328, 328, 2120, 2120, 2120, 2120, 2120, 2120 ]):
 
             success = setDataLength(transport, upperTester, initiator.handles[1], txOctets, txTime, trace) and success;
+            requested = success;
+            success = success or (not success and ((txOctets > maxPacketLength) or (txTime > maxPacketTime)));
 
             changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and ((cmaxTxTime == max(txTime, 328)) or (cmaxTxTime == min(txTime, 328))));
 
-            if changed:
+            if requested and changed:
                 gotEvent, handle, cmaxTxOctets, cmaxTxTime, maxRxOctets, maxRxTime = hasDataLengthChangedEvent(transport, upperTester, trace);
                 success = success and gotEvent;
                 gotEvent = hasDataLengthChangedEvent(transport, lowerTester, trace)[0];
@@ -4224,7 +4232,7 @@ def ll_con_mas_bv_43_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-73-C [Master Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 1M PHY]
+    LL/CON/MAS/BV-73-C [Master Packet Data Length Update - Responding to Packet Data Length Update Procedure; LE 1M PHY]
 
     Last modified: 08-08-2019
     Reviewed and verified: 08-08-2019 Henrik Eriksen (Note: Requires that CONFIG_BT_CTLR_DATA_LENGTH_MAX=60 is set in the prj.conf file for the ptt_app.)
@@ -4335,10 +4343,12 @@ def ll_con_mas_bv_74_c(transport, upperTester, lowerTester, trace):
                                      [ maxPacketTime, maxPacketTime, maxPacketTime, 328, 328, 328, 2120, 2120, 2120, 2120, 2120, 2120 ] ):
 
             success = setDataLength(transport, upperTester, initiator.handles[0], txOctets, txTime, trace) and success;
+            requested = success;
+            success = success or (not success and ((txOctets > maxPacketLength) or (txTime > maxPacketTime)));
 
             changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and ((cmaxTxTime == max(txTime, 328)) or (cmaxTxTime == min(txTime, 328))));
 
-            if changed:
+            if requested and changed:
                 gotEvent, handle, cmaxTxOctets, cmaxTxTime, maxRxOctets, maxRxTime = hasDataLengthChangedEvent(transport, upperTester, trace);
                 success = success and gotEvent;
                 gotEvent = hasDataLengthChangedEvent(transport, lowerTester, trace)[0];
@@ -4374,7 +4384,7 @@ def ll_con_mas_bv_74_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-76-C [Master Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 2M PHY]
+    LL/CON/MAS/BV-76-C [Master Packet Data Length Update - Responding to Packet Data Length Update Procedure; LE 2M PHY]
 
     Last modified: 08-08-2019
     Reviewed and verified: 08-08-2019 Henrik Eriksen (Note: Requires that CONFIG_BT_CTLR_DATA_LENGTH_MAX=60 is set in the prj.conf file for the ptt_app.)
@@ -4493,10 +4503,12 @@ def ll_con_mas_bv_77_c(transport, upperTester, lowerTester, trace):
                                      [ maxPacketTime, maxPacketTime, maxPacketTime, 328, 328, 328, 2120, 2120, 2120, 2120, 2120, 2120 ] ):
 
             success = setDataLength(transport, upperTester, initiator.handles[0], txOctets, txTime, trace) and success;
+            requested = success;
+            success = success or (not success and ((txOctets > maxPacketLength) or (txTime > maxPacketTime)));
 
             changed = not ((cmaxTxOctets == min(txOctets, maxPacketLength)) and ((cmaxTxTime == max(txTime, 328)) or (cmaxTxTime == min(txTime, 328))));
 
-            if changed:
+            if requested and changed:
                 gotEvent, handle, cmaxTxOctets, cmaxTxTime, maxRxOctets, maxRxTime = hasDataLengthChangedEvent(transport, upperTester, trace);
                 if not gotEvent:
                     trace.trace(7, "Missing Data Length Changed Event from upperTester!");
@@ -6968,9 +6980,9 @@ __tests__ = {
     "LL/CON/MAS/BV-35-C": [ ll_con_mas_bv_35_c, "Master responds to Connection Parameters request - Host rejects" ],
     "LL/CON/MAS/BV-41-C": [ ll_con_mas_bv_41_c, "Master requests PHY Update procedure" ],
     "LL/CON/MAS/BV-43-C": [ ll_con_mas_bv_43_c, "Master responds to PHY Update procedure" ],
-    "LL/CON/MAS/BV-73-C": [ ll_con_mas_bv_73_c, "Master Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 1M PHY" ],
+    "LL/CON/MAS/BV-73-C": [ ll_con_mas_bv_73_c, "Master Packet Data Length Update - Responding to Packet Data Length Update Procedure; LE 1M PHY" ],
     "LL/CON/MAS/BV-74-C": [ ll_con_mas_bv_74_c, "Master Packet Data Length Update - Initiating Packet Data Length Update Procedure; LE 1M PHY" ],
-    "LL/CON/MAS/BV-76-C": [ ll_con_mas_bv_76_c, "Master Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 2M PHY" ],
+    "LL/CON/MAS/BV-76-C": [ ll_con_mas_bv_76_c, "Master Packet Data Length Update - Responding to Packet Data Length Update Procedure; LE 2M PHY" ],
     "LL/CON/MAS/BV-77-C": [ ll_con_mas_bv_77_c, "Master Packet Data Length Update - Initiating Packet Data Length Update Procedure; LE 2M PHY" ],
     "LL/CON/SLA/BI-08-C": [ ll_con_sla_bi_08_c, "Slave responds to Connection Parameters request - Illegal Parameters" ],
     "LL/CON/SLA/BV-04-C": [ ll_con_sla_bv_04_c, "Connection where Slave sends data to Master" ],
@@ -6993,9 +7005,9 @@ __tests__ = {
     "LL/CON/SLA/BV-34-C": [ ll_con_sla_bv_34_c, "Slave responds to Connection Parameters request - Host rejects" ],
     "LL/CON/SLA/BV-40-C": [ ll_con_sla_bv_40_c, "Slave requests PHY Update procedure" ],
     "LL/CON/SLA/BV-42-C": [ ll_con_sla_bv_42_c, "Slave responds to PHY Update procedure" ],
-    "LL/CON/SLA/BV-77-C": [ ll_con_sla_bv_77_c, "Slave Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 1M PHY" ],
+    "LL/CON/SLA/BV-77-C": [ ll_con_sla_bv_77_c, "Slave Packet Data Length Update - Responding to Packet Data Length Update Procedure; LE 1M PHY" ],
     "LL/CON/SLA/BV-78-C": [ ll_con_sla_bv_78_c, "Slave requests Packet Data Length Update procedure; LE 1M PHY" ],
-    "LL/CON/SLA/BV-80-C": [ ll_con_sla_bv_80_c, "Slave Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 2M PHY" ],
+    "LL/CON/SLA/BV-80-C": [ ll_con_sla_bv_80_c, "Slave Packet Data Length Update - Responding to Packet Data Length Update Procedure; LE 2M PHY" ],
     "LL/CON/SLA/BV-81-C": [ ll_con_sla_bv_81_c, "Slave requests Packet Data Length Update procedure; LE 2M PHY" ],
     "LL/DDI/ADV/BV-01-C": [ ll_ddi_adv_bv_01_c, "Non-Connectable Advertising Packets on one channel" ],
     "LL/DDI/ADV/BV-02-C": [ ll_ddi_adv_bv_02_c, "Undirected Advertising Packets on one channel" ],

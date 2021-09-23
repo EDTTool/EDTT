@@ -319,7 +319,7 @@ def hci_cco_bv_09_c(transport, upperTester, lowerTester, trace):
     success = success and connected;
 
     if connected:
-        TxOctets, TxTime = 60, 728;
+        TxOctets, TxTime = 60, 592;
         status, handle = le_set_data_length(transport, upperTester, initiator.handles[0], TxOctets, TxTime, 100);
         trace.trace(6, "LE Set Data Length Command returns status: 0x%02X handle: 0x%04X" % (status, handle));
         success = success and __check_command_complete_event(transport, upperTester, trace) and (status == 0);
