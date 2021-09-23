@@ -114,7 +114,7 @@ def preamble_standby(transport, idx, trace):
              6 Remote Name Request Complete Event
              7 Encryption Change Event
              8 Change Connection Link Key Complete Event
-             9 Master Link Key Complete Event
+             9 Central Link Key Complete Event
             10 Read Remote Supported Features Complete Event
             11 Read Remote Version Information Complete Event
             12 QoS Setup Complete Event
@@ -385,9 +385,9 @@ def preamble_set_random_address(transport, idx, address, trace):
 
 
 """
-    When the IUT is in advertising state or slave role, a default value for the scanning, initiating or master address used is 0x123456789ABC.
-    When the IUT is in scanning state, initiating state or master role, a default value for the address used for the state of advertising
-    or the role of slave is 0x456789ABCDEF.
+    When the IUT is in advertising state or peripheral role, a default value for the scanning, initiating or central address used is 0x123456789ABC.
+    When the IUT is in scanning state, initiating state or central role, a default value for the address used for the state of advertising
+    or the role of peripheral is 0x456789ABCDEF.
 
     When it is required to modify the Lower Tester address either in the company_assigned field, the company_id field,
     it has to be done by exchanging bytes 1 and 3 of company_assigned field or company_id field.

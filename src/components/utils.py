@@ -135,7 +135,7 @@ def showCommands(commands, trace):
     CommandTexts = [
         [ 'Inquiry', 'Inquiry Cancel', 'Periodic Inquiry Mode', 'Exit Periodic Inquiry Mode', 'Create Connection', 'Disconnect', 'Add SCO Connection (deprecated)', 'Create Connection Cancel' ],
         [ 'Accept Connection Request', 'Reject Connection Request', 'Link Key Request Reply', 'Link Key Request Negative Reply', 'PIN Code Request Reply', 'PIN Code Request Negative Reply', 'Change Connection Packet Type', 'Authentication Requested' ],
-        [ 'Set Connection Encryption', 'Change Connection Link Key', 'Master Link Key', 'Remote Name Request', 'Remote Name Request Cancel', 'Read Remote Supported Features', 'Read Remote Extended Features', 'Read Remote Version Information' ],
+        [ 'Set Connection Encryption', 'Change Connection Link Key', 'Central Link Key', 'Remote Name Request', 'Remote Name Request Cancel', 'Read Remote Supported Features', 'Read Remote Extended Features', 'Read Remote Version Information' ],
         [ 'Read Clock Offset', 'Read LMP Handle', 'Reserved for Future Use', 'Reserved for Future Use', 'Reserved for Future Use', 'Reserved for Future Use', 'Reserved for Future Use', 'Reserved for Future Use' ],
         [ 'Reserved for Future Use', 'Hold Mode', 'Sniff Mode', 'Exit Sniff Mode', 'Reserved for Future Use', 'Reserved for Future Use', 'QoS Setup', 'Role Discovery' ],
         [ 'Switch Role', 'Read Link Policy Settings', 'Write Link Policy Settings', 'Read Default Link Policy Settings', 'Write Default Link Policy Settings', 'Flow Specification', 'Set Event Mask', 'Reset' ],
@@ -164,7 +164,7 @@ def showCommands(commands, trace):
         [ 'LE Start Encryption', 'LE Long Term Key Request Reply', 'LE Long Term Key Request Negative Reply', 'LE Read Supported States', 'LE Receiver Test', 'LE Transmitter Test', 'LE Test End', 'Reserved for Future Use' ],
         [ 'Reserved for Future Use', 'Reserved for Future Use', 'Reserved for Future Use', 'Enhanced Setup Synchronous Connection', 'Enhanced Accept Synchronous Connection', 'Read Local Supported Codecs', 'Set MWS Channel Parameters', 'Set External Frame Configuration' ],
         [ 'Set MWS Signaling', 'Set MWS Transport Layer', 'Set MWS Scan Frequency Table', 'Get MWS Transport Layer Configuration', 'Set MWS PATTERN Configuration', 'Set Triggered Clock Capture', 'Truncated Page', 'Truncated Page Cancel' ],
-        [ 'Set Connectionless Slave Broadcast', 'Set Connectionless Slave Broadcast Receive', 'Start Synchronization Train', 'Receive Synchronization Train', 'Set Reserved LT_ADDR', 'Delete Reserved LT_ADDR', 'Set Connectionless Slave Broadcast Data', 'Read Synchronization Train Parameters' ],
+        [ 'Set Connectionless Peripheral Broadcast', 'Set Connectionless Peripheral Broadcast Receive', 'Start Synchronization Train', 'Receive Synchronization Train', 'Set Reserved LT_ADDR', 'Delete Reserved LT_ADDR', 'Set Connectionless Peripheral Broadcast Data', 'Read Synchronization Train Parameters' ],
         [ 'Write Synchronization Train Parameters', 'Remote OOB Extended Data Request Reply', 'Read Secure Connections Host Support', 'Write Secure Connections Host Support', 'Read Authenticated Payload Timeout', 'Write Authenticated Payload Timeout', 'Read Local OOB Extended Data', 'Write Secure Connections Test Mode' ],
         [ 'Read Extended Page Timeout', 'Write Extended Page Timeout', 'Read Extended Inquiry Length', 'Write Extended Inquiry Length', 'LE Remote Connection Parameter Request Reply', 'LE Remote Connection Parameter Request Negative Reply', 'LE Set Data Length', 'LE Read Suggested Default Data Length' ],
         [ 'LE Write Suggested Default Data Length', 'LE Read Local P-256 Public Key', 'LE Generate DH Key', 'LE Add Device To Resolving List', 'LE Remove Device From Resolving List', 'LE Clear Resolving List', 'LE Read Resolving List Size', 'LE Read Peer Resolvable Address' ],
@@ -191,8 +191,8 @@ def showFeatures(features, trace):
         [ 'Reserved for Future Use', 'Power control requests', 'Channel quality driven data rate (CQDDR)', 'SCO link', 'HV2 packets', 'HV3 packets', 'µ-law log synchronous data', 'A-law log synchronous data' ],
         [ 'CVSD synchronous data', 'Paging parameter negotiation', 'Power control', 'Transparent synchronous data', 'Flow control lag (least significant bit)', 'Flow control lag (middle bit)', 'Flow control lag (most significant bit)', 'Broadcast Encryption' ],
         [ 'Reserved for Future Use', 'Enhanced Data Rate ACL 2 Mb/s mode', 'Enhanced Data Rate ACL 3 Mb/s mode', 'Enhanced inquiry scan', 'Interlaced inquiry scan', 'Interlaced page scan', 'RSSI with inquiry results', 'Extended SCO link (EV3 packets)' ],
-        [ 'EV4 packets', 'EV5 packets', 'Reserved for Future Use', 'AFH capable slave', 'AFH classification slave', 'BR/EDR Not Supported', 'LE Supported (Controller)', '3-slot Enhanced Data Rate ACL packets' ],
-        [ '5-slot Enhanced Data Rate ACL packets', 'Sniff subrating', 'Pause encryption', 'AFH capable master', 'AFH classification master', 'Enhanced Data Rate eSCO 2 Mb/s mode', 'Enhanced Data Rate eSCO 3 Mb/s mode', '3-slot Enhanced Data Rate eSCO packets' ],
+        [ 'EV4 packets', 'EV5 packets', 'Reserved for Future Use', 'AFH capable peripheral', 'AFH classification peripheral', 'BR/EDR Not Supported', 'LE Supported (Controller)', '3-slot Enhanced Data Rate ACL packets' ],
+        [ '5-slot Enhanced Data Rate ACL packets', 'Sniff subrating', 'Pause encryption', 'AFH capable central', 'AFH classification central', 'Enhanced Data Rate eSCO 2 Mb/s mode', 'Enhanced Data Rate eSCO 3 Mb/s mode', '3-slot Enhanced Data Rate eSCO packets' ],
         [ 'Extended Inquiry Response', 'Simultaneous LE and BR/EDR to Same Device Capable (Controller)', 'Reserved for Future Use', 'Secure Simple Pairing', 'Encapsulated PDU', 'Erroneous Data Reporting', 'Non-flushable Packet Boundary Flag', 'Reserved for Future Use' ],
         [ 'Link Supervision Timeout Changed Event', 'Inquiry TX Power Level', 'Enhanced Power Control', 'Reserved for Future Use', 'Reserved for Future Use', 'Reserved for Future Use', 'Reserved for Future Use', 'Reserved for Future Use' ]
     ];
@@ -209,7 +209,7 @@ def showFeatures(features, trace):
 
 def showLEFeatures(features, trace):
     LEFeatureTexts = [
-        [ 'LE Encryption', 'Connection Parameters Request Procedure', 'Extended Reject Indication', 'Slave-initiated Features Exchange', 'LE Ping', 'LE Data Packet Length Extension', 'LL Privacy', 'Extended Scanner Filter Policies' ],
+        [ 'LE Encryption', 'Connection Parameters Request Procedure', 'Extended Reject Indication', 'Peripheral-initiated Features Exchange', 'LE Ping', 'LE Data Packet Length Extension', 'LL Privacy', 'Extended Scanner Filter Policies' ],
         [ 'LE 2M PHY', 'Stable Modulation Index - Transmitter', 'Stable Modulation Index - Receiver', 'LE Coded PHY', 'LE Extended Advertising', 'LE Periodic Advertising', 'Channel Selection Algorithm #2', 'LE Power Class 1' ],
         [ 'Minimum Number of Used Channels Procedure', 'Reserved for Future Use', 'Reserved for Future Use', 'Reserved for Future Use', 'Reserved for Future Use', 'Reserved for Future Use', 'Reserved for Future Use', 'Reserved for Future Use' ],
     ];
@@ -226,7 +226,7 @@ def showLEFeatures(features, trace):
 
 def showLEStates(states, trace):
     LEStateTexts = [ 'Scannable Advertising State', 'Connectable Advertising State', 'Non-connectable Advertising State', 'High Duty Cycle Directed Advertising State', 'Low Duty Cycle Directed Advertising State',
-                     'Active Scanning State', 'Passive Scanning State', 'Initiating State', 'Connection State (Master Role)', 'Connection State (Slave Role)' ];
+                     'Active Scanning State', 'Passive Scanning State', 'Initiating State', 'Connection State (Central Role)', 'Connection State (Peripheral Role)' ];
     LEStateMap   = [ [   4,   1,   2,   8,  64,  32, 128, 512 ],
                      [  68,  65,  66,  72,  36,  33,  34,  40 ],
                      [ 132, 129, 260, 257, 516, 513, 192, 160 ],
@@ -257,7 +257,7 @@ def showEventMask(eventMask, trace):
     """
     EventTexts = [ 'Inquiry Complete Event', 'Inquiry Result Event', 'Connection Complete Event', 'Connection Request Event',
                    'Disconnection Complete Event', 'Authentication Complete Event', 'Remote Name Request Complete Event', 'Encryption Change Event',
-                   'Change Connection Link Key Complete Event', 'Master Link Key Complete Event', 'Read Remote Supported Features Complete Event', 'Read Remote Version Information Complete Event',
+                   'Change Connection Link Key Complete Event', 'Central Link Key Complete Event', 'Read Remote Supported Features Complete Event', 'Read Remote Version Information Complete Event',
                    'QoS Setup Complete Event', 'Reserved', 'Reserved', 'Hardware Error Event',
                    'Flush Occurred Event', 'Role Change Event', 'Reserved', 'Mode Change Event',
                    'Return Link Keys Event', 'PIN Code Request Event', 'Link Key Request Event', 'Link Key Notification Event',

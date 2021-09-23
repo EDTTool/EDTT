@@ -297,10 +297,10 @@ class HCICommands(IntEnum):
     BT_HCI_OP_LE_SET_SCAN_ENABLE            = 0x200C
     BT_HCI_OP_LE_CREATE_CONN                = 0x200D
     BT_HCI_OP_LE_CREATE_CONN_CANCEL         = 0x200E
-    BT_HCI_OP_LE_READ_WL_SIZE               = 0x200F
-    BT_HCI_OP_LE_CLEAR_WL                   = 0x2010
-    BT_HCI_OP_LE_ADD_DEV_TO_WL              = 0x2011
-    BT_HCI_OP_LE_REM_DEV_FROM_WL            = 0x2012
+    BT_HCI_OP_LE_READ_FAL_SIZE              = 0x200F
+    BT_HCI_OP_LE_CLEAR_FAL                  = 0x2010
+    BT_HCI_OP_LE_ADD_DEV_TO_FAL             = 0x2011
+    BT_HCI_OP_LE_REM_DEV_FROM_FAL           = 0x2012
     BT_HCI_OP_LE_CONN_UPDATE                = 0x2013
     BT_HCI_OP_LE_SET_HOST_CHAN_CLASSIF      = 0x2014
     BT_HCI_OP_LE_READ_CHAN_MAP              = 0x2015
@@ -1236,7 +1236,7 @@ def le_create_connection_cancel(transport, idx, to):
 """
 def le_read_white_list_size(transport, idx, to):
 
-    cmd = struct.pack('<HHH', Commands.CMD_LE_READ_WHITE_LIST_SIZE_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_WL_SIZE);
+    cmd = struct.pack('<HHH', Commands.CMD_LE_READ_WHITE_LIST_SIZE_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_FAL_SIZE);
     transport.send(idx, cmd);
 
     packet = transport.recv(idx, 6, to);
@@ -1244,7 +1244,7 @@ def le_read_white_list_size(transport, idx, to):
     if ( 6 != len(packet) ):
         raise Exception("LE Read White List Size command failed: Response too short (Expected %i bytes got %i bytes)" % (6, len(packet)));
 
-    RespCmd, RespLen, status, WlSize = struct.unpack('<HHBB', packet);
+    RespCmd, RespLen, status, FalSize = struct.unpack('<HHBB', packet);
 
     if ( RespCmd != Commands.CMD_LE_READ_WHITE_LIST_SIZE_RSP ):
         raise Exception("LE Read White List Size command failed: Inappropriate command response received");
@@ -1252,14 +1252,14 @@ def le_read_white_list_size(transport, idx, to):
     if ( RespLen != 2 ):
         raise Exception("LE Read White List Size command failed: Response length field corrupted (%i)" % RespLen);
 
-    return status, WlSize;
+    return status, FalSize;
 
 """
     The LE_Clear_White_List command is used to clear the White List stored in the Controller.
 """
 def le_clear_white_list(transport, idx, to):
 
-    cmd = struct.pack('<HHH', Commands.CMD_LE_CLEAR_WHITE_LIST_REQ, 2, HCICommands.BT_HCI_OP_LE_CLEAR_WL);
+    cmd = struct.pack('<HHH', Commands.CMD_LE_CLEAR_WHITE_LIST_REQ, 2, HCICommands.BT_HCI_OP_LE_CLEAR_FAL);
     transport.send(idx, cmd);
 
     packet = transport.recv(idx, 5, to);
@@ -1282,7 +1282,7 @@ def le_clear_white_list(transport, idx, to):
 """
 def le_add_device_to_white_list(transport, idx, AddrType, AVal, to):
 
-    cmd = struct.pack('<HHHB6B', Commands.CMD_LE_ADD_DEVICE_TO_WHITE_LIST_REQ, 9, HCICommands.BT_HCI_OP_LE_ADD_DEV_TO_WL, AddrType, *AVal);
+    cmd = struct.pack('<HHHB6B', Commands.CMD_LE_ADD_DEVICE_TO_WHITE_LIST_REQ, 9, HCICommands.BT_HCI_OP_LE_ADD_DEV_TO_FAL, AddrType, *AVal);
     transport.send(idx, cmd);
 
     packet = transport.recv(idx, 5, to);
@@ -1306,7 +1306,7 @@ def le_add_device_to_white_list(transport, idx, AddrType, AVal, to):
 """
 def le_remove_device_from_white_list(transport, idx, AddrType, AVal, to):
 
-    cmd = struct.pack('<HHHB6B', Commands.CMD_LE_REMOVE_DEVICE_FROM_WHITE_LIST_REQ, 9, HCICommands.BT_HCI_OP_LE_REM_DEV_FROM_WL, AddrType, *AVal);
+    cmd = struct.pack('<HHHB6B', Commands.CMD_LE_REMOVE_DEVICE_FROM_WHITE_LIST_REQ, 9, HCICommands.BT_HCI_OP_LE_REM_DEV_FROM_FAL, AddrType, *AVal);
     transport.send(idx, cmd);
 
     packet = transport.recv(idx, 5, to);
@@ -1326,7 +1326,7 @@ def le_remove_device_from_white_list(transport, idx, AddrType, AVal, to):
 
 """
     The LE_Connection_Update command is used to change the Link Layer connection parameters of a connection. This command may
-    be issued on both the master and slave.
+    be issued on both the central and peripheral.
 """
 def le_connection_update(transport, idx, handle, ConnIntervalMin, ConnIntervalMax, ConnLatency, SupervisionTimeout, MinCeLen, MaxCeLen, to):
 
@@ -1646,7 +1646,7 @@ def le_test_end(transport, idx, to):
     return status, RxPktCount;
 
 """
-    Both the master Host and the slave Host use this command to reply to the HCI LE Remote Connection Parameter Request event.
+    Both the central Host and the peripheral Host use this command to reply to the HCI LE Remote Connection Parameter Request event.
     This indicates that the Host has accepted the remote device\92s request to change connection parameters.
 """
 def le_remote_connection_parameter_request_reply(transport, idx, handle, IntervalMin, IntervalMax, latency, timeout, MinCeLen, MaxCeLen, to):
@@ -1670,7 +1670,7 @@ def le_remote_connection_parameter_request_reply(transport, idx, handle, Interva
     return status, handle;
 
 """
-    Both the master Host and the slave Host use this command to reply to the HCI LE Remote Connection Parameter Request event.
+    Both the central Host and the peripheral Host use this command to reply to the HCI LE Remote Connection Parameter Request event.
     This indicates that the Host has rejected the remote device\92s request to change connection parameters. The reason for the
     rejection is given in the Reason parameter.
 """
@@ -3219,11 +3219,11 @@ def le_iso_data_read(transport, idx, to):
     return time, handle, PbFlags, TsFlag, data
 
 """
-    The HCI_LE_Set_CIG_Parameters command is used by a master's Host to
+    The HCI_LE_Set_CIG_Parameters command is used by a central's Host to
     set the parameters of one or more CISes that are associated with a CIG in the
     Controller.
 """
-def le_set_cig_parameters(transport, idx, CigId, SduIntervalMToS, SduIntervalSToM, SlavesClockAccuracy, Packing,
+def le_set_cig_parameters(transport, idx, CigId, SduIntervalMToS, SduIntervalSToM, PeripheralsClockAccuracy, Packing,
                           Framing, MaxTransportLatencyMToS, MaxTransportLatencySToM, CisCount, CisId, MaxSduMToS, MaxSduSToM,
                           PhyMToS, PhySToM, RtnMToS, RtnSToM, to):
 
@@ -3232,7 +3232,7 @@ def le_set_cig_parameters(transport, idx, CigId, SduIntervalMToS, SduIntervalSTo
 
     cmd = struct.pack('<HHHB3B3BBBBHHB' + cCB + cCH + cCH + cCB + cCB + cCB + cCB,
                       Commands.CMD_LE_SET_CIG_PARAMETERS_REQ, 17 + (5 * CisCount * 1) + (2 * CisCount * 2), HCICommands.BT_HCI_OP_LE_SET_CIG_PARAMETERS,
-                      CigId, *toArray(SduIntervalMToS, 3), *toArray(SduIntervalSToM, 3), SlavesClockAccuracy, Packing,
+                      CigId, *toArray(SduIntervalMToS, 3), *toArray(SduIntervalSToM, 3), PeripheralsClockAccuracy, Packing,
                       Framing, MaxTransportLatencyMToS, MaxTransportLatencySToM, CisCount, *CisId, *MaxSduMToS, *MaxSduSToM,
                       *PhyMToS, *PhySToM, *RtnMToS, *RtnSToM)
     transport.send(idx, cmd)
@@ -3254,11 +3254,11 @@ def le_set_cig_parameters(transport, idx, CigId, SduIntervalMToS, SduIntervalSTo
     return status, cigId, cisCount, connectionHandle
 
 """
-    The command is used by a master's Host to set the parameters of one or more
+    The command is used by a central's Host to set the parameters of one or more
     CISes that are associated with a CIG in the Controller. Should only be used for
     testing purposes.
 """
-def le_set_cig_parameters_test(transport, idx, CigId, SduIntervalMToS, SduIntervalSToM, FtMToS, FtSToM, IsoInterval, SlavesClockAccuracy,
+def le_set_cig_parameters_test(transport, idx, CigId, SduIntervalMToS, SduIntervalSToM, FtMToS, FtSToM, IsoInterval, PeripheralsClockAccuracy,
                                Packing, Framing, CisCount, CisId, Nse, MaxSduMToS, MaxSduSToM, MaxPduMToS, MaxPduSToM,
                                PhyMToS, PhySToM, BnMToS, BnSToM, to):
 
@@ -3267,7 +3267,7 @@ def le_set_cig_parameters_test(transport, idx, CigId, SduIntervalMToS, SduInterv
 
     cmd = struct.pack('<HHHB3B3BBBHBBBB' + cCB + cCB + cCH + cCH + cCH + cCH + cCB + cCB + cCB + cCB,
                       Commands.CMD_LE_SET_CIG_PARAMETERS_TEST_REQ, 17 + (6 * CisCount * 1) + (4 * CisCount * 2), HCICommands.BT_HCI_OP_LE_SET_CIG_PARAMETERS_TEST,
-                      CigId, *toArray(SduIntervalMToS, 3), *toArray(SduIntervalSToM, 3), FtMToS, FtSToM, IsoInterval, SlavesClockAccuracy,
+                      CigId, *toArray(SduIntervalMToS, 3), *toArray(SduIntervalSToM, 3), FtMToS, FtSToM, IsoInterval, PeripheralsClockAccuracy,
                       Packing, Framing, CisCount, *CisId, *Nse, *MaxSduMToS, *MaxSduSToM, *MaxPduMToS, *MaxPduSToM,
                       *PhyMToS, *PhySToM, *BnMToS, *BnSToM)
     transport.send(idx, cmd)
@@ -3289,7 +3289,7 @@ def le_set_cig_parameters_test(transport, idx, CigId, SduIntervalMToS, SduInterv
     return status, cigId, cisCount, connectionHandle
 
 """
-    The HCI_LE_Create_CIS command is used by the master's Host to create one
+    The HCI_LE_Create_CIS command is used by the central's Host to create one
     or more CISes using the connections identified by the ACL_Connection_Handle[i]
     parameter array.
 """
@@ -3316,7 +3316,7 @@ def le_create_cis(transport, idx, CisCount, CisConnectionHandle, AclConnectionHa
     return status
 
 """
-    The HCI_LE_Remove_CIG command is used by the master's Host to remove
+    The HCI_LE_Remove_CIG command is used by the central's Host to remove
     all the CISes associated with the CIG identified by CIG_ID.
 """
 def le_remove_cig(transport, idx, CigId, to):
@@ -3340,7 +3340,7 @@ def le_remove_cig(transport, idx, CigId, to):
     return status, cigId
 
 """
-    The HCI_LE_Accept_CIS_Request command is used by the slave's Host to
+    The HCI_LE_Accept_CIS_Request command is used by the peripheral's Host to
     inform the Controller to accept the request for the CIS that is identified by the
     Connection_Handle.
 """
@@ -3368,7 +3368,7 @@ def le_accept_cis_request(transport, idx, ConnectionHandle, to):
     return status
 
 """
-    The HCI_LE_Reject_CIS_Request command is used by the slave's Host to
+    The HCI_LE_Reject_CIS_Request command is used by the peripheral's Host to
     inform the Controller to reject the request for the CIS that is identified by the
     Connection_Handle.
 """

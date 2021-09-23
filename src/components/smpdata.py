@@ -65,7 +65,7 @@ class SMPOpcode(IntEnum):
     SMP_PAIRING_RANDOM                   =   4 # Pairing Random   - Pairing Random value
     SMP_PAIRING_FAILED                   =   5 # Pairing Failed   - Pairing Failed reason
     SMP_ENCRYPTION_INFORMATION           =   6 # Encryption Information - Long Term Key
-    SMP_MASTER_IDENTIFICATION            =   7 # Master Identification  - Dsitribute EDIV and Rand for encrypting future connections
+    SMP_CENTRAL_IDENTIFICATION           =   7 # Central Identification  - Dsitribute EDIV and Rand for encrypting future connections
     SMP_IDENTITY_INFORMATION             =   8 # Identity Information   - Distribute the IRK
     SMP_IDENTITY_ADDRESS_INFORMATION     =   9 # Identity Address Information - Distribute Public or Static Random device address
     SMP_SIGNING_INFORMATION              =  10 # Signing Information    - Distribute the CSRK
@@ -133,10 +133,10 @@ class SMPData:
         elif ( opcode == SMPOpcode.SMP_ENCRYPTION_INFORMATION ):
             self.data = [ opcode ] + toArray( args[0], 16 );
       #
-      # encode ( SMPOpcode.SMP_MASTER_IDENTIFICATION, <ediv>, <rand> )
+      # encode ( SMPOpcode.SMP_CENTRAL_IDENTIFICATION, <ediv>, <rand> )
       #       where <ediv> 2 octets; <rand> 8 octets
       #
-        elif ( opcode == SMPOpcode.SMP_MASTER_IDENTIFICATION ):
+        elif ( opcode == SMPOpcode.SMP_CENTRAL_IDENTIFICATION ):
             self.data = [ opcode ] + toArray( args[0], 2 ) + toArray( args[1], 8 );
       #
       # encode ( SMPOpcode.SMP_IDENTITY_INFORMATION, <irk> )
@@ -241,10 +241,10 @@ class SMPData:
         elif ( opcode == SMPOpcode.SMP_ENCRYPTION_INFORMATION ):
             result["ltk"] = toNumber( data[5:21] );
       #
-      # decode ( SMPOpcode.SMP_MASTER_IDENTIFICATION, <ediv>, <rand> )
+      # decode ( SMPOpcode.SMP_CENTRAL_IDENTIFICATION, <ediv>, <rand> )
       #       where <ediv> 2 octets; <rand> 8 octets
       #
-        elif ( opcode == SMPOpcode.SMP_MASTER_IDENTIFICATION ):
+        elif ( opcode == SMPOpcode.SMP_CENTRAL_IDENTIFICATION ):
             result["ediv"] = toNumber( data[5:7] );
             result["rand"] = toNumber( data[7:15] );
       #
