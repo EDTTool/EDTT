@@ -94,6 +94,7 @@ def run_one_test(args, xtra_args, transport, trace, test_mod, test_spec, nameLen
 def run_tests(args, xtra_args, transport, trace, dumps):
     passed = 0;
     total = 0;
+    unknown = 0;
 
     test_mod = try_to_import(args.test, "test", "tests.");
     test_specs = test_mod.get_tests_specs();
@@ -137,6 +138,7 @@ def run_tests(args, xtra_args, transport, trace, dumps):
                 if result != 0 and args.stop_on_failure:
                     break;
             else:
+                unknown += 1;
                 print(("unknown test " + t + ". Skipping"))
         file.close();
 
@@ -154,9 +156,13 @@ def run_tests(args, xtra_args, transport, trace, dumps):
         if failed > 0:
             trace.trace(2, "FAIL%10d" % failed);
             trace.btsnoop.send_user_data(0, BtsnoopPriority.INFO, "FAIL%10d" % failed)
+
+        if unknown > 0:
+            trace.trace(2, "UNKNOWN%7d" % unknown);
+
         trace.trace(2, "%s\nTotal%9d" % ('='*14, total));
 
-    return failed
+    return failed + unknown
 
 class Trace():
     def __init__(self, level):
