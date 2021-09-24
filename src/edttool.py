@@ -85,10 +85,11 @@ def run_one_test(args, xtra_args, transport, trace, test_mod, test_spec, nameLen
 def run_tests(args, xtra_args, transport, trace):
     passed = 0;
     total = 0;
+    unknown = 0;
 
     test_mod = try_to_import(args.test, "test", "tests.");
     test_specs = test_mod.get_tests_specs();
-    nameLen = max([ len(test_specs[key].name) for key in test_specs ]); 
+    nameLen = max([ len(test_specs[key].name) for key in test_specs ]);
 
     t = args.case
 
@@ -128,7 +129,8 @@ def run_tests(args, xtra_args, transport, trace):
                 if result != 0 and args.stop_on_failure:
                     break;
             else:
-                print(("unkown test " + t + ". Skipping"))
+                unknown += 1;
+                print(("unknown test " + t + ". Skipping"))
         file.close();
 
     else:
@@ -140,12 +142,16 @@ def run_tests(args, xtra_args, transport, trace):
         trace.trace(2, "\nSummary:\n\nStatus   Count\n%s" % ('='*14));
         if passed > 0:
             trace.trace(2, "PASS%10d" % passed);
-        
+
         if failed > 0:
             trace.trace(2, "FAIL%10d" % failed);
+
+        if unknown > 0:
+            trace.trace(2, "UNKNOWN%7d" % unknown);
+
         trace.trace(2, "%s\nTotal%9d" % ('='*14, total));
 
-    return failed
+    return failed + unknown
 
 class Trace():
     def __init__(self, level):
@@ -169,7 +175,7 @@ def main():
     transport = None;
     try:
         (args, xtra_args) = parse_arguments();
-        
+
         random.seed(args.seed);
 
         trace = Trace(args.verbose);
