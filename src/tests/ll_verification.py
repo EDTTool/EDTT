@@ -6937,7 +6937,7 @@ __tests__ = {
     "LL/CIS/PER/BV-32-C": [ ll_cis_per_bv_32_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Peripheral, BN=1" ],
     "LL/CIS/PER/BV-33-C": [ ll_cis_per_bv_33_c, "Sending Data in Unidirectional CIS, BN = 1" ],
     "LL/CIS/PER/BV-34-C": [ ll_cis_per_bv_34_c, "Receiving Data in Unidirectional CIS, BN = 1" ],
-#   "LL/CIS/PER/BV-37-C": [ ll_cis_per_bv_37_c, "CIS Map Update" ],  # https://github.com/EDTTool/EDTT-le-audio/issues/83
+    "LL/CIS/PER/BV-37-C": [ ll_cis_per_bv_37_c, "CIS Map Update" ],
 #   "LL/CIS/PER/BV-39-C": [ ll_cis_per_bv_39_c, "CIS Peripheral Accepts All Supported NSE Values" ],  # https://github.com/EDTTool/EDTT-le-audio/issues/84
 #   "LL/CIS/PER/BV-40-C": [ ll_cis_per_bv_40_c, "CIS Setup Response Procedure, Peripheral" ],  # https://github.com/EDTTool/EDTT-le-audio/issues/85
     "LL/CIS/PER/BV-12-C": [ ll_cis_per_bv_12_c, "CIS Terminate Procedure, Initiated - Peripheral" ],
