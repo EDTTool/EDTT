@@ -5685,7 +5685,7 @@ def test_cis_map_update(transport, upper_tester, lower_tester, trace, bn_c_to_p,
     success = channelMapUpdate(transport, lower_tester, 0x1249249249, trace) and success
 
     # 2. After the instant has passed, the Upper Tester sends an HCI_LE_Read_Channel_Map command to IUT.
-    instant_to = initiator.prevInterval * 7  # TODO: calculate based on LL_CHANNEL_MAP_IND PDU instant
+    instant_to = initiator.prevInterval * 10  # TODO: calculate based on LL_CHANNEL_MAP_IND PDU instant
     transport.wait(instant_to)
     status, handle, channel_map = le_read_channel_map(transport, upper_tester, acl_handle, 100)
     success = getCommandCompleteEvent(transport, upper_tester, trace) and status == 0x00 and handle == acl_handle and success
