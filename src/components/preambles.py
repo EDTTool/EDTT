@@ -460,22 +460,22 @@ def address_scramble_LAP(address):
 def address_exchange_OUI_LAP(address):
     return (address ^ 0xff00000000ff);
 
-def preamble_specific_white_listed(transport, idx, addresses, trace):
-    trace.trace(5, "Specific White Listed preamble steps...");
+def preamble_specific_filter_accept_listed(transport, idx, addresses, trace):
+    trace.trace(5, "Specific Filter Accept Listed preamble steps...");
 
     try:
-        status = le_clear_white_list(transport, idx, 100);
-        trace.trace(6, "LE Clear White List Command returns status: 0x%02X" % status);
+        status = le_clear_filter_accept_list(transport, idx, 100);
+        trace.trace(6, "LE Clear Filter Accept List Command returns status: 0x%02X" % status);
         success = __getCommandCompleteEvent(transport, idx, trace) and (status == 0);
 
         for i in range(len(addresses)):
             address = toArray(addresses[i][1], 6);
-            trace.trace(7, "Addding Device to White List %s" % formatAddress(address, addresses[i][0]));
-            status = le_add_device_to_white_list(transport, idx, addresses[i][0], address, 100);
-            trace.trace(6, "LE Add Device to White List Command returns status: 0x%02X" % status);
+            trace.trace(7, "Addding Device to Filter Accept List %s" % formatAddress(address, addresses[i][0]));
+            status = le_add_device_to_filter_accept_list(transport, idx, addresses[i][0], address, 100);
+            trace.trace(6, "LE Add Device to Filter Accept List Command returns status: 0x%02X" % status);
             success = __getCommandCompleteEvent(transport, idx, trace) and (status == 0) and success;
     except Exception as e:
-        trace.trace(3, "Specific White Listed preamble failed: %s" % str(e));
+        trace.trace(3, "Specific Filter Accept Listed preamble failed: %s" % str(e));
         success = False;
 
     return success;

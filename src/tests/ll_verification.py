@@ -143,7 +143,7 @@ def readRemoteVersionInformation(transport, idx, handle, trace):
 def addAddressesToAllowList(transport, idx, addresses, trace):
 
     _addresses = [ [ _.type, toNumber(_.address) ] for _ in addresses ];
-    return preamble_specific_white_listed(transport, idx, _addresses, trace);
+    return preamble_specific_filter_accept_listed(transport, idx, _addresses, trace);
 
 """
     Send a DATA package...
@@ -658,7 +658,7 @@ def ll_ddi_adv_bv_08_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setActiveScanning(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
     """
-        Place Public and static Random addresses of lowerTester in the White List for the Advertiser
+        Place Public and static Random addresses of lowerTester in the Filter Accept List for the Advertiser
     """
     ownAddress = Address( ExtendedAddressType.PUBLIC );
     peerAddresses = [ Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), Address( IdentityAddressType.RANDOM, 0x456789ABCDEF | 0xC00000000000 ) ];
@@ -737,7 +737,7 @@ def ll_ddi_adv_bv_08_c(transport, upperTester, lowerTester, trace):
 def ll_ddi_adv_bv_09_c(transport, upperTester, lowerTester, trace):
 
     """
-        Place Public address and Random static address of lowerTester in the White List for the Advertiser
+        Place Public address and Random static address of lowerTester in the Filter Accept List for the Advertiser
     """
     ownAddress = Address( ExtendedAddressType.PUBLIC );
     peerAddresses = [ Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), Address( IdentityAddressType.RANDOM, 0x456789ABCDEF | 0xC00000000000 ) ];
@@ -824,7 +824,7 @@ def ll_ddi_adv_bv_11_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setPassiveScanning(transport, lowerTester, trace, Advertising.CONNECTABLE_HDC_DIRECTED, 30, AdvertisingFilterPolicy.FILTER_BOTH_REQUESTS);
     """
-        Place Public address of lowerTester in the White List
+        Place Public address of lowerTester in the Filter Accept List
     """
     ownAddress = Address( ExtendedAddressType.PUBLIC );
     peerAddress = publicIdentityAddress(lowerTester);
@@ -860,7 +860,7 @@ def ll_ddi_adv_bv_15_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setPassiveScanning(transport, lowerTester, trace, Advertising.SCANNABLE_UNDIRECTED, 100, AdvertisingFilterPolicy.FILTER_BOTH_REQUESTS);
     """
-        Place Public address of lowerTester in the White List
+        Place Public address of lowerTester in the Filter Accept List
     """
     peerAddress = publicIdentityAddress(lowerTester);
     success = addAddressesToAllowList(transport, upperTester, [ peerAddress ], trace);
@@ -940,7 +940,7 @@ def ll_ddi_adv_bv_18_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setActiveScanning(transport, lowerTester, trace, Advertising.SCANNABLE_UNDIRECTED, 30, None, AdvertisingFilterPolicy.FILTER_BOTH_REQUESTS);
     """
-        Place Public address of lowerTester in the White List
+        Place Public address of lowerTester in the Filter Accept List
     """
     ownAddress = Address( ExtendedAddressType.PUBLIC );
     peerAddress = publicIdentityAddress(lowerTester);
@@ -982,7 +982,7 @@ def ll_ddi_adv_bv_19_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setPassiveScanning(transport, lowerTester, trace, Advertising.CONNECTABLE_LDC_DIRECTED, 100, AdvertisingFilterPolicy.FILTER_BOTH_REQUESTS);
     """
-        Place Public address of lowerTester in the White List
+        Place Public address of lowerTester in the Filter Accept List
     """
     ownAddress = Address( ExtendedAddressType.PUBLIC );
     peerAddress = publicIdentityAddress(lowerTester);
@@ -1016,7 +1016,7 @@ def ll_ddi_adv_bv_20_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setPassiveScanning(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED, 100, AdvertisingFilterPolicy.FILTER_BOTH_REQUESTS);
     """
-        Place Public address of lowerTester in the White List
+        Place Public address of lowerTester in the Filter Accept List
     """
     peerAddress = publicIdentityAddress(lowerTester);
     success = addAddressesToAllowList(transport, upperTester, [ peerAddress ], trace);
@@ -1154,9 +1154,9 @@ def ll_ddi_scn_bv_01_c(transport, upperTester, lowerTester, trace):
 def ll_ddi_scn_bv_02_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setPassiveScanning(transport, upperTester, trace, Advertising.NON_CONNECTABLE_UNDIRECTED, 20, \
-                                             AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.CHANNEL_37, ScanningFilterPolicy.FILTER_WHITE_LIST);
+                                             AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.CHANNEL_37, ScanningFilterPolicy.FILTER_ACCEPT_LIST);
     """
-        Place Public address of lowerTester in the White List
+        Place Public address of lowerTester in the Filter Accept List
     """
     peerAddress = publicIdentityAddress(lowerTester);
     success = addAddressesToAllowList(transport, upperTester, [ peerAddress ], trace);
@@ -1240,9 +1240,9 @@ def ll_ddi_scn_bv_03_c(transport, upperTester, lowerTester, trace):
 def ll_ddi_scn_bv_04_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setActiveScanning(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED, 20, 1, \
-                                            AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.ALL_CHANNELS, ScanningFilterPolicy.FILTER_WHITE_LIST);
+                                            AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.ALL_CHANNELS, ScanningFilterPolicy.FILTER_ACCEPT_LIST);
     """
-        Place Public address of lowerTester in the White List
+        Place Public address of lowerTester in the Filter Accept List
     """
     peerAddress = publicIdentityAddress(lowerTester);
     success = addAddressesToAllowList(transport, upperTester, [ peerAddress ], trace);
@@ -1371,9 +1371,9 @@ def ll_ddi_scn_bv_10_c(transport, upperTester, lowerTester, trace):
 def ll_ddi_scn_bv_11_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setPassiveScanning(transport, upperTester, trace, Advertising.CONNECTABLE_LDC_DIRECTED, 20, \
-                                             AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.ALL_CHANNELS, ScanningFilterPolicy.FILTER_WHITE_LIST);
+                                             AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.ALL_CHANNELS, ScanningFilterPolicy.FILTER_ACCEPT_LIST);
     """
-        Place Public address of lowerTester in the White List
+        Place Public address of lowerTester in the Filter Accept List
     """
     peerAddress = publicIdentityAddress(lowerTester);
     success = addAddressesToAllowList(transport, upperTester, [ peerAddress ], trace);
@@ -1414,9 +1414,9 @@ def ll_ddi_scn_bv_11_c(transport, upperTester, lowerTester, trace):
 def ll_ddi_scn_bv_12_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setPassiveScanning(transport, upperTester, trace, Advertising.SCANNABLE_UNDIRECTED, 20, \
-                                             AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.ALL_CHANNELS, ScanningFilterPolicy.FILTER_WHITE_LIST);
+                                             AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.ALL_CHANNELS, ScanningFilterPolicy.FILTER_ACCEPT_LIST);
     """
-        Place Public address of lowerTester in the White List
+        Place Public address of lowerTester in the Filter Accept List
     """
     peerAddress = publicIdentityAddress(lowerTester);
     success = addAddressesToAllowList(transport, upperTester, [ peerAddress ], trace);
@@ -2008,13 +2008,13 @@ def ll_con_ini_bv_06_c(transport, upperTester, lowerTester, trace):
     for j in range(2):
         if j == 0:
             advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED, \
-                                                       AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+                                                       AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_ACCEPT_LIST_ONLY);
         else:
             advertiser, initiator = setPrivateInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED, \
                                                         ExtendedAddressType.RANDOM, ExtendedAddressType.RANDOM, AdvertisingFilterPolicy.FILTER_NONE, \
-                                                        AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+                                                        AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_ACCEPT_LIST_ONLY);
         """
-            Place Public|Random address of lowerTester in the White List
+            Place Public|Random address of lowerTester in the Filter Accept List
         """
         allowListAddress = publicIdentityAddress(lowerTester) if j == 0 else randomIdentityAddress(lowerTester);
 
@@ -2064,13 +2064,13 @@ def ll_con_ini_bv_07_c(transport, upperTester, lowerTester, trace):
     for j in range(2):
         if j == 0:
             advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_LDC_DIRECTED, \
-                                                       AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+                                                       AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_ACCEPT_LIST_ONLY);
         else:
             advertiser, initiator = setPrivateInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_LDC_DIRECTED, \
                                                         ExtendedAddressType.RANDOM, ExtendedAddressType.RANDOM, AdvertisingFilterPolicy.FILTER_NONE, \
-                                                        AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+                                                        AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_ACCEPT_LIST_ONLY);
         """
-            Place Public|Random address of lowerTester in the White List
+            Place Public|Random address of lowerTester in the Filter Accept List
         """
         allowListAddress = publicIdentityAddress(lowerTester) if j == 0 else randomIdentityAddress(lowerTester);
 
@@ -2592,7 +2592,7 @@ def ll_con_ini_bv_23_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPrivateInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED, ExtendedAddressType.PUBLIC,
                                                 ExtendedAddressType.RESOLVABLE_OR_PUBLIC, AdvertisingFilterPolicy.FILTER_NONE,
-                                                AdvertiseChannel.ALL_CHANNELS, InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+                                                AdvertiseChannel.ALL_CHANNELS, InitiatorFilterPolicy.FILTER_ACCEPT_LIST_ONLY);
     """
         Add Public address of lowerTester to the Resolving List
     """
@@ -2615,7 +2615,7 @@ def ll_con_ini_bv_23_c(transport, upperTester, lowerTester, trace):
     success = RPAs[upperTester].timeout( 60 ) and RPAs[lowerTester].timeout( 60 ) and success;
     success = RPAs[lowerTester].enable() and success;
     """
-        Add Lower tester identity address to plus two more to White List
+        Add Lower tester identity address to plus two more to Filter Accept List
     """
     success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester), extraAddressses[0], extraAddressses[1] ], trace);
 
@@ -4964,7 +4964,7 @@ def ll_con_cen_bi_06_c(transport, upperTester, lowerTester, trace):
     LL/SEC/ADV/BV-01-C [Changing Static Address while Advertising]
 
     Last modified: 07-08-2019
-    Reviewed and verified: 07-08-2019 Henrik Eriksen (NOTE: Test fails - test specification is omitting White List addition!)
+    Reviewed and verified: 07-08-2019 Henrik Eriksen (NOTE: Test fails - test specification is omitting Filter Accept List addition!)
 """
 def ll_sec_adv_bv_01_c(transport, upperTester, lowerTester, trace):
 
@@ -4973,7 +4973,7 @@ def ll_sec_adv_bv_01_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IUT' );
     """
-        Adding lowerTester address to the White List
+        Adding lowerTester address to the Filter Accept List
     """
     success = addAddressesToAllowList(transport, upperTester, [ randomIdentityAddress(lowerTester) ], trace);
 
@@ -5128,7 +5128,7 @@ def ll_sec_adv_bv_05_c(transport, upperTester, lowerTester, trace):
     success = RPAs[upperTester].add( publicIdentityAddress(lowerTester), lowerIRK ) and success;
     success = RPAs[lowerTester].add( publicIdentityAddress(upperTester), upperIRK ) and success;
     """
-        Adding lowerTester address to the White List
+        Adding lowerTester address to the Filter Accept List
     """
     success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
     """
@@ -5218,7 +5218,7 @@ def ll_sec_adv_bv_07_c(transport, upperTester, lowerTester, trace):
     success = RPAs[upperTester].add( publicIdentityAddress(lowerTester) ) and success;
     success = RPAs[lowerTester].add( publicIdentityAddress(upperTester), upperIRK ) and success;
     """
-        Adding lowerTester address to the White List
+        Adding lowerTester address to the Filter Accept List
     """
     success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
     """
@@ -5264,7 +5264,7 @@ def ll_sec_adv_bv_08_c(transport, upperTester, lowerTester, trace):
     success = RPAs[upperTester].add( publicIdentityAddress(lowerTester), lowerIRK ) and success;
     success = RPAs[lowerTester].add( publicIdentityAddress(upperTester), upperIRK ) and success;
     """
-        Adding lowerTester address to the White List
+        Adding lowerTester address to the Filter Accept List
     """
     success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
     """
@@ -5310,7 +5310,7 @@ def ll_sec_adv_bv_09_c(transport, upperTester, lowerTester, trace):
     success = RPAs[upperTester].add( publicIdentityAddress(lowerTester), lowerIRK ) and success;
     success = RPAs[lowerTester].add( publicIdentityAddress(upperTester) ) and success;
     """
-        Adding lowerTester address to the White List
+        Adding lowerTester address to the Filter Accept List
     """
     success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
     """
@@ -5360,7 +5360,7 @@ def ll_sec_adv_bv_10_c(transport, upperTester, lowerTester, trace):
     success = RPAs[upperTester].add( publicIdentityAddress(lowerTester), bogusIRK ) and success;
     success = RPAs[lowerTester].add( publicIdentityAddress(upperTester), upperIRK ) and success;
     """
-        Add Identity Address of lower Tester to White List to enable responding to Scan Requests
+        Add Identity Address of lower Tester to Filter Accept List to enable responding to Scan Requests
     """
     success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
 
@@ -5616,7 +5616,7 @@ def ll_sec_adv_bv_14_c(transport, upperTester, lowerTester, trace):
     success = RPAs[upperTester].add( publicIdentityAddress(lowerTester), bogusIRK ) and success;
     success = RPAs[lowerTester].add( publicIdentityAddress(upperTester), upperIRK ) and success;
     """
-        Add Identity Address of lower Tester to White List to enable responding to Scan Requests
+        Add Identity Address of lower Tester to Filter Accept List to enable responding to Scan Requests
     """
     success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
 
@@ -5658,7 +5658,7 @@ def ll_sec_adv_bv_15_c(transport, upperTester, lowerTester, trace):
     success = RPAs[upperTester].add( publicIdentityAddress(lowerTester), lowerIRK ) and success;
     success = RPAs[lowerTester].add( publicIdentityAddress(upperTester), upperIRK ) and success;
     """
-        Adding lowerTester address to the White List
+        Adding lowerTester address to the Filter Accept List
     """
     success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
     """
@@ -5699,7 +5699,7 @@ def ll_sec_adv_bv_16_c(transport, upperTester, lowerTester, trace):
     success = RPAs[upperTester].add( publicIdentityAddress(lowerTester), lowerIRK ) and success;
     success = RPAs[lowerTester].add( publicIdentityAddress(upperTester), upperIRK ) and success;
     """
-        Adding lowerTester address to the White List
+        Adding lowerTester address to the Filter Accept List
     """
     success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
     """
@@ -5778,7 +5778,7 @@ def ll_sec_adv_bv_18_c(transport, upperTester, lowerTester, trace):
     """
     success = setPrivacyMode(transport, upperTester, publicIdentityAddress(lowerTester), PrivacyMode.DEVICE_PRIVACY, trace) and success;
     """
-        Add Identity Address of lower Tester to White List to enable responding to Scan Requests
+        Add Identity Address of lower Tester to Filter Accept List to enable responding to Scan Requests
     """
     success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
     """
@@ -5822,7 +5822,7 @@ def ll_sec_adv_bv_19_c(transport, upperTester, lowerTester, trace):
     """
     success = setPrivacyMode(transport, upperTester, publicIdentityAddress(lowerTester), PrivacyMode.DEVICE_PRIVACY, trace) and success;
     """
-        Add Identity Address of lower Tester to White List to enable responding to Scan Requests
+        Add Identity Address of lower Tester to Filter Accept List to enable responding to Scan Requests
     """
     success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
     """

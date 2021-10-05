@@ -75,14 +75,14 @@ class Commands(IntEnum):
     CMD_LE_CREATE_CONNECTION_RSP                                  = 64
     CMD_LE_CREATE_CONNECTION_CANCEL_REQ                           = 65
     CMD_LE_CREATE_CONNECTION_CANCEL_RSP                           = 66
-    CMD_LE_READ_WHITE_LIST_SIZE_REQ                               = 67
-    CMD_LE_READ_WHITE_LIST_SIZE_RSP                               = 68
-    CMD_LE_CLEAR_WHITE_LIST_REQ                                   = 69
-    CMD_LE_CLEAR_WHITE_LIST_RSP                                   = 70
-    CMD_LE_ADD_DEVICE_TO_WHITE_LIST_REQ                           = 71
-    CMD_LE_ADD_DEVICE_TO_WHITE_LIST_RSP                           = 72
-    CMD_LE_REMOVE_DEVICE_FROM_WHITE_LIST_REQ                      = 73
-    CMD_LE_REMOVE_DEVICE_FROM_WHITE_LIST_RSP                      = 74
+    CMD_LE_READ_FILTER_ACCEPT_LIST_SIZE_REQ                       = 67
+    CMD_LE_READ_FILTER_ACCEPT_LIST_SIZE_RSP                       = 68
+    CMD_LE_CLEAR_FILTER_ACCEPT_LIST_REQ                           = 69
+    CMD_LE_CLEAR_FILTER_ACCEPT_LIST_RSP                           = 70
+    CMD_LE_ADD_DEVICE_TO_FILTER_ACCEPT_LIST_REQ                   = 71
+    CMD_LE_ADD_DEVICE_TO_FILTER_ACCEPT_LIST_RSP                   = 72
+    CMD_LE_REMOVE_DEVICE_FROM_FILTER_ACCEPT_LIST_REQ              = 73
+    CMD_LE_REMOVE_DEVICE_FROM_FILTER_ACCEPT_LIST_RSP              = 74
     CMD_LE_CONNECTION_UPDATE_REQ                                  = 75
     CMD_LE_CONNECTION_UPDATE_RSP                                  = 76
     CMD_LE_SET_HOST_CHANNEL_CLASSIFICATION_REQ                    = 77
@@ -1231,96 +1231,96 @@ def le_create_connection_cancel(transport, idx, to):
     return status;
 
 """
-    The LE_Read_White_List_Size command is used to read the total number of White List entries that can be stored in the
+    The LE_Read_Filter_Accept_List_Size command is used to read the total number of Filter Accept List entries that can be stored in the
     Controller.
 """
-def le_read_white_list_size(transport, idx, to):
+def le_read_filter_accept_list_size(transport, idx, to):
 
-    cmd = struct.pack('<HHH', Commands.CMD_LE_READ_WHITE_LIST_SIZE_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_FAL_SIZE);
+    cmd = struct.pack('<HHH', Commands.CMD_LE_READ_FILTER_ACCEPT_LIST_SIZE_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_FAL_SIZE);
     transport.send(idx, cmd);
 
     packet = transport.recv(idx, 6, to);
 
     if ( 6 != len(packet) ):
-        raise Exception("LE Read White List Size command failed: Response too short (Expected %i bytes got %i bytes)" % (6, len(packet)));
+        raise Exception("LE Read Filter Accept List Size command failed: Response too short (Expected %i bytes got %i bytes)" % (6, len(packet)));
 
     RespCmd, RespLen, status, FalSize = struct.unpack('<HHBB', packet);
 
-    if ( RespCmd != Commands.CMD_LE_READ_WHITE_LIST_SIZE_RSP ):
-        raise Exception("LE Read White List Size command failed: Inappropriate command response received");
+    if ( RespCmd != Commands.CMD_LE_READ_FILTER_ACCEPT_LIST_SIZE_RSP ):
+        raise Exception("LE Read Filter Accept List Size command failed: Inappropriate command response received");
 
     if ( RespLen != 2 ):
-        raise Exception("LE Read White List Size command failed: Response length field corrupted (%i)" % RespLen);
+        raise Exception("LE Read Filter Accept List Size command failed: Response length field corrupted (%i)" % RespLen);
 
     return status, FalSize;
 
 """
-    The LE_Clear_White_List command is used to clear the White List stored in the Controller.
+    The LE_Clear_Filter_Accept_List command is used to clear the Filter Accept List stored in the Controller.
 """
-def le_clear_white_list(transport, idx, to):
+def le_clear_filter_accept_list(transport, idx, to):
 
-    cmd = struct.pack('<HHH', Commands.CMD_LE_CLEAR_WHITE_LIST_REQ, 2, HCICommands.BT_HCI_OP_LE_CLEAR_FAL);
+    cmd = struct.pack('<HHH', Commands.CMD_LE_CLEAR_FILTER_ACCEPT_LIST_REQ, 2, HCICommands.BT_HCI_OP_LE_CLEAR_FAL);
     transport.send(idx, cmd);
 
     packet = transport.recv(idx, 5, to);
 
     if ( 5 != len(packet) ):
-        raise Exception("LE Clear White List command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
+        raise Exception("LE Clear Filter Accept List command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
 
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
 
-    if ( RespCmd != Commands.CMD_LE_CLEAR_WHITE_LIST_RSP ):
-        raise Exception("LE Clear White List command failed: Inappropriate command response received");
+    if ( RespCmd != Commands.CMD_LE_CLEAR_FILTER_ACCEPT_LIST_RSP ):
+        raise Exception("LE Clear Filter Accept List command failed: Inappropriate command response received");
 
     if ( RespLen != 1 ):
-        raise Exception("LE Clear White List command failed: Response length field corrupted (%i)" % RespLen);
+        raise Exception("LE Clear Filter Accept List command failed: Response length field corrupted (%i)" % RespLen);
 
     return status;
 
 """
-    The LE_Add_Device_To_White_List command is used to add a single device to the White List stored in the Controller.
+    The LE_Add_Device_To_Filter_Accept_List command is used to add a single device to the Filter Accept List stored in the Controller.
 """
-def le_add_device_to_white_list(transport, idx, AddrType, AVal, to):
+def le_add_device_to_filter_accept_list(transport, idx, AddrType, AVal, to):
 
-    cmd = struct.pack('<HHHB6B', Commands.CMD_LE_ADD_DEVICE_TO_WHITE_LIST_REQ, 9, HCICommands.BT_HCI_OP_LE_ADD_DEV_TO_FAL, AddrType, *AVal);
+    cmd = struct.pack('<HHHB6B', Commands.CMD_LE_ADD_DEVICE_TO_FILTER_ACCEPT_LIST_REQ, 9, HCICommands.BT_HCI_OP_LE_ADD_DEV_TO_FAL, AddrType, *AVal);
     transport.send(idx, cmd);
 
     packet = transport.recv(idx, 5, to);
 
     if ( 5 != len(packet) ):
-        raise Exception("LE Add Device To White List command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
+        raise Exception("LE Add Device To Filter Accept List command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
 
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
 
-    if ( RespCmd != Commands.CMD_LE_ADD_DEVICE_TO_WHITE_LIST_RSP ):
-        raise Exception("LE Add Device To White List command failed: Inappropriate command response received");
+    if ( RespCmd != Commands.CMD_LE_ADD_DEVICE_TO_FILTER_ACCEPT_LIST_RSP ):
+        raise Exception("LE Add Device To Filter Accept List command failed: Inappropriate command response received");
 
     if ( RespLen != 1 ):
-        raise Exception("LE Add Device To White List command failed: Response length field corrupted (%i)" % RespLen);
+        raise Exception("LE Add Device To Filter Accept List command failed: Response length field corrupted (%i)" % RespLen);
 
     return status;
 
 """
-    The LE_Remove_Device_From_White_List command is used to remove a single device from the White List stored in the
+    The LE_Remove_Device_From_Filter_Accept_List command is used to remove a single device from the Filter Accept List stored in the
     Controller.
 """
-def le_remove_device_from_white_list(transport, idx, AddrType, AVal, to):
+def le_remove_device_from_filter_accept_list(transport, idx, AddrType, AVal, to):
 
-    cmd = struct.pack('<HHHB6B', Commands.CMD_LE_REMOVE_DEVICE_FROM_WHITE_LIST_REQ, 9, HCICommands.BT_HCI_OP_LE_REM_DEV_FROM_FAL, AddrType, *AVal);
+    cmd = struct.pack('<HHHB6B', Commands.CMD_LE_REMOVE_DEVICE_FROM_FILTER_ACCEPT_LIST_REQ, 9, HCICommands.BT_HCI_OP_LE_REM_DEV_FROM_FAL, AddrType, *AVal);
     transport.send(idx, cmd);
 
     packet = transport.recv(idx, 5, to);
 
     if ( 5 != len(packet) ):
-        raise Exception("LE Remove Device From White List command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
+        raise Exception("LE Remove Device From Filter Accept List command failed: Response too short (Expected %i bytes got %i bytes)" % (5, len(packet)));
 
     RespCmd, RespLen, status = struct.unpack('<HHB', packet);
 
-    if ( RespCmd != Commands.CMD_LE_REMOVE_DEVICE_FROM_WHITE_LIST_RSP ):
-        raise Exception("LE Remove Device From White List command failed: Inappropriate command response received");
+    if ( RespCmd != Commands.CMD_LE_REMOVE_DEVICE_FROM_FILTER_ACCEPT_LIST_RSP ):
+        raise Exception("LE Remove Device From Filter Accept List command failed: Inappropriate command response received");
 
     if ( RespLen != 1 ):
-        raise Exception("LE Remove Device From White List command failed: Response length field corrupted (%i)" % RespLen);
+        raise Exception("LE Remove Device From Filter Accept List command failed: Response length field corrupted (%i)" % RespLen);
 
     return status;
 
