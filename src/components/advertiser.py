@@ -20,10 +20,10 @@ class Advertise(IntEnum):
     ENABLE  = 1                    # Enable Advertising
 
 class AdvertisingFilterPolicy(IntEnum):
-    FILTER_NONE                = 0 # Process scan and connection requests from all devices (i.e., the White List is not in use) (default).
-    FILTER_SCAN_REQUESTS       = 1 # Process connection requests from all devices and only scan requests from devices that are in the White List.
-    FILTER_CONNECTION_REQUESTS = 2 # Process scan requests from all devices and only connection requests from devices that are in the White List.
-    FILTER_BOTH_REQUESTS       = 3 # Process scan and connection requests only from devices in the White List.
+    FILTER_NONE                = 0 # Process scan and connection requests from all devices (i.e., the Filter Accept List is not in use) (default).
+    FILTER_SCAN_REQUESTS       = 1 # Process connection requests from all devices and only scan requests from devices that are in the Filter Accept List.
+    FILTER_CONNECTION_REQUESTS = 2 # Process scan requests from all devices and only connection requests from devices that are in the Filter Accept List.
+    FILTER_BOTH_REQUESTS       = 3 # Process scan and connection requests only from devices in the Filter Accept List.
 
 class AdvertiseChannel(IntEnum):
     CHANNEL_37   = 1               # Advertise on channel 37

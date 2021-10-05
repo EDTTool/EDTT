@@ -241,16 +241,16 @@ def hci_cin_bv_04_c(transport, idx, trace):
     return success;
 
 """
-    HCI/CIN/BV-06-C [Reported White List Size]
+    HCI/CIN/BV-06-C [Reported Filter Accept List Size]
 """
 def hci_cin_bv_06_c(transport, idx, trace):
 
-    status = le_clear_white_list(transport, idx, 100);
-    trace.trace(6, "LE Clear White List Command returns status: 0x%02X" % status);
+    status = le_clear_filter_accept_list(transport, idx, 100);
+    trace.trace(6, "LE Clear Filter Accept List Command returns status: 0x%02X" % status);
     success = __check_command_complete_event(transport, idx, trace) and (status == 0);
 
-    status, FalSize = le_read_white_list_size(transport, idx, 100);
-    trace.trace(6, "LE Read White List Size Command returns status: 0x%02X list size: %i" % (status, FalSize));
+    status, FalSize = le_read_filter_accept_list_size(transport, idx, 100);
+    trace.trace(6, "LE Read Filter Accept List Size Command returns status: 0x%02X list size: %i" % (status, FalSize));
     success = success and __check_command_complete_event(transport, idx, trace) and (status == 0);
 
     for n in range(FalSize+1):
@@ -258,16 +258,16 @@ def hci_cin_bv_06_c(transport, idx, trace):
         AVal = [random.randint(0,255) for _ in range(6)];
         if n < FalSize:
             lastAVal = AVal
-        status = le_add_device_to_white_list(transport, idx, AddrType, AVal, 100);
-        trace.trace(6, "LE Add Device to White List Command returns status: 0x%02X" % status);
+        status = le_add_device_to_filter_accept_list(transport, idx, AddrType, AVal, 100);
+        trace.trace(6, "LE Add Device to Filter Accept List Command returns status: 0x%02X" % status);
         success = success and __check_command_complete_event(transport, idx, trace) and ((status == 0) if n < FalSize else (status == 7));
 
-        status = le_remove_device_from_white_list(transport, idx, AddrType, lastAVal, 100);
-        trace.trace(6, "LE Remove Device from White List Command returns status: 0x%02X" % status);
+        status = le_remove_device_from_filter_accept_list(transport, idx, AddrType, lastAVal, 100);
+        trace.trace(6, "LE Remove Device from Filter Accept List Command returns status: 0x%02X" % status);
         success = success and __check_command_complete_event(transport, idx, trace) and (status == 0);
 
-        status = le_add_device_to_white_list(transport, idx, AddrType, lastAVal, 100);
-        trace.trace(6, "LE Add Device to White List Command returns status: 0x%02X" % status);
+        status = le_add_device_to_filter_accept_list(transport, idx, AddrType, lastAVal, 100);
+        trace.trace(6, "LE Add Device to Filter Accept List Command returns status: 0x%02X" % status);
         success = success and __check_command_complete_event(transport, idx, trace) and (status == 0);
 
     return success;
@@ -956,7 +956,7 @@ __tests__ = {
     "HCI/CIN/BV-01-C": [ hci_cin_bv_01_c, 'Features returned by Read Local Supported Features Command' ],
     "HCI/CIN/BV-03-C": [ hci_cin_bv_03_c, 'Supported Commands returned by Read Local Supported Commands Command' ],
     "HCI/CIN/BV-04-C": [ hci_cin_bv_04_c, 'Versions returned by Read Local Version Information Command' ],
-    "HCI/CIN/BV-06-C": [ hci_cin_bv_06_c, 'Reported White List Size' ],
+    "HCI/CIN/BV-06-C": [ hci_cin_bv_06_c, 'Reported Filter Accept List Size' ],
     "HCI/CIN/BV-09-C": [ hci_cin_bv_09_c, 'Feature Bits returned by Read LE Public Key Validation Feature Bit' ],
     "HCI/CM/BV-01-C":  [ hci_cm_bv_01_c,  'Handling LE Read Peer Resolvable Address Command' ],
     "HCI/CM/BV-02-C":  [ hci_cm_bv_02_c,  'Handling LE Read Local Resolvable Address Command' ],

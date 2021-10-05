@@ -859,17 +859,17 @@ def gap_conn_ucon_bv_03_c(transport, upperTester, lowerTester, trace):
 def gap_conn_acep_bv_01_c(transport, upperTester, lowerTester, trace):
 
     """
-        Place Public address of lowerTester in the White List for the Scanner
+        Place Public address of lowerTester in the Filter Accept List for the Scanner
     """
     addresses = [[ SimpleAddressType.PUBLIC, 0x456789ABCDEF ]];
-    success = preamble_specific_white_listed(transport, upperTester, addresses, trace);
+    success = preamble_specific_filter_accept_listed(transport, upperTester, addresses, trace);
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
     peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), \
-                          Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+                          Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), InitiatorFilterPolicy.FILTER_ACCEPT_LIST_ONLY);
 
     advertising = advertiser.enable();
     success = success and advertising;
@@ -906,17 +906,17 @@ def gap_conn_acep_bv_03_c(transport, upperTester, lowerTester, trace):
     success = success and RPAs[upperTester].timeout( 60 ) and RPAs[lowerTester].timeout(60);
     success = success and RPAs[upperTester].enable() and RPAs[lowerTester].enable();
     """
-        Place Public address of lowerTester in the White List for the Scanner
+        Place Public address of lowerTester in the Filter Accept List for the Scanner
     """
     addresses = [[ SimpleAddressType.PUBLIC, 0x456789ABCDEF ]];
-    success = preamble_specific_white_listed(transport, upperTester, addresses, trace);
+    success = preamble_specific_filter_accept_listed(transport, upperTester, addresses, trace);
 
     ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC );
     peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), \
-                          Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+                          Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), InitiatorFilterPolicy.FILTER_ACCEPT_LIST_ONLY);
 
     advertising = advertiser.enable();
     success = success and advertising;
@@ -955,17 +955,17 @@ def gap_conn_acep_bv_04_c(transport, upperTester, lowerTester, trace):
     success = success and RPAs[upperTester].timeout( 60 ) and RPAs[lowerTester].timeout(60);
     success = success and RPAs[upperTester].enable() and RPAs[lowerTester].enable();
     """
-        Place Public address of lowerTester in the White List for the Scanner
+        Place Public address of lowerTester in the Filter Accept List for the Scanner
     """
     addresses = [[ SimpleAddressType.PUBLIC, 0x456789ABCDEF ]];
-    success = preamble_specific_white_listed(transport, upperTester, addresses, trace);
+    success = preamble_specific_filter_accept_listed(transport, upperTester, addresses, trace);
 
     ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC );
     peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), \
-                          Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+                          Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), InitiatorFilterPolicy.FILTER_ACCEPT_LIST_ONLY);
 
     advertising = advertiser.enable();
     success = success and advertising;

@@ -9,8 +9,8 @@ from components.address import *;
 from components.events import *;
 
 class InitiatorFilterPolicy(IntEnum):
-    FILTER_NONE            = 0     # White list is not used to determine which advertiser to connect to. Peer_Address_Type and Peer_Address shall be used.
-    FILTER_WHITE_LIST_ONLY = 1     # White list is used to determine which advertiser to connect to. Peer_Address_Type and Peer_Address shall be ignored.
+    FILTER_NONE             = 0     # Filter Accept list is not used to determine which advertiser to connect to. Peer_Address_Type and Peer_Address shall be used.
+    FILTER_ACCEPT_LIST_ONLY = 1     # Filter Accept list is used to determine which advertiser to connect to. Peer_Address_Type and Peer_Address shall be ignored.
 
 class Initiator:
     """
