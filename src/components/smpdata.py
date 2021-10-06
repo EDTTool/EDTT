@@ -53,7 +53,7 @@ class SMPKeyGeneration(IntEnum):
     SMP_KEY_GEN_OOB                      =   3 # Out of Band
 
 class SMPDistribution(IntEnum):
-    SMP_DST_ENCKEY                       =   1 # Distribute LTK, EDIV and Rand (LE legacy pairing); ignored (Secure Connections) 
+    SMP_DST_ENCKEY                       =   1 # Distribute LTK, EDIV and Rand (LE legacy pairing); ignored (Secure Connections)
     SMP_DST_IDKEY                        =   2 # Distribute IRK and BD_ADDR
     SMP_DST_SIGNKEY                      =   4 # Distribute CSRK
     SMP_DST_LINKKEY                      =   8 # Derive Link Key from LTK (Secure Connections); ignored (no Secure Connections)
@@ -65,7 +65,7 @@ class SMPOpcode(IntEnum):
     SMP_PAIRING_RANDOM                   =   4 # Pairing Random   - Pairing Random value
     SMP_PAIRING_FAILED                   =   5 # Pairing Failed   - Pairing Failed reason
     SMP_ENCRYPTION_INFORMATION           =   6 # Encryption Information - Long Term Key
-    SMP_MASTER_IDENTIFICATION            =   7 # Master Identification  - Dsitribute EDIV and Rand for encrypting future connections
+    SMP_CENTRAL_IDENTIFICATION           =   7 # Central Identification  - Dsitribute EDIV and Rand for encrypting future connections
     SMP_IDENTITY_INFORMATION             =   8 # Identity Information   - Distribute the IRK
     SMP_IDENTITY_ADDRESS_INFORMATION     =   9 # Identity Address Information - Distribute Public or Static Random device address
     SMP_SIGNING_INFORMATION              =  10 # Signing Information    - Distribute the CSRK
@@ -99,85 +99,85 @@ class SMPData:
       #
       # encode ( SMPOpcode.SMP_PAIRING_REQUEST, <io_capability>, <oob_flag>, <auth_req>, <max_enq_key_size>, <init_key_dist>, <resp_key_dist> )
       #          where <io_capability> 1 octet, <oob_flag> 1 octet, <auth_req> 1 octet, <max_enq_key_size> 1 octet, <init_key_dist> 1 octet, <resp_key_dist> 1 octet
-      # 
+      #
         if   ( opcode == SMPOpcode.SMP_PAIRING_REQUEST ):
             self.data = [ opcode ] + list( args[:6] );
       #
       # encode ( SMPOpcode.SMP_PAIRING_RESPONSE, <io_capability>, <oob_flag>, <auth_req>, <max_enq_key_size>, <init_key_dist>, <resp_key_dist> )
       #          where <io_capability> 1 octet, <oob_flag> 1 octet, <auth_req> 1 octet, <max_enq_key_size> 1 octet, <init_key_dist> 1 octet, <resp_key_dist> 1 octet
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_PAIRING_RESPONSE ):
             self.data = [ opcode ] + list( args[:6] );
       #
       # encode ( SMPOpcode.SMP_PAIRING_CONFIRM, <confirm_value> )
       #       where <confirm_value> 16 octets
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_PAIRING_CONFIRM ):
             self.data = [ opcode ] + toArray( args[0], 16 );
       #
       # encode ( SMPOpcode.SMP_PAIRING_RANDOM, <random_value> )
       #       where <random_value> 16 octets
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_PAIRING_RANDOM ):
             self.data = [ opcode ] + toArray( args[0], 16 );
       #
       # encode ( SMPOpcode.SMP_PAIRING_FAILED, <reason> )
       #       where <reason> 1 octet
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_PAIRING_FAILED ):
             self.data = [ opcode ] + [ args[0] ];
       #
       # encode ( SMPOpcode.SMP_ENCRYPTION_INFORMATION, <ltk> )
       #       where <ltk> 16 octets
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_ENCRYPTION_INFORMATION ):
             self.data = [ opcode ] + toArray( args[0], 16 );
       #
-      # encode ( SMPOpcode.SMP_MASTER_IDENTIFICATION, <ediv>, <rand> )
+      # encode ( SMPOpcode.SMP_CENTRAL_IDENTIFICATION, <ediv>, <rand> )
       #       where <ediv> 2 octets; <rand> 8 octets
-      # 
-        elif ( opcode == SMPOpcode.SMP_MASTER_IDENTIFICATION ):
+      #
+        elif ( opcode == SMPOpcode.SMP_CENTRAL_IDENTIFICATION ):
             self.data = [ opcode ] + toArray( args[0], 2 ) + toArray( args[1], 8 );
       #
       # encode ( SMPOpcode.SMP_IDENTITY_INFORMATION, <irk> )
       #       where <irk> 16 octets
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_IDENTITY_INFORMATION ):
             self.data = [ opcode ] + toArray( args[0], 16 );
       #
       # encode ( SMPOpcode.SMP_IDENTITY_ADDRESS_INFORMATION, <address_type>, <address> )
       #       where <address_type> 1 octet; <address> 6 octets
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_IDENTITY_ADDRESS_INFORMATION ):
             self.data = [ opcode ] + [ args[0] ] + toArray( args[1], 6 );
       #
       # encode ( SMPOpcode.SMP_SIGNING_INFORMATION, <csrk> )
       #       where <csrk> 16 octets
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_SIGNING_INFORMATION ):
             self.data = [ opcode ] + toArray( args[0], 16 );
       #
       # encode ( SMPOpcode.SMP_SECURITY_REQUEST, <properties> )
       #       where <properties> 1 octet
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_SECURITY_REQUEST ):
             self.data = [ opcode ] + [ args[0] ];
       #
       # encode ( SMPOpcode.SMP_PAIRING_PUBLIC_KEY, <key_X>, <key_Y> )
       #       where <key_X> 32 octets; <key_Y> 32 octets
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_PAIRING_PUBLIC_KEY ):
             self.data = [ opcode ] + toArray( args[0], 32 ) + toArray( args[1], 32 );
       #
       # encode ( SMPOpcode.SMP_PAIRING_DHKEY_CHECK, <check_value> )
       #       where <check_value> 16 octets
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_PAIRING_DHKEY_CHECK ):
             self.data = [ opcode ] + toArray( args[0], 16 );
       #
       # encode ( SMPOpcode.SMP_PAIRING_KEYPRESS_NOTIFICATION, <type> )
       #       where <type> 1 octet
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_PAIRING_KEYPRESS_NOTIFICATION ):
             self.data = [ opcode ] + [ args[0] ];
       #
@@ -186,7 +186,7 @@ class SMPData:
         if len(self.data) > 0:
             self.data = toArray( len(self.data), 2 ) + toArray( SMP_CID, 2 ) + self.data;
         return self.data;
-                
+
     def decode(self, data):
         self.data = data[:];
         size = toNumber( data[:2] );
@@ -197,7 +197,7 @@ class SMPData:
       #
       # decode ( SMPOpcode.SMP_PAIRING_REQUEST, <io_capability>, <oob_flag>, <auth_req>, <max_enq_key_size>, <init_key_dist>, <resp_key_dist> )
       #          where <io_capability> 1 octet, <oob_flag> 1 octet, <auth_req> 1 octet, <max_enq_key_size> 1 octet, <init_key_dist> 1 octet, <resp_key_dist> 1 octet
-      # 
+      #
         if   ( opcode == SMPOpcode.SMP_PAIRING_REQUEST ):
             result["capability"] = data[5];
             result["oob"] = data[6];
@@ -208,7 +208,7 @@ class SMPData:
       #
       # decode ( SMPOpcode.SMP_PAIRING_RESPONSE, <io_capability>, <oob_flag>, <auth_req>, <max_enq_key_size>, <init_key_dist>, <resp_key_dist> )
       #          where <io_capability> 1 octet, <oob_flag> 1 octet, <auth_req> 1 octet, <max_enq_key_size> 1 octet, <init_key_dist> 1 octet, <resp_key_dist> 1 octet
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_PAIRING_RESPONSE ):
             result["capability"] = data[5];
             result["oob"] = data[6];
@@ -219,70 +219,70 @@ class SMPData:
       #
       # decode ( SMPOpcode.SMP_PAIRING_CONFIRM, <confirm_value> )
       #       where <confirm_value> 16 octets
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_PAIRING_CONFIRM ):
             result["value"] = toNumber( data[5:21] );
       #
       # decode ( SMPOpcode.SMP_PAIRING_RANDOM, <random_value> )
       #       where <random_value> 16 octets
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_PAIRING_RANDOM ):
             result["value"] = toNumber( data[5:21] );
       #
       # decode ( SMPOpcode.SMP_PAIRING_FAILED, <reason> )
       #       where <reason> 1 octet
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_PAIRING_FAILED ):
             result["reason"] = (SMPError)(data[5]);
       #
       # decode ( SMPOpcode.SMP_ENCRYPTION_INFORMATION, <ltk> )
       #       where <ltk> 16 octets
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_ENCRYPTION_INFORMATION ):
             result["ltk"] = toNumber( data[5:21] );
       #
-      # decode ( SMPOpcode.SMP_MASTER_IDENTIFICATION, <ediv>, <rand> )
+      # decode ( SMPOpcode.SMP_CENTRAL_IDENTIFICATION, <ediv>, <rand> )
       #       where <ediv> 2 octets; <rand> 8 octets
-      # 
-        elif ( opcode == SMPOpcode.SMP_MASTER_IDENTIFICATION ):
+      #
+        elif ( opcode == SMPOpcode.SMP_CENTRAL_IDENTIFICATION ):
             result["ediv"] = toNumber( data[5:7] );
             result["rand"] = toNumber( data[7:15] );
       #
       # decode ( SMPOpcode.SMP_IDENTITY_INFORMATION, <irk> )
       #       where <irk> 16 octets
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_IDENTITY_INFORMATION ):
             result["irk"] = toNumber( data[5:21] );
       #
       # decode ( SMPOpcode.SMP_IDENTITY_ADDRESS_INFORMATION, <address_type>, <address> )
       #       where <address_type> 1 octet; <address> 6 octets
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_IDENTITY_ADDRESS_INFORMATION ):
             result["type"] = data[5];
             result["address"] = toNumber( data[6:12] );
       #
       # decode ( SMPOpcode.SMP_SIGNING_INFORMATION, <csrk> )
       #       where <csrk> 16 octets
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_SIGNING_INFORMATION ):
             result["csrk"] = toNumber( data[5:21] );
       #
       # decode ( SMPOpcode.SMP_PAIRING_PUBLIC_KEY, <key_X>, <key_Y> )
       #       where <key_X> 32 octets; <key_Y> 32 octets
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_PAIRING_PUBLIC_KEY ):
             result["key_X"] = toNumber( data[5:37] );
             result["key_Y"] = toNumber( data[37:69] );
       #
       # decode ( SMPOpcode.SMP_PAIRING_DHKEY_CHECK, <check_value> )
       #       where <check_value> 16 octets
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_PAIRING_DHKEY_CHECK ):
             result["value"] = toNumber( data[5:21] );
       #
       # decode ( SMPOpcode.SMP_PAIRING_KEYPRESS_NOTIFICATION, <type> )
       #       where <type> 1 octet
-      # 
+      #
         elif ( opcode == SMPOpcode.SMP_PAIRING_KEYPRESS_NOTIFICATION ):
             result["change"] = (SMPPasskey)(data[5]);
 

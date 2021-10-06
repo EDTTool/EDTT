@@ -114,7 +114,7 @@ def preamble_standby(transport, idx, trace):
              6 Remote Name Request Complete Event
              7 Encryption Change Event
              8 Change Connection Link Key Complete Event
-             9 Master Link Key Complete Event
+             9 Central Link Key Complete Event
             10 Read Remote Supported Features Complete Event
             11 Read Remote Version Information Complete Event
             12 QoS Setup Complete Event
@@ -399,9 +399,9 @@ def preamble_set_random_address(transport, idx, address, trace):
 
 
 """
-    When the IUT is in advertising state or slave role, a default value for the scanning, initiating or master address used is 0x123456789ABC.
-    When the IUT is in scanning state, initiating state or master role, a default value for the address used for the state of advertising
-    or the role of slave is 0x456789ABCDEF.
+    When the IUT is in advertising state or peripheral role, a default value for the scanning, initiating or central address used is 0x123456789ABC.
+    When the IUT is in scanning state, initiating state or central role, a default value for the address used for the state of advertising
+    or the role of peripheral is 0x456789ABCDEF.
 
     When it is required to modify the Lower Tester address either in the company_assigned field, the company_id field,
     it has to be done by exchanging bytes 1 and 3 of company_assigned field or company_id field.
@@ -474,22 +474,22 @@ def address_scramble_LAP(address):
 def address_exchange_OUI_LAP(address):
     return (address ^ 0xff00000000ff);
 
-def preamble_specific_white_listed(transport, idx, addresses, trace):
-    trace.trace(5, "Specific White Listed preamble steps...");
+def preamble_specific_filter_accept_listed(transport, idx, addresses, trace):
+    trace.trace(5, "Specific Filter Accept Listed preamble steps...");
 
     try:
-        status = le_clear_white_list(transport, idx, 100);
-        trace.trace(6, "LE Clear White List Command returns status: 0x%02X" % status);
+        status = le_clear_filter_accept_list(transport, idx, 100);
+        trace.trace(6, "LE Clear Filter Accept List Command returns status: 0x%02X" % status);
         success = __getCommandCompleteEvent(transport, idx, trace) and (status == 0);
 
         for i in range(len(addresses)):
             address = toArray(addresses[i][1], 6);
-            trace.trace(7, "Addding Device to White List %s" % formatAddress(address, addresses[i][0]));
-            status = le_add_device_to_white_list(transport, idx, addresses[i][0], address, 100);
-            trace.trace(6, "LE Add Device to White List Command returns status: 0x%02X" % status);
+            trace.trace(7, "Addding Device to Filter Accept List %s" % formatAddress(address, addresses[i][0]));
+            status = le_add_device_to_filter_accept_list(transport, idx, addresses[i][0], address, 100);
+            trace.trace(6, "LE Add Device to Filter Accept List Command returns status: 0x%02X" % status);
             success = __getCommandCompleteEvent(transport, idx, trace) and (status == 0) and success;
     except Exception as e:
-        trace.trace(3, "Specific White Listed preamble failed: %s" % str(e));
+        trace.trace(3, "Specific Filter Accept Listed preamble failed: %s" % str(e));
         success = False;
 
     return success;

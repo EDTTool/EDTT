@@ -52,16 +52,16 @@ def ll_multiple_connections(transport, trace):
         initiator2 = Initiator(transport, 2, 0, trace, initiatorAddress, Address( ExtendedAddressType.PUBLIC, 0x123456789ABC ));
             
         if connected:          
-            print("\nStarting slave advertising...");
+            print("\nStarting peripheral advertising...");
             success = advertiser.enable();
 
-            print("\nStarting master 2 scanning...");
+            print("\nStarting central 2 scanning...");
             success = success and scanner2.enable();
             scanner2.monitor();
             success = success and scanner2.disable();
             success = success and scanner2.qualifyReports( 1 );
 
-            print("\nStarting master 2 connection...");
+            print("\nStarting central 2 connection...");
             connected = initiator2.connect();
             success = success and connected;
             
@@ -97,12 +97,12 @@ def get_tests_specs():
 """
 def main(transport, trace):
     success = True
-    print(("preamble Standby Slave "    + ("PASS" if preamble_standby(transport, 0, trace) else "FAIL")));
-    print(("preamble Standby Master 1 " + ("PASS" if preamble_standby(transport, 1, trace) else "FAIL")));
-    print(("preamble Standby Master 2 " + ("PASS" if preamble_standby(transport, 2, trace) else "FAIL")));
-    print(("preamble Device Address Set Slave "    + ("PASS" if preamble_device_address_set(transport, 0, trace) else "FAIL")));
-    print(("preamble Device Address Set Master 1 " + ("PASS" if preamble_device_address_set(transport, 1, trace) else "FAIL")));    
-    print(("preamble Device Address Set Master 2 " + ("PASS" if preamble_device_address_set(transport, 2, trace) else "FAIL")));    
+    print(("preamble Standby Peripheral "    + ("PASS" if preamble_standby(transport, 0, trace) else "FAIL")));
+    print(("preamble Standby Central 1 " + ("PASS" if preamble_standby(transport, 1, trace) else "FAIL")));
+    print(("preamble Standby Central 2 " + ("PASS" if preamble_standby(transport, 2, trace) else "FAIL")));
+    print(("preamble Device Address Set Peripheral "    + ("PASS" if preamble_device_address_set(transport, 0, trace) else "FAIL")));
+    print(("preamble Device Address Set Central 1 " + ("PASS" if preamble_device_address_set(transport, 1, trace) else "FAIL")));    
+    print(("preamble Device Address Set Central 2 " + ("PASS" if preamble_device_address_set(transport, 2, trace) else "FAIL")));    
     print();
     success = ll_multiple_connections(transport, trace);
     return (0 if success else 1)

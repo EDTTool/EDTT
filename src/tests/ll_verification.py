@@ -283,11 +283,11 @@ def ll_ddi_adv_bv_08_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setActiveScanning(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
     """
-        Place Public and static Random addresses of lowerTester in the White List for the Advertiser
+        Place Public and static Random addresses of lowerTester in the Filter Accept List for the Advertiser
     """
     ownAddress = Address( ExtendedAddressType.PUBLIC );
     peerAddresses = [ Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), Address( IdentityAddressType.RANDOM, 0x456789ABCDEF | 0xC00000000000 ) ];
-    success = addAddressesToWhiteList(transport, upperTester, peerAddresses, trace);
+    success = addAddressesToAllowList(transport, upperTester, peerAddresses, trace);
 
     adData = ADData();
     advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IUT' );
@@ -362,11 +362,11 @@ def ll_ddi_adv_bv_08_c(transport, upperTester, lowerTester, trace):
 def ll_ddi_adv_bv_09_c(transport, upperTester, lowerTester, trace):
 
     """
-        Place Public address and Random static address of lowerTester in the White List for the Advertiser
+        Place Public address and Random static address of lowerTester in the Filter Accept List for the Advertiser
     """
     ownAddress = Address( ExtendedAddressType.PUBLIC );
     peerAddresses = [ Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), Address( IdentityAddressType.RANDOM, 0x456789ABCDEF | 0xC00000000000 ) ];
-    success = addAddressesToWhiteList(transport, upperTester, peerAddresses, trace);
+    success = addAddressesToAllowList(transport, upperTester, peerAddresses, trace);
     """
         Initialize Advertiser with Connectable Undirected advertising using a Public Address
     """
@@ -449,11 +449,11 @@ def ll_ddi_adv_bv_11_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setPassiveScanning(transport, lowerTester, trace, Advertising.CONNECTABLE_HDC_DIRECTED, 30, AdvertisingFilterPolicy.FILTER_BOTH_REQUESTS);
     """
-        Place Public address of lowerTester in the White List
+        Place Public address of lowerTester in the Filter Accept List
     """
     ownAddress = Address( ExtendedAddressType.PUBLIC );
     peerAddress = publicIdentityAddress(lowerTester);
-    success = addAddressesToWhiteList(transport, upperTester, [ peerAddress ], trace);
+    success = addAddressesToAllowList(transport, upperTester, [ peerAddress ], trace);
 
     success = scanner.enable() and success;
     success = advertiser.enable() and success;
@@ -485,10 +485,10 @@ def ll_ddi_adv_bv_15_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setPassiveScanning(transport, lowerTester, trace, Advertising.SCANNABLE_UNDIRECTED, 100, AdvertisingFilterPolicy.FILTER_BOTH_REQUESTS);
     """
-        Place Public address of lowerTester in the White List
+        Place Public address of lowerTester in the Filter Accept List
     """
     peerAddress = publicIdentityAddress(lowerTester);
-    success = addAddressesToWhiteList(transport, upperTester, [ peerAddress ], trace);
+    success = addAddressesToAllowList(transport, upperTester, [ peerAddress ], trace);
 
     success = scanner.enable() and success;
     success = advertiser.enable() and success;
@@ -565,11 +565,11 @@ def ll_ddi_adv_bv_18_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setActiveScanning(transport, lowerTester, trace, Advertising.SCANNABLE_UNDIRECTED, 30, None, AdvertisingFilterPolicy.FILTER_BOTH_REQUESTS);
     """
-        Place Public address of lowerTester in the White List
+        Place Public address of lowerTester in the Filter Accept List
     """
     ownAddress = Address( ExtendedAddressType.PUBLIC );
     peerAddress = publicIdentityAddress(lowerTester);
-    success = addAddressesToWhiteList(transport, upperTester, [ peerAddress ], trace);
+    success = addAddressesToAllowList(transport, upperTester, [ peerAddress ], trace);
 
     adData = ADData();
     advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IUT' );
@@ -607,11 +607,11 @@ def ll_ddi_adv_bv_19_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setPassiveScanning(transport, lowerTester, trace, Advertising.CONNECTABLE_LDC_DIRECTED, 100, AdvertisingFilterPolicy.FILTER_BOTH_REQUESTS);
     """
-        Place Public address of lowerTester in the White List
+        Place Public address of lowerTester in the Filter Accept List
     """
     ownAddress = Address( ExtendedAddressType.PUBLIC );
     peerAddress = publicIdentityAddress(lowerTester);
-    success = addAddressesToWhiteList(transport, upperTester, [ peerAddress ], trace);
+    success = addAddressesToAllowList(transport, upperTester, [ peerAddress ], trace);
 
     success = advertiser.enable() and success;
 
@@ -641,10 +641,10 @@ def ll_ddi_adv_bv_20_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setPassiveScanning(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED, 100, AdvertisingFilterPolicy.FILTER_BOTH_REQUESTS);
     """
-        Place Public address of lowerTester in the White List
+        Place Public address of lowerTester in the Filter Accept List
     """
     peerAddress = publicIdentityAddress(lowerTester);
-    success = addAddressesToWhiteList(transport, upperTester, [ peerAddress ], trace);
+    success = addAddressesToAllowList(transport, upperTester, [ peerAddress ], trace);
 
     AllPhys, TxPhys, RxPhys = 0, PreferredPhysicalChannel.LE_2M, PreferredPhysicalChannel.LE_2M;
 
@@ -779,12 +779,12 @@ def ll_ddi_scn_bv_01_c(transport, upperTester, lowerTester, trace):
 def ll_ddi_scn_bv_02_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setPassiveScanning(transport, upperTester, trace, Advertising.NON_CONNECTABLE_UNDIRECTED, 20, \
-                                             AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.CHANNEL_37, ScanningFilterPolicy.FILTER_WHITE_LIST);
+                                             AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.CHANNEL_37, ScanningFilterPolicy.FILTER_ACCEPT_LIST);
     """
-        Place Public address of lowerTester in the White List
+        Place Public address of lowerTester in the Filter Accept List
     """
     peerAddress = publicIdentityAddress(lowerTester);
-    success = addAddressesToWhiteList(transport, upperTester, [ peerAddress ], trace);
+    success = addAddressesToAllowList(transport, upperTester, [ peerAddress ], trace);
 
     success = scanner.enable() and success;
 
@@ -865,12 +865,12 @@ def ll_ddi_scn_bv_03_c(transport, upperTester, lowerTester, trace):
 def ll_ddi_scn_bv_04_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setActiveScanning(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED, 20, 1, \
-                                            AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.ALL_CHANNELS, ScanningFilterPolicy.FILTER_WHITE_LIST);
+                                            AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.ALL_CHANNELS, ScanningFilterPolicy.FILTER_ACCEPT_LIST);
     """
-        Place Public address of lowerTester in the White List
+        Place Public address of lowerTester in the Filter Accept List
     """
     peerAddress = publicIdentityAddress(lowerTester);
-    success = addAddressesToWhiteList(transport, upperTester, [ peerAddress ], trace);
+    success = addAddressesToAllowList(transport, upperTester, [ peerAddress ], trace);
 
     adData = ADData();
     advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IX' );
@@ -996,12 +996,12 @@ def ll_ddi_scn_bv_10_c(transport, upperTester, lowerTester, trace):
 def ll_ddi_scn_bv_11_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setPassiveScanning(transport, upperTester, trace, Advertising.CONNECTABLE_LDC_DIRECTED, 20, \
-                                             AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.ALL_CHANNELS, ScanningFilterPolicy.FILTER_WHITE_LIST);
+                                             AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.ALL_CHANNELS, ScanningFilterPolicy.FILTER_ACCEPT_LIST);
     """
-        Place Public address of lowerTester in the White List
+        Place Public address of lowerTester in the Filter Accept List
     """
     peerAddress = publicIdentityAddress(lowerTester);
-    success = addAddressesToWhiteList(transport, upperTester, [ peerAddress ], trace);
+    success = addAddressesToAllowList(transport, upperTester, [ peerAddress ], trace);
 
     for i, channel in enumerate([ AdvertiseChannel.CHANNEL_37, AdvertiseChannel.CHANNEL_38, AdvertiseChannel.CHANNEL_39 ]):
         if   i == 0:
@@ -1039,12 +1039,12 @@ def ll_ddi_scn_bv_11_c(transport, upperTester, lowerTester, trace):
 def ll_ddi_scn_bv_12_c(transport, upperTester, lowerTester, trace):
 
     advertiser, scanner = setPassiveScanning(transport, upperTester, trace, Advertising.SCANNABLE_UNDIRECTED, 20, \
-                                             AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.ALL_CHANNELS, ScanningFilterPolicy.FILTER_WHITE_LIST);
+                                             AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.ALL_CHANNELS, ScanningFilterPolicy.FILTER_ACCEPT_LIST);
     """
-        Place Public address of lowerTester in the White List
+        Place Public address of lowerTester in the Filter Accept List
     """
     peerAddress = publicIdentityAddress(lowerTester);
-    success = addAddressesToWhiteList(transport, upperTester, [ peerAddress ], trace);
+    success = addAddressesToAllowList(transport, upperTester, [ peerAddress ], trace);
 
     for i, channel in enumerate([ AdvertiseChannel.CHANNEL_37, AdvertiseChannel.CHANNEL_38, AdvertiseChannel.CHANNEL_39 ]):
         if   i == 0:
@@ -1632,22 +1632,22 @@ def ll_con_ini_bv_06_c(transport, upperTester, lowerTester, trace):
     for j in range(2):
         if j == 0:
             advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED, \
-                                                       AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+                                                       AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_ACCEPT_LIST_ONLY);
         else:
             advertiser, initiator = setPrivateInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED, \
                                                         ExtendedAddressType.RANDOM, ExtendedAddressType.RANDOM, AdvertisingFilterPolicy.FILTER_NONE, \
-                                                        AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+                                                        AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_ACCEPT_LIST_ONLY);
         """
-            Place Public|Random address of lowerTester in the White List
+            Place Public|Random address of lowerTester in the Filter Accept List
         """
-        whiteListAddress = publicIdentityAddress(lowerTester) if j == 0 else randomIdentityAddress(lowerTester);
+        allowListAddress = publicIdentityAddress(lowerTester) if j == 0 else randomIdentityAddress(lowerTester);
 
-        success = addAddressesToWhiteList(transport, upperTester, [ whiteListAddress ], trace) and success;
-        addresses = [ Address( ExtendedAddressType.RANDOM if whiteListAddress.type == SimpleAddressType.PUBLIC \
-                                                          else ExtendedAddressType.PUBLIC, whiteListAddress.address ),
-                      Address( ExtendedAddressType.PUBLIC if whiteListAddress.type == SimpleAddressType.PUBLIC \
-                                                          else ExtendedAddressType.RANDOM, address_scramble_LAP(toNumber(whiteListAddress.address)) ),
-                      whiteListAddress ];
+        success = addAddressesToAllowList(transport, upperTester, [ allowListAddress ], trace) and success;
+        addresses = [ Address( ExtendedAddressType.RANDOM if allowListAddress.type == SimpleAddressType.PUBLIC \
+                                                          else ExtendedAddressType.PUBLIC, allowListAddress.address ),
+                      Address( ExtendedAddressType.PUBLIC if allowListAddress.type == SimpleAddressType.PUBLIC \
+                                                          else ExtendedAddressType.RANDOM, address_scramble_LAP(toNumber(allowListAddress.address)) ),
+                      allowListAddress ];
 
         for i, advertiserAddress in enumerate( addresses ):
 
@@ -1687,23 +1687,23 @@ def ll_con_ini_bv_07_c(transport, upperTester, lowerTester, trace):
     for j in range(2):
         if j == 0:
             advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_LDC_DIRECTED, \
-                                                       AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+                                                       AdvertisingFilterPolicy.FILTER_NONE, AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_ACCEPT_LIST_ONLY);
         else:
             advertiser, initiator = setPrivateInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_LDC_DIRECTED, \
                                                         ExtendedAddressType.RANDOM, ExtendedAddressType.RANDOM, AdvertisingFilterPolicy.FILTER_NONE, \
-                                                        AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+                                                        AdvertiseChannel.CHANNEL_38, InitiatorFilterPolicy.FILTER_ACCEPT_LIST_ONLY);
         """
-            Place Public|Random address of lowerTester in the White List
+            Place Public|Random address of lowerTester in the Filter Accept List
         """
-        whiteListAddress = publicIdentityAddress(lowerTester) if j == 0 else randomIdentityAddress(lowerTester);
+        allowListAddress = publicIdentityAddress(lowerTester) if j == 0 else randomIdentityAddress(lowerTester);
 
-        success = addAddressesToWhiteList(transport, upperTester, [ whiteListAddress ], trace) and success;
+        success = addAddressesToAllowList(transport, upperTester, [ allowListAddress ], trace) and success;
 
-        addresses = [ Address( ExtendedAddressType.RANDOM if whiteListAddress.type == SimpleAddressType.PUBLIC \
-                                                          else ExtendedAddressType.PUBLIC, whiteListAddress.address ),
-                      Address( ExtendedAddressType.PUBLIC if whiteListAddress.type == SimpleAddressType.PUBLIC \
-                                                          else ExtendedAddressType.RANDOM, address_scramble_LAP(toNumber(whiteListAddress.address)) ),
-                      whiteListAddress ];
+        addresses = [ Address( ExtendedAddressType.RANDOM if allowListAddress.type == SimpleAddressType.PUBLIC \
+                                                          else ExtendedAddressType.PUBLIC, allowListAddress.address ),
+                      Address( ExtendedAddressType.PUBLIC if allowListAddress.type == SimpleAddressType.PUBLIC \
+                                                          else ExtendedAddressType.RANDOM, address_scramble_LAP(toNumber(allowListAddress.address)) ),
+                      allowListAddress ];
 
         for i, advertiserAddress in enumerate( addresses ):
 
@@ -2206,7 +2206,7 @@ def ll_con_ini_bv_21_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/INI/BV-23-C [Network Privacy - Connection Establishment using whitelist and resolving list with address resolution disabled]
+    LL/CON/INI/BV-23-C [Network Privacy - Connection Establishment using allowlist and resolving list with address resolution disabled]
 
     Last modified: 17-12-2019
     Reviewed and verified: 17-12-2019 Henrik Eriksen
@@ -2215,7 +2215,7 @@ def ll_con_ini_bv_23_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPrivateInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED, ExtendedAddressType.PUBLIC,
                                                 ExtendedAddressType.RESOLVABLE_OR_PUBLIC, AdvertisingFilterPolicy.FILTER_NONE,
-                                                AdvertiseChannel.ALL_CHANNELS, InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+                                                AdvertiseChannel.ALL_CHANNELS, InitiatorFilterPolicy.FILTER_ACCEPT_LIST_ONLY);
     """
         Add Public address of lowerTester to the Resolving List
     """
@@ -2238,9 +2238,9 @@ def ll_con_ini_bv_23_c(transport, upperTester, lowerTester, trace):
     success = RPAs[upperTester].timeout( 60 ) and RPAs[lowerTester].timeout( 60 ) and success;
     success = RPAs[lowerTester].enable() and success;
     """
-        Add Lower tester identity address to plus two more to White List
+        Add Lower tester identity address to plus two more to Filter Accept List
     """
-    success = addAddressesToWhiteList(transport, upperTester, [ publicIdentityAddress(lowerTester), extraAddressses[0], extraAddressses[1] ], trace);
+    success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester), extraAddressses[0], extraAddressses[1] ], trace);
 
     success = success and advertiser.enable();
     connected = initiator.connect();
@@ -2294,12 +2294,12 @@ def ll_con_ini_bv_24_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-04-C [Connection where Slave sends data to Master]
+    LL/CON/PER/BV-04-C [Connection where Peripheral sends data to Central]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen
 """
-def ll_con_sla_bv_04_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_04_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
     """
@@ -2351,12 +2351,12 @@ def ll_con_sla_bv_04_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-05-C [Connection where Slave receives data from Master]
+    LL/CON/PER/BV-05-C [Connection where Peripheral receives data from Central]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen
 """
-def ll_con_sla_bv_05_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_05_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -2388,12 +2388,12 @@ def ll_con_sla_bv_05_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-06-C [Connection where Slave sends and receives data to and from Master]
+    LL/CON/PER/BV-06-C [Connection where Peripheral sends and receives data to and from Central]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen
 """
-def ll_con_sla_bv_06_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_06_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -2436,12 +2436,12 @@ def ll_con_sla_bv_06_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-10-C [Slave accepting Connection Parameter Update from Master]
+    LL/CON/PER/BV-10-C [Peripheral accepting Connection Parameter Update from Central]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen (NOTE: Timing cannot be verified - see Air trace)
 """
-def ll_con_sla_bv_10_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_10_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -2475,12 +2475,12 @@ def ll_con_sla_bv_10_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-11-C [Slave sending Termination to Master]
+    LL/CON/PER/BV-11-C [Peripheral sending Termination to Central]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen (NOTE: Timing cannot be verified - see Air trace)
 """
-def ll_con_sla_bv_11_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_11_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -2498,12 +2498,12 @@ def ll_con_sla_bv_11_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-12-C [Slave accepting Termination from Master]
+    LL/CON/PER/BV-12-C [Peripheral accepting Termination from Central]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen (NOTE: Timing cannot be verified - see Air trace)
 """
-def ll_con_sla_bv_12_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_12_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -2519,9 +2519,9 @@ def ll_con_sla_bv_12_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-13-C [Slave Terminating Connection on Supervision Timer]
+    LL/CON/PER/BV-13-C [Peripheral Terminating Connection on Supervision Timer]
 """
-def ll_con_sla_bv_13_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_13_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -2545,12 +2545,12 @@ def ll_con_sla_bv_13_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-14-C [Slave performs Feature Setup procedure]
+    LL/CON/PER/BV-14-C [Peripheral performs Feature Setup procedure]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen
 """
-def ll_con_sla_bv_14_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_14_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -2578,12 +2578,12 @@ def ll_con_sla_bv_14_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-19-C [Slave requests Version Exchange procedure]
+    LL/CON/PER/BV-19-C [Peripheral requests Version Exchange procedure]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen
 """
-def ll_con_sla_bv_19_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_19_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -2608,12 +2608,12 @@ def ll_con_sla_bv_19_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-20-C [Slave responds to Version Exchange procedure]
+    LL/CON/PER/BV-20-C [Peripheral responds to Version Exchange procedure]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen
 """
-def ll_con_sla_bv_20_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_20_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -2638,12 +2638,12 @@ def ll_con_sla_bv_20_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-22-C [Slave requests Feature Exchange procedure]
+    LL/CON/PER/BV-22-C [Peripheral requests Feature Exchange procedure]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen
 """
-def ll_con_sla_bv_22_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_22_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -2675,12 +2675,12 @@ def ll_con_sla_bv_22_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-24-C [Slave requests Connection Parameters - Master Accepts]
+    LL/CON/PER/BV-24-C [Peripheral requests Connection Parameters - Central Accepts]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen (NOTE: Timing not verified - see Air trace)
 """
-def ll_con_sla_bv_24_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_24_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -2717,12 +2717,12 @@ def ll_con_sla_bv_24_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-25-C [Slave requests Connection Parameters - Master Rejects]
+    LL/CON/PER/BV-25-C [Peripheral requests Connection Parameters - Central Rejects]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen (NOTE: Timing not verified - see Air trace)
 """
-def ll_con_sla_bv_25_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_25_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -2757,12 +2757,12 @@ def ll_con_sla_bv_25_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-26-C [Slave requests Connection Parameters - same procedure collision]
+    LL/CON/PER/BV-26-C [Peripheral requests Connection Parameters - same procedure collision]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen (NOTE: Timing not verified - see Air trace)
 """
-def ll_con_sla_bv_26_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_26_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -2820,12 +2820,12 @@ def ll_con_sla_bv_26_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-27-C [Slave requests Connection Parameters - channel map update procedure collision]
+    LL/CON/PER/BV-27-C [Peripheral requests Connection Parameters - channel map update procedure collision]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen (NOTE: Timing not verified - see Air trace)
 """
-def ll_con_sla_bv_27_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_27_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -2865,12 +2865,12 @@ def ll_con_sla_bv_27_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-29-C [Slave responds to Connection Parameters - Master no Preferred Periodicity]
+    LL/CON/PER/BV-29-C [Peripheral responds to Connection Parameters - Central no Preferred Periodicity]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen (NOTE: Timing not verified - see Air trace)
 """
-def ll_con_sla_bv_29_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_29_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -2902,12 +2902,12 @@ def ll_con_sla_bv_29_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-33-C [Slave responds to Connection Parameters request - event masked]
+    LL/CON/PER/BV-33-C [Peripheral responds to Connection Parameters request - event masked]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen
 """
-def ll_con_sla_bv_33_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_33_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -2940,12 +2940,12 @@ def ll_con_sla_bv_33_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-34-C [Slave responds to Connection Parameters request - Host rejects]
+    LL/CON/PER/BV-34-C [Peripheral responds to Connection Parameters request - Host rejects]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen
 """
-def ll_con_sla_bv_34_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_34_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -2975,12 +2975,12 @@ def ll_con_sla_bv_34_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-40-C [Slave requests PHY Update procedure]
+    LL/CON/PER/BV-40-C [Peripheral requests PHY Update procedure]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen
 """
-def ll_con_sla_bv_40_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_40_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -2990,7 +2990,7 @@ def ll_con_sla_bv_40_c(transport, upperTester, lowerTester, trace):
 
     columns = defaultdict(list); # each value in each column is appended to a list
 
-    with open('src/tests/params_con_sla_bv_40.csv') as f:
+    with open('src/tests/params_con_per_bv_40.csv') as f:
         reader = csv.reader(f);
         next(reader);
         for row in reader:
@@ -3023,12 +3023,12 @@ def ll_con_sla_bv_40_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-42-C [Slave responds to PHY Update procedure]
+    LL/CON/PER/BV-42-C [Peripheral responds to PHY Update procedure]
 
     Last modified: 05-08-2019
     Reviewed and verified: 05-08-2019 Henrik Eriksen
 """
-def ll_con_sla_bv_42_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_42_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -3058,12 +3058,12 @@ def ll_con_sla_bv_42_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-77-C [Slave Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 1M PHY]
+    LL/CON/PER/BV-77-C [Peripheral Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 1M PHY]
 
     Last modified: 09-08-2019
     Reviewed and verified: 09-08-2019 Henrik Eriksen (Note: Requires that CONFIG_BT_CTLR_DATA_LENGTH_MAX=60 is set in the prj.conf file for the ptt_app.)
 """
-def ll_con_sla_bv_77_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_77_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
     """
@@ -3135,12 +3135,12 @@ def ll_con_sla_bv_77_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-78-C [Slave requests Packet Data Length Update procedure; LE 1M PHY]
+    LL/CON/PER/BV-78-C [Peripheral requests Packet Data Length Update procedure; LE 1M PHY]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (NOTE: Requires that CONFIG_BT_CTLR_DATA_LENGTH_MAX=60 is set in the prj.conf file for the ptt_app.)
 """
-def ll_con_sla_bv_78_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_78_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
     """
@@ -3210,12 +3210,12 @@ def ll_con_sla_bv_78_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-80-C [Slave Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 2M PHY]
+    LL/CON/PER/BV-80-C [Peripheral Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 2M PHY]
 
     Last modified: 09-08-2019
     Reviewed and verified: 09-08-2019 Henrik Eriksen (Note: Requires that CONFIG_BT_CTLR_DATA_LENGTH_MAX=60 is set in the prj.conf file for the ptt_app.)
 """
-def ll_con_sla_bv_80_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_80_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
     """
@@ -3294,12 +3294,12 @@ def ll_con_sla_bv_80_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BV-81-C [Slave requests Packet Data Length Update procedure; LE 2M PHY]
+    LL/CON/PER/BV-81-C [Peripheral requests Packet Data Length Update procedure; LE 2M PHY]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (NOTE: Requires that CONFIG_BT_CTLR_DATA_LENGTH_MAX=60 is set in the prj.conf file for the ptt_app.)
 """
-def ll_con_sla_bv_81_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bv_81_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
     """
@@ -3375,12 +3375,12 @@ def ll_con_sla_bv_81_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/SLA/BI-08-C [Slave responds to Connection Parameters request - Illegal Parameters]
+    LL/CON/PER/BI-08-C [Peripheral responds to Connection Parameters request - Illegal Parameters]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen
 """
-def ll_con_sla_bi_08_c(transport, upperTester, lowerTester, trace):
+def ll_con_per_bi_08_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -3406,12 +3406,12 @@ def ll_con_sla_bi_08_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-03-C [Master sending Data packets to Slave]
+    LL/CON/CEN/BV-03-C [Central sending Data packets to Peripheral]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen
 """
-def ll_con_mas_bv_03_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_03_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
     """
@@ -3463,12 +3463,12 @@ def ll_con_mas_bv_03_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-04-C [Master receiving Data packets from Slave]
+    LL/CON/CEN/BV-04-C [Central receiving Data packets from Peripheral]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen
 """
-def ll_con_mas_bv_04_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_04_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -3500,12 +3500,12 @@ def ll_con_mas_bv_04_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-05-C [Master sending and receiving Data packets to and form Slave]
+    LL/CON/CEN/BV-05-C [Central sending and receiving Data packets to and form Peripheral]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen
 """
-def ll_con_mas_bv_05_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_05_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -3550,12 +3550,12 @@ def ll_con_mas_bv_05_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-07-C [Master requests Connection Parameter Update]
+    LL/CON/CEN/BV-07-C [Central requests Connection Parameter Update]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (NOTE: connection event where change take place cannot be verified - see Air trace)
 """
-def ll_con_mas_bv_07_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_07_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -3589,12 +3589,12 @@ def ll_con_mas_bv_07_c(transport, upperTester, lowerTester, trace):
     return success
 
 """
-    LL/CON/MAS/BV-08-C [Master Terminating Connection]
+    LL/CON/CEN/BV-08-C [Central Terminating Connection]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (NOTE: Not verified that IUT stops sending empty data packets - see Air trace)
 """
-def ll_con_mas_bv_08_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_08_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -3610,12 +3610,12 @@ def ll_con_mas_bv_08_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-09-C [Master accepting Connection Termination]
+    LL/CON/CEN/BV-09-C [Central accepting Connection Termination]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (NOTE: Not verified that IUT stops sending empty data packets - see Air trace)
 """
-def ll_con_mas_bv_09_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_09_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -3632,12 +3632,12 @@ def ll_con_mas_bv_09_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-13-C [Master requests Feature Setup procedure]
+    LL/CON/CEN/BV-13-C [Central requests Feature Setup procedure]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen
 """
-def ll_con_mas_bv_13_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_13_c(transport, upperTester, lowerTester, trace):
 
     LL_FEAT_BIT_MASK_VALID = 0x1CF2F # Bitmask for features not impacting feature masking (ll_feat.h)
 
@@ -3682,12 +3682,12 @@ def ll_con_mas_bv_13_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-20-C [Master requests Version Exchange procedure]
+    LL/CON/CEN/BV-20-C [Central requests Version Exchange procedure]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen
 """
-def ll_con_mas_bv_20_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_20_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -3717,12 +3717,12 @@ def ll_con_mas_bv_20_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-21-C [Master responds to Version Exchange procedure]
+    LL/CON/CEN/BV-21-C [Central responds to Version Exchange procedure]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen
 """
-def ll_con_mas_bv_21_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_21_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -3752,12 +3752,12 @@ def ll_con_mas_bv_21_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-23-C [Master responds to Feature Exchange procedure]
+    LL/CON/CEN/BV-23-C [Central responds to Feature Exchange procedure]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen
 """
-def ll_con_mas_bv_23_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_23_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -3787,12 +3787,12 @@ def ll_con_mas_bv_23_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-24-C [Master requests Connection Parameters - Slave Accepts]
+    LL/CON/CEN/BV-24-C [Central requests Connection Parameters - Peripheral Accepts]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (NOTE: Actual effect of change cannot be verified - see Air trace)
 """
-def ll_con_mas_bv_24_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_24_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -3826,12 +3826,12 @@ def ll_con_mas_bv_24_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-25-C [Master requests Connection Parameters - Slave Rejects]
+    LL/CON/CEN/BV-25-C [Central requests Connection Parameters - Peripheral Rejects]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (NOTE: Actual effect of change cannot be verified - see Air trace)
 """
-def ll_con_mas_bv_25_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_25_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -3869,12 +3869,12 @@ def ll_con_mas_bv_25_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-26-C [Master requests Connection Parameters - same procedure collision]
+    LL/CON/CEN/BV-26-C [Central requests Connection Parameters - same procedure collision]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (NOTE: Test not according to specs - not possible!)
 """
-def ll_con_mas_bv_26_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_26_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -3928,12 +3928,12 @@ def ll_con_mas_bv_26_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-27-C [Master requests Connection Parameters - Channel Map Update procedure collision]
+    LL/CON/CEN/BV-27-C [Central requests Connection Parameters - Channel Map Update procedure collision]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (NOTE: Switch to only even channels cannot be verified - see Air trace)
 """
-def ll_con_mas_bv_27_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_27_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -3983,12 +3983,12 @@ def ll_con_mas_bv_27_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-29-C [Master requests Connection Parameters - Slave unsupported]
+    LL/CON/CEN/BV-29-C [Central requests Connection Parameters - Peripheral unsupported]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (NOTE: Change to connection interval cannot be verified - see Air trace)
 """
-def ll_con_mas_bv_29_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_29_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -4022,12 +4022,12 @@ def ll_con_mas_bv_29_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-30-C [Master responds to Connection Parameters request - no Preferred_Periodicity]
+    LL/CON/CEN/BV-30-C [Central responds to Connection Parameters request - no Preferred_Periodicity]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (NOTE: Change to connection interval cannot be verified - see Air trace)
 """
-def ll_con_mas_bv_30_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_30_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -4066,12 +4066,12 @@ def ll_con_mas_bv_30_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-34-C [Master responds to Connection Parameters request - event masked]
+    LL/CON/CEN/BV-34-C [Central responds to Connection Parameters request - event masked]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen
 """
-def ll_con_mas_bv_34_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_34_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -4107,12 +4107,12 @@ def ll_con_mas_bv_34_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-35-C [Master responds to Connection Parameters request - Host rejects]
+    LL/CON/CEN/BV-35-C [Central responds to Connection Parameters request - Host rejects]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen
 """
-def ll_con_mas_bv_35_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_35_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -4147,12 +4147,12 @@ def ll_con_mas_bv_35_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-41-C [Master requests PHY Update procedure]
+    LL/CON/CEN/BV-41-C [Central requests PHY Update procedure]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen
 """
-def ll_con_mas_bv_41_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_41_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -4182,12 +4182,12 @@ def ll_con_mas_bv_41_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-43-C [Master responds to PHY Update procedure]
+    LL/CON/CEN/BV-43-C [Central responds to PHY Update procedure]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen
 """
-def ll_con_mas_bv_43_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_43_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -4224,12 +4224,12 @@ def ll_con_mas_bv_43_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-73-C [Master Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 1M PHY]
+    LL/CON/CEN/BV-73-C [Central Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 1M PHY]
 
     Last modified: 08-08-2019
     Reviewed and verified: 08-08-2019 Henrik Eriksen (Note: Requires that CONFIG_BT_CTLR_DATA_LENGTH_MAX=60 is set in the prj.conf file for the ptt_app.)
 """
-def ll_con_mas_bv_73_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_73_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
     """
@@ -4305,12 +4305,12 @@ def ll_con_mas_bv_73_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-74-C [Master Packet Data Length Update - Initiating Packet Data Length Update Procedure; LE 1M PHY]
+    LL/CON/CEN/BV-74-C [Central Packet Data Length Update - Initiating Packet Data Length Update Procedure; LE 1M PHY]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (Note: Requires that CONFIG_BT_CTLR_DATA_LENGTH_MAX=60 is set in the prj.conf file for the ptt_app.)
 """
-def ll_con_mas_bv_74_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_74_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
     """
@@ -4374,12 +4374,12 @@ def ll_con_mas_bv_74_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-76-C [Master Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 2M PHY]
+    LL/CON/CEN/BV-76-C [Central Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 2M PHY]
 
     Last modified: 08-08-2019
     Reviewed and verified: 08-08-2019 Henrik Eriksen (Note: Requires that CONFIG_BT_CTLR_DATA_LENGTH_MAX=60 is set in the prj.conf file for the ptt_app.)
 """
-def ll_con_mas_bv_76_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_76_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
     """
@@ -4458,12 +4458,12 @@ def ll_con_mas_bv_76_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BV-77-C [Master Packet Data Length Update - Initiating Packet Data Length Update Procedure; LE 2M PHY]
+    LL/CON/CEN/BV-77-C [Central Packet Data Length Update - Initiating Packet Data Length Update Procedure; LE 2M PHY]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen (Note: Requires that CONFIG_BT_CTLR_DATA_LENGTH_MAX=60 is set in the prj.conf file for the ptt_app.)
 """
-def ll_con_mas_bv_77_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bv_77_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
     """
@@ -4536,12 +4536,12 @@ def ll_con_mas_bv_77_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    LL/CON/MAS/BI-06-C [Master responds to Connection Parameter Request - illegal parameters]
+    LL/CON/CEN/BI-06-C [Central responds to Connection Parameter Request - illegal parameters]
 
     Last modified: 06-08-2019
     Reviewed and verified: 06-08-2019 Henrik Eriksen
 """
-def ll_con_mas_bi_06_c(transport, upperTester, lowerTester, trace):
+def ll_con_cen_bi_06_c(transport, upperTester, lowerTester, trace):
 
     advertiser, initiator = setPublicInitiator(transport, upperTester, trace, Advertising.CONNECTABLE_UNDIRECTED);
 
@@ -4575,7 +4575,7 @@ def ll_con_mas_bi_06_c(transport, upperTester, lowerTester, trace):
     LL/SEC/ADV/BV-01-C [Changing Static Address while Advertising]
 
     Last modified: 07-08-2019
-    Reviewed and verified: 07-08-2019 Henrik Eriksen (NOTE: Test fails - test specification is omitting White List addition!)
+    Reviewed and verified: 07-08-2019 Henrik Eriksen (NOTE: Test fails - test specification is omitting Filter Accept List addition!)
 """
 def ll_sec_adv_bv_01_c(transport, upperTester, lowerTester, trace):
 
@@ -4584,9 +4584,9 @@ def ll_sec_adv_bv_01_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'IUT' );
     """
-        Adding lowerTester address to the White List
+        Adding lowerTester address to the Filter Accept List
     """
-    success = addAddressesToWhiteList(transport, upperTester, [ randomIdentityAddress(lowerTester) ], trace);
+    success = addAddressesToAllowList(transport, upperTester, [ randomIdentityAddress(lowerTester) ], trace);
 
     success = advertiser.enable();
     success = scanner.enable() and success;
@@ -4739,9 +4739,9 @@ def ll_sec_adv_bv_05_c(transport, upperTester, lowerTester, trace):
     success = RPAs[upperTester].add( publicIdentityAddress(lowerTester), lowerIRK ) and success;
     success = RPAs[lowerTester].add( publicIdentityAddress(upperTester), upperIRK ) and success;
     """
-        Adding lowerTester address to the White List
+        Adding lowerTester address to the Filter Accept List
     """
-    success = addAddressesToWhiteList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
+    success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
     """
         Set resolvable private address timeout in seconds ( two and sixty seconds )
     """
@@ -4829,9 +4829,9 @@ def ll_sec_adv_bv_07_c(transport, upperTester, lowerTester, trace):
     success = RPAs[upperTester].add( publicIdentityAddress(lowerTester) ) and success;
     success = RPAs[lowerTester].add( publicIdentityAddress(upperTester), upperIRK ) and success;
     """
-        Adding lowerTester address to the White List
+        Adding lowerTester address to the Filter Accept List
     """
-    success = addAddressesToWhiteList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
+    success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
     """
         Set resolvable private address timeout in seconds ( sixty seconds )
     """
@@ -4875,9 +4875,9 @@ def ll_sec_adv_bv_08_c(transport, upperTester, lowerTester, trace):
     success = RPAs[upperTester].add( publicIdentityAddress(lowerTester), lowerIRK ) and success;
     success = RPAs[lowerTester].add( publicIdentityAddress(upperTester), upperIRK ) and success;
     """
-        Adding lowerTester address to the White List
+        Adding lowerTester address to the Filter Accept List
     """
-    success = addAddressesToWhiteList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
+    success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
     """
         Set resolvable private address timeout in seconds ( sixty seconds )
     """
@@ -4890,7 +4890,7 @@ def ll_sec_adv_bv_08_c(transport, upperTester, lowerTester, trace):
 
     if connected:
         """
-            Upper tester (SLAVE) terminates the connection
+            Upper tester (PERIPHERAL) terminates the connection
         """
         initiator.switchRoles();
         success = initiator.disconnect(0x13) and success;
@@ -4921,9 +4921,9 @@ def ll_sec_adv_bv_09_c(transport, upperTester, lowerTester, trace):
     success = RPAs[upperTester].add( publicIdentityAddress(lowerTester), lowerIRK ) and success;
     success = RPAs[lowerTester].add( publicIdentityAddress(upperTester) ) and success;
     """
-        Adding lowerTester address to the White List
+        Adding lowerTester address to the Filter Accept List
     """
-    success = addAddressesToWhiteList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
+    success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
     """
         Set resolvable private address timeout in seconds ( sixty seconds )
     """
@@ -4936,7 +4936,7 @@ def ll_sec_adv_bv_09_c(transport, upperTester, lowerTester, trace):
 
     if connected:
         """
-            Upper tester (SLAVE) terminates the connection
+            Upper tester (PERIPHERAL) terminates the connection
         """
         initiator.switchRoles();
         success = initiator.disconnect(0x13) and success;
@@ -4971,9 +4971,9 @@ def ll_sec_adv_bv_10_c(transport, upperTester, lowerTester, trace):
     success = RPAs[upperTester].add( publicIdentityAddress(lowerTester), bogusIRK ) and success;
     success = RPAs[lowerTester].add( publicIdentityAddress(upperTester), upperIRK ) and success;
     """
-        Add Identity Address of lower Tester to White List to enable responding to Scan Requests
+        Add Identity Address of lower Tester to Filter Accept List to enable responding to Scan Requests
     """
-    success = addAddressesToWhiteList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
+    success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
 
     success = RPAs[upperTester].timeout( 60 ) and RPAs[lowerTester].timeout( 60 ) and success;
     success = RPAs[upperTester].enable() and RPAs[lowerTester].enable() and success;
@@ -5031,7 +5031,7 @@ def ll_sec_adv_bv_11_c(transport, upperTester, lowerTester, trace):
         if not isRPA:
             trace.trace(6, "Wrong RPAs - local RPA: %s peer RPA: %s" %(Address( None, initiator.localRPA() ), Address( None, initiator.peerRPA() )));
         """
-            Upper tester (SLAVE) terminates the connection
+            Upper tester (PERIPHERAL) terminates the connection
         """
         initiator.switchRoles();
         success = initiator.disconnect(0x13) and success;
@@ -5109,7 +5109,7 @@ def ll_sec_adv_bv_12_c(transport, upperTester, lowerTester, trace):
         addressRead, privateAddresses[0] = readPeerResolvableAddress(transport, lowerTester, publicIdentityAddress(upperTester), trace);
         trace.trace(6, "AdvA Address: %s" % formatAddress(privateAddresses[0]));
         """
-            Upper tester (SLAVE) terminates the connection
+            Upper tester (PERIPHERAL) terminates the connection
         """
         initiator.switchRoles();
         success = initiator.disconnect(0x13) and success;
@@ -5178,7 +5178,7 @@ def ll_sec_adv_bv_13_c(transport, upperTester, lowerTester, trace):
         addressRead, privateAddresses[0] = readLocalResolvableAddress(transport, lowerTester, publicIdentityAddress(upperTester), trace);
         trace.trace(6, "InitA Address: %s" % formatAddress(privateAddresses[0]));
         """
-            Upper tester (SLAVE) terminates the connection
+            Upper tester (PERIPHERAL) terminates the connection
         """
         initiator.switchRoles();
         success = initiator.disconnect(0x13) and success;
@@ -5227,9 +5227,9 @@ def ll_sec_adv_bv_14_c(transport, upperTester, lowerTester, trace):
     success = RPAs[upperTester].add( publicIdentityAddress(lowerTester), bogusIRK ) and success;
     success = RPAs[lowerTester].add( publicIdentityAddress(upperTester), upperIRK ) and success;
     """
-        Add Identity Address of lower Tester to White List to enable responding to Scan Requests
+        Add Identity Address of lower Tester to Filter Accept List to enable responding to Scan Requests
     """
-    success = addAddressesToWhiteList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
+    success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
 
     success = RPAs[upperTester].timeout( 60 ) and RPAs[lowerTester].timeout( 60 ) and success;
     success = RPAs[upperTester].enable() and RPAs[lowerTester].enable() and success;
@@ -5269,9 +5269,9 @@ def ll_sec_adv_bv_15_c(transport, upperTester, lowerTester, trace):
     success = RPAs[upperTester].add( publicIdentityAddress(lowerTester), lowerIRK ) and success;
     success = RPAs[lowerTester].add( publicIdentityAddress(upperTester), upperIRK ) and success;
     """
-        Adding lowerTester address to the White List
+        Adding lowerTester address to the Filter Accept List
     """
-    success = addAddressesToWhiteList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
+    success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
     """
         Set resolvable private address timeout in seconds ( sixty seconds )
     """
@@ -5310,9 +5310,9 @@ def ll_sec_adv_bv_16_c(transport, upperTester, lowerTester, trace):
     success = RPAs[upperTester].add( publicIdentityAddress(lowerTester), lowerIRK ) and success;
     success = RPAs[lowerTester].add( publicIdentityAddress(upperTester), upperIRK ) and success;
     """
-        Adding lowerTester address to the White List
+        Adding lowerTester address to the Filter Accept List
     """
-    success = addAddressesToWhiteList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
+    success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
     """
         Set resolvable private address timeout in seconds ( sixty seconds )
     """
@@ -5389,9 +5389,9 @@ def ll_sec_adv_bv_18_c(transport, upperTester, lowerTester, trace):
     """
     success = setPrivacyMode(transport, upperTester, publicIdentityAddress(lowerTester), PrivacyMode.DEVICE_PRIVACY, trace) and success;
     """
-        Add Identity Address of lower Tester to White List to enable responding to Scan Requests
+        Add Identity Address of lower Tester to Filter Accept List to enable responding to Scan Requests
     """
-    success = addAddressesToWhiteList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
+    success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
     """
         Set resolvable private address timeout in seconds ( sixty seconds )
     """
@@ -5433,9 +5433,9 @@ def ll_sec_adv_bv_19_c(transport, upperTester, lowerTester, trace):
     """
     success = setPrivacyMode(transport, upperTester, publicIdentityAddress(lowerTester), PrivacyMode.DEVICE_PRIVACY, trace) and success;
     """
-        Add Identity Address of lower Tester to White List to enable responding to Scan Requests
+        Add Identity Address of lower Tester to Filter Accept List to enable responding to Scan Requests
     """
-    success = addAddressesToWhiteList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
+    success = addAddressesToAllowList(transport, upperTester, [ publicIdentityAddress(lowerTester) ], trace) and success;
     """
         Set resolvable private address timeout in seconds ( two and sixty seconds )
     """
@@ -6489,7 +6489,7 @@ def ll_cis_per_bv_13_c(transport, upper_tester, lower_tester, trace):
 
 
 """
-    LL/CIS/PER/BV-15-C Bursting of Payloads in CIS, SlavePeripheral
+    LL/CIS/PER/BV-15-C Bursting of Payloads in CIS, PeripheralPeripheral
 """
 def ll_cis_per_bv_15_c(transport, upper_tester, lower_tester, trace):
     # Initial Condition
@@ -6825,58 +6825,58 @@ __tests__ = {
     "LL/CON/INI/BV-19-C": [ ll_con_ini_bv_19_c, "Don't connect to Directed Advertiser using Identity address with Network Privacy thru Resolving List" ],
     "LL/CON/INI/BV-20-C": [ ll_con_ini_bv_20_c, "Connect to Advertiser using Identity address with Device Privacy thru Resolving List" ],
     "LL/CON/INI/BV-21-C": [ ll_con_ini_bv_21_c, "Connect to Directed Advertiser using Identity address with Device Privacy thru Resolving List" ],
-    "LL/CON/INI/BV-23-C": [ ll_con_ini_bv_23_c, "Network Privacy - Connection Establishment using whitelist and resolving list with address resolution disabled" ],
+    "LL/CON/INI/BV-23-C": [ ll_con_ini_bv_23_c, "Network Privacy - Connection Establishment using allowlist and resolving list with address resolution disabled" ],
     "LL/CON/INI/BV-24-C": [ ll_con_ini_bv_24_c, "Network Privacy - Connection Establishment using resolving list with address resolution disabled" ],
-    "LL/CON/MAS/BI-06-C": [ ll_con_mas_bi_06_c, "Master responds to Connection Parameter Request - illegal parameters" ],
-    "LL/CON/MAS/BV-03-C": [ ll_con_mas_bv_03_c, "Master sending Data packets to Slave" ],
-    "LL/CON/MAS/BV-04-C": [ ll_con_mas_bv_04_c, "Master receiving Data packets from Slave" ],
-    "LL/CON/MAS/BV-05-C": [ ll_con_mas_bv_05_c, "Master sending and receiving Data packets to and form Slave" ],
-    "LL/CON/MAS/BV-07-C": [ ll_con_mas_bv_07_c, "Master requests Connection Parameter Update" ],
-    "LL/CON/MAS/BV-08-C": [ ll_con_mas_bv_08_c, "Master Terminating Connection" ],
-    "LL/CON/MAS/BV-09-C": [ ll_con_mas_bv_09_c, "Master accepting Connection Termination" ],
-    "LL/CON/MAS/BV-13-C": [ ll_con_mas_bv_13_c, "Master requests Feature Setup procedure" ],
-    "LL/CON/MAS/BV-20-C": [ ll_con_mas_bv_20_c, "Master requests Version Exchange procedure" ],
-    "LL/CON/MAS/BV-21-C": [ ll_con_mas_bv_21_c, "Master responds to Version Exchange procedure" ],
-    "LL/CON/MAS/BV-23-C": [ ll_con_mas_bv_23_c, "Master responds to Feature Exchange procedure" ],
-    "LL/CON/MAS/BV-24-C": [ ll_con_mas_bv_24_c, "Master requests Connection Parameters - Slave Accepts" ],
-    "LL/CON/MAS/BV-25-C": [ ll_con_mas_bv_25_c, "Master requests Connection Parameters - Slave Rejects" ],
-    "LL/CON/MAS/BV-26-C": [ ll_con_mas_bv_26_c, "Master requests Connection Parameters - same procedure collision" ],
-    "LL/CON/MAS/BV-27-C": [ ll_con_mas_bv_27_c, "Master requests Connection Parameters - Channel Map Update procedure collision" ],
-    "LL/CON/MAS/BV-29-C": [ ll_con_mas_bv_29_c, "Master requests Connection Parameters - Slave unsupported" ],
-    "LL/CON/MAS/BV-30-C": [ ll_con_mas_bv_30_c, "Master responds to Connection Parameters request - no Preferred_Periodicity" ],
-    "LL/CON/MAS/BV-34-C": [ ll_con_mas_bv_34_c, "Master responds to Connection Parameters request - event masked" ],
-    "LL/CON/MAS/BV-35-C": [ ll_con_mas_bv_35_c, "Master responds to Connection Parameters request - Host rejects" ],
-    "LL/CON/MAS/BV-41-C": [ ll_con_mas_bv_41_c, "Master requests PHY Update procedure" ],
-    "LL/CON/MAS/BV-43-C": [ ll_con_mas_bv_43_c, "Master responds to PHY Update procedure" ],
-    "LL/CON/MAS/BV-73-C": [ ll_con_mas_bv_73_c, "Master Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 1M PHY" ],
-    "LL/CON/MAS/BV-74-C": [ ll_con_mas_bv_74_c, "Master Packet Data Length Update - Initiating Packet Data Length Update Procedure; LE 1M PHY" ],
-    "LL/CON/MAS/BV-76-C": [ ll_con_mas_bv_76_c, "Master Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 2M PHY" ],
-    "LL/CON/MAS/BV-77-C": [ ll_con_mas_bv_77_c, "Master Packet Data Length Update - Initiating Packet Data Length Update Procedure; LE 2M PHY" ],
-    "LL/CON/SLA/BI-08-C": [ ll_con_sla_bi_08_c, "Slave responds to Connection Parameters request - Illegal Parameters" ],
-    "LL/CON/SLA/BV-04-C": [ ll_con_sla_bv_04_c, "Connection where Slave sends data to Master" ],
-    "LL/CON/SLA/BV-05-C": [ ll_con_sla_bv_05_c, "Connection where Slave receives data from Master" ],
-    "LL/CON/SLA/BV-06-C": [ ll_con_sla_bv_06_c, "Connection where Slave sends and receives data to and from Master" ],
-    "LL/CON/SLA/BV-10-C": [ ll_con_sla_bv_10_c, "Slave accepting Connection Parameter Update from Master" ],
-    "LL/CON/SLA/BV-11-C": [ ll_con_sla_bv_11_c, "Slave sending Termination to Master" ],
-    "LL/CON/SLA/BV-12-C": [ ll_con_sla_bv_12_c, "Slave accepting Termination from Master" ],
-#   "LL/CON/SLA/BV-13-C": [ ll_con_sla_bv_13_c, "Slave Terminating Connection on Supervision Timer" ],
-    "LL/CON/SLA/BV-14-C": [ ll_con_sla_bv_14_c, "Slave performs Feature Setup procedure" ],
-    "LL/CON/SLA/BV-19-C": [ ll_con_sla_bv_19_c, "Slave requests Version Exchange procedure" ],
-    "LL/CON/SLA/BV-20-C": [ ll_con_sla_bv_20_c, "Slave responds to Version Exchange procedure" ],
-    "LL/CON/SLA/BV-22-C": [ ll_con_sla_bv_22_c, "Slave requests Feature Exchange procedure" ],
-    "LL/CON/SLA/BV-24-C": [ ll_con_sla_bv_24_c, "Slave requests Connection Parameters - Master Accepts" ],
-    "LL/CON/SLA/BV-25-C": [ ll_con_sla_bv_25_c, "Slave requests Connection Parameters - Master Rejects" ],
-    "LL/CON/SLA/BV-26-C": [ ll_con_sla_bv_26_c, "Slave requests Connection Parameters - same procedure collision" ],
-    "LL/CON/SLA/BV-27-C": [ ll_con_sla_bv_27_c, "Slave requests Connection Parameters - channel map update procedure collision" ],
-    "LL/CON/SLA/BV-29-C": [ ll_con_sla_bv_29_c, "Slave responds to Connection Parameters - Master no Preferred Periodicity" ],
-    "LL/CON/SLA/BV-33-C": [ ll_con_sla_bv_33_c, "Slave responds to Connection Parameters request - event masked" ],
-    "LL/CON/SLA/BV-34-C": [ ll_con_sla_bv_34_c, "Slave responds to Connection Parameters request - Host rejects" ],
-    "LL/CON/SLA/BV-40-C": [ ll_con_sla_bv_40_c, "Slave requests PHY Update procedure" ],
-    "LL/CON/SLA/BV-42-C": [ ll_con_sla_bv_42_c, "Slave responds to PHY Update procedure" ],
-    "LL/CON/SLA/BV-77-C": [ ll_con_sla_bv_77_c, "Slave Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 1M PHY" ],
-    "LL/CON/SLA/BV-78-C": [ ll_con_sla_bv_78_c, "Slave requests Packet Data Length Update procedure; LE 1M PHY" ],
-    "LL/CON/SLA/BV-80-C": [ ll_con_sla_bv_80_c, "Slave Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 2M PHY" ],
-    "LL/CON/SLA/BV-81-C": [ ll_con_sla_bv_81_c, "Slave requests Packet Data Length Update procedure; LE 2M PHY" ],
+    "LL/CON/CEN/BI-06-C": [ ll_con_cen_bi_06_c, "Central responds to Connection Parameter Request - illegal parameters" ],
+    "LL/CON/CEN/BV-03-C": [ ll_con_cen_bv_03_c, "Central sending Data packets to Peripheral" ],
+    "LL/CON/CEN/BV-04-C": [ ll_con_cen_bv_04_c, "Central receiving Data packets from Peripheral" ],
+    "LL/CON/CEN/BV-05-C": [ ll_con_cen_bv_05_c, "Central sending and receiving Data packets to and form Peripheral" ],
+    "LL/CON/CEN/BV-07-C": [ ll_con_cen_bv_07_c, "Central requests Connection Parameter Update" ],
+    "LL/CON/CEN/BV-08-C": [ ll_con_cen_bv_08_c, "Central Terminating Connection" ],
+    "LL/CON/CEN/BV-09-C": [ ll_con_cen_bv_09_c, "Central accepting Connection Termination" ],
+    "LL/CON/CEN/BV-13-C": [ ll_con_cen_bv_13_c, "Central requests Feature Setup procedure" ],
+    "LL/CON/CEN/BV-20-C": [ ll_con_cen_bv_20_c, "Central requests Version Exchange procedure" ],
+    "LL/CON/CEN/BV-21-C": [ ll_con_cen_bv_21_c, "Central responds to Version Exchange procedure" ],
+    "LL/CON/CEN/BV-23-C": [ ll_con_cen_bv_23_c, "Central responds to Feature Exchange procedure" ],
+    "LL/CON/CEN/BV-24-C": [ ll_con_cen_bv_24_c, "Central requests Connection Parameters - Peripheral Accepts" ],
+    "LL/CON/CEN/BV-25-C": [ ll_con_cen_bv_25_c, "Central requests Connection Parameters - Peripheral Rejects" ],
+    "LL/CON/CEN/BV-26-C": [ ll_con_cen_bv_26_c, "Central requests Connection Parameters - same procedure collision" ],
+    "LL/CON/CEN/BV-27-C": [ ll_con_cen_bv_27_c, "Central requests Connection Parameters - Channel Map Update procedure collision" ],
+    "LL/CON/CEN/BV-29-C": [ ll_con_cen_bv_29_c, "Central requests Connection Parameters - Peripheral unsupported" ],
+    "LL/CON/CEN/BV-30-C": [ ll_con_cen_bv_30_c, "Central responds to Connection Parameters request - no Preferred_Periodicity" ],
+    "LL/CON/CEN/BV-34-C": [ ll_con_cen_bv_34_c, "Central responds to Connection Parameters request - event masked" ],
+    "LL/CON/CEN/BV-35-C": [ ll_con_cen_bv_35_c, "Central responds to Connection Parameters request - Host rejects" ],
+    "LL/CON/CEN/BV-41-C": [ ll_con_cen_bv_41_c, "Central requests PHY Update procedure" ],
+    "LL/CON/CEN/BV-43-C": [ ll_con_cen_bv_43_c, "Central responds to PHY Update procedure" ],
+    "LL/CON/CEN/BV-73-C": [ ll_con_cen_bv_73_c, "Central Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 1M PHY" ],
+    "LL/CON/CEN/BV-74-C": [ ll_con_cen_bv_74_c, "Central Packet Data Length Update - Initiating Packet Data Length Update Procedure; LE 1M PHY" ],
+    "LL/CON/CEN/BV-76-C": [ ll_con_cen_bv_76_c, "Central Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 2M PHY" ],
+    "LL/CON/CEN/BV-77-C": [ ll_con_cen_bv_77_c, "Central Packet Data Length Update - Initiating Packet Data Length Update Procedure; LE 2M PHY" ],
+    "LL/CON/PER/BI-08-C": [ ll_con_per_bi_08_c, "Peripheral responds to Connection Parameters request - Illegal Parameters" ],
+    "LL/CON/PER/BV-04-C": [ ll_con_per_bv_04_c, "Connection where Peripheral sends data to Central" ],
+    "LL/CON/PER/BV-05-C": [ ll_con_per_bv_05_c, "Connection where Peripheral receives data from Central" ],
+    "LL/CON/PER/BV-06-C": [ ll_con_per_bv_06_c, "Connection where Peripheral sends and receives data to and from Central" ],
+    "LL/CON/PER/BV-10-C": [ ll_con_per_bv_10_c, "Peripheral accepting Connection Parameter Update from Central" ],
+    "LL/CON/PER/BV-11-C": [ ll_con_per_bv_11_c, "Peripheral sending Termination to Central" ],
+    "LL/CON/PER/BV-12-C": [ ll_con_per_bv_12_c, "Peripheral accepting Termination from Central" ],
+#   "LL/CON/PER/BV-13-C": [ ll_con_per_bv_13_c, "Peripheral Terminating Connection on Supervision Timer" ],
+    "LL/CON/PER/BV-14-C": [ ll_con_per_bv_14_c, "Peripheral performs Feature Setup procedure" ],
+    "LL/CON/PER/BV-19-C": [ ll_con_per_bv_19_c, "Peripheral requests Version Exchange procedure" ],
+    "LL/CON/PER/BV-20-C": [ ll_con_per_bv_20_c, "Peripheral responds to Version Exchange procedure" ],
+    "LL/CON/PER/BV-22-C": [ ll_con_per_bv_22_c, "Peripheral requests Feature Exchange procedure" ],
+    "LL/CON/PER/BV-24-C": [ ll_con_per_bv_24_c, "Peripheral requests Connection Parameters - Central Accepts" ],
+    "LL/CON/PER/BV-25-C": [ ll_con_per_bv_25_c, "Peripheral requests Connection Parameters - Central Rejects" ],
+    "LL/CON/PER/BV-26-C": [ ll_con_per_bv_26_c, "Peripheral requests Connection Parameters - same procedure collision" ],
+    "LL/CON/PER/BV-27-C": [ ll_con_per_bv_27_c, "Peripheral requests Connection Parameters - channel map update procedure collision" ],
+    "LL/CON/PER/BV-29-C": [ ll_con_per_bv_29_c, "Peripheral responds to Connection Parameters - Central no Preferred Periodicity" ],
+    "LL/CON/PER/BV-33-C": [ ll_con_per_bv_33_c, "Peripheral responds to Connection Parameters request - event masked" ],
+    "LL/CON/PER/BV-34-C": [ ll_con_per_bv_34_c, "Peripheral responds to Connection Parameters request - Host rejects" ],
+    "LL/CON/PER/BV-40-C": [ ll_con_per_bv_40_c, "Peripheral requests PHY Update procedure" ],
+    "LL/CON/PER/BV-42-C": [ ll_con_per_bv_42_c, "Peripheral responds to PHY Update procedure" ],
+    "LL/CON/PER/BV-77-C": [ ll_con_per_bv_77_c, "Peripheral Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 1M PHY" ],
+    "LL/CON/PER/BV-78-C": [ ll_con_per_bv_78_c, "Peripheral requests Packet Data Length Update procedure; LE 1M PHY" ],
+    "LL/CON/PER/BV-80-C": [ ll_con_per_bv_80_c, "Peripheral Packet Data Length Update - Pesponding to Packet Data Length Update Procedure; LE 2M PHY" ],
+    "LL/CON/PER/BV-81-C": [ ll_con_per_bv_81_c, "Peripheral requests Packet Data Length Update procedure; LE 2M PHY" ],
     "LL/DDI/ADV/BV-01-C": [ ll_ddi_adv_bv_01_c, "Non-Connectable Advertising Packets on one channel" ],
     "LL/DDI/ADV/BV-02-C": [ ll_ddi_adv_bv_02_c, "Undirected Advertising Packets on one channel" ],
     "LL/DDI/ADV/BV-03-C": [ ll_ddi_adv_bv_03_c, "Non-Connectable Advertising Packets on all channels" ],

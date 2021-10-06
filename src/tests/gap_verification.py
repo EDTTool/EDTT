@@ -34,7 +34,7 @@ def gap_disc_nonm_bv_01_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
@@ -64,7 +64,7 @@ def gap_disc_nonm_bv_02_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
@@ -94,7 +94,7 @@ def gap_disc_limm_bv_01_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
@@ -123,7 +123,7 @@ def gap_disc_limm_bv_02_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
@@ -152,7 +152,7 @@ def gap_disc_limm_bv_03_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
@@ -181,7 +181,7 @@ def gap_disc_limm_bv_04_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
@@ -210,7 +210,7 @@ def gap_disc_genm_bv_01_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_GENERAL_DISCOVERABLE );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
@@ -239,7 +239,7 @@ def gap_disc_genm_bv_02_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_GENERAL_DISCOVERABLE );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
@@ -268,7 +268,7 @@ def gap_disc_genm_bv_03_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
@@ -297,7 +297,7 @@ def gap_disc_genm_bv_04_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
@@ -381,7 +381,7 @@ def gap_disc_limp_bv_04_c(transport, upperTester, lowerTester, trace):
 
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
@@ -411,7 +411,7 @@ def gap_disc_limp_bv_05_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
@@ -494,7 +494,7 @@ def gap_disc_genp_bv_04_c(transport, upperTester, lowerTester, trace):
 
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData  = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
@@ -524,7 +524,7 @@ def gap_disc_genp_bv_05_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
@@ -570,7 +570,7 @@ def gap_disc_rpa_bv_01_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
         
     success = advertiser.enable();
@@ -600,7 +600,7 @@ def gap_conn_ncon_bv_01_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
     """
         Attempt to initiate connection with Advertiser
@@ -626,7 +626,7 @@ def gap_conn_ncon_bv_02_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
 
     success = advertiser.enable();
@@ -663,7 +663,7 @@ def gap_conn_ncon_bv_03_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
 
     success = advertiser.enable();
@@ -738,7 +738,7 @@ def gap_conn_ucon_bv_01_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
 
     success = advertising = advertiser.enable();
@@ -781,7 +781,7 @@ def gap_conn_ucon_bv_02_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
 
     success = advertising = advertiser.enable();
@@ -824,7 +824,7 @@ def gap_conn_ucon_bv_03_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData  = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
-    advertiser.advertiseData += adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
+    advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
 
     success = advertising = advertiser.enable();
@@ -859,17 +859,17 @@ def gap_conn_ucon_bv_03_c(transport, upperTester, lowerTester, trace):
 def gap_conn_acep_bv_01_c(transport, upperTester, lowerTester, trace):
 
     """
-        Place Public address of lowerTester in the White List for the Scanner
+        Place Public address of lowerTester in the Filter Accept List for the Scanner
     """
     addresses = [[ SimpleAddressType.PUBLIC, 0x456789ABCDEF ]];
-    success = preamble_specific_white_listed(transport, upperTester, addresses, trace);
+    success = preamble_specific_filter_accept_listed(transport, upperTester, addresses, trace);
 
     ownAddress = Address( ExtendedAddressType.PUBLIC );
     peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), \
-                          Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+                          Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), InitiatorFilterPolicy.FILTER_ACCEPT_LIST_ONLY);
 
     advertising = advertiser.enable();
     success = success and advertising;
@@ -906,17 +906,17 @@ def gap_conn_acep_bv_03_c(transport, upperTester, lowerTester, trace):
     success = success and RPAs[upperTester].timeout( 60 ) and RPAs[lowerTester].timeout(60);
     success = success and RPAs[upperTester].enable() and RPAs[lowerTester].enable();
     """
-        Place Public address of lowerTester in the White List for the Scanner
+        Place Public address of lowerTester in the Filter Accept List for the Scanner
     """
     addresses = [[ SimpleAddressType.PUBLIC, 0x456789ABCDEF ]];
-    success = preamble_specific_white_listed(transport, upperTester, addresses, trace);
+    success = preamble_specific_filter_accept_listed(transport, upperTester, addresses, trace);
 
     ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC );
     peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), \
-                          Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+                          Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), InitiatorFilterPolicy.FILTER_ACCEPT_LIST_ONLY);
 
     advertising = advertiser.enable();
     success = success and advertising;
@@ -955,17 +955,17 @@ def gap_conn_acep_bv_04_c(transport, upperTester, lowerTester, trace):
     success = success and RPAs[upperTester].timeout( 60 ) and RPAs[lowerTester].timeout(60);
     success = success and RPAs[upperTester].enable() and RPAs[lowerTester].enable();
     """
-        Place Public address of lowerTester in the White List for the Scanner
+        Place Public address of lowerTester in the Filter Accept List for the Scanner
     """
     addresses = [[ SimpleAddressType.PUBLIC, 0x456789ABCDEF ]];
-    success = preamble_specific_white_listed(transport, upperTester, addresses, trace);
+    success = preamble_specific_filter_accept_listed(transport, upperTester, addresses, trace);
 
     ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC );
     peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), \
-                          Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), InitiatorFilterPolicy.FILTER_WHITE_LIST_ONLY);
+                          Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ), InitiatorFilterPolicy.FILTER_ACCEPT_LIST_ONLY);
 
     advertising = advertiser.enable();
     success = success and advertising;
@@ -1524,7 +1524,7 @@ def gap_adv_bv_05_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    GAP/ADV/BV-08-C [Advertising with AD Type – Slave Connection Interval Range]
+    GAP/ADV/BV-08-C [Advertising with AD Type – Peripheral Connection Interval Range]
 """
 def gap_adv_bv_08_c(transport, upperTester, lowerTester, trace):
 
@@ -1535,8 +1535,8 @@ def gap_adv_bv_08_c(transport, upperTester, lowerTester, trace):
     scanner = Scanner(transport, lowerTester, trace, ScanType.ACTIVE, AdvertisingReport.ADV_IND, ownAddress, ScanningFilterPolicy.FILTER_NONE, 1, 1);
 
     adData = ADData();
-    advertiser.advertiseData = adData.encode( ADType.SLAVE_CONNECT_INT, 20, 40 );
-    advertiser.responseData = adData.encode( ADType.SLAVE_CONNECT_INT, 10, 50 );
+    advertiser.advertiseData = adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
+    advertiser.responseData = adData.encode( ADType.PERIPHERAL_CONNECT_INT, 10, 50 );
         
     success = advertiser.enable();
 
@@ -1838,7 +1838,7 @@ __tests__ = {
     "GAP/ADV/BV-03-C":       [ gap_adv_bv_03_c,       "Advertising with AD Type – Flags" ],
     "GAP/ADV/BV-04-C":       [ gap_adv_bv_04_c,       "Advertising with AD Type – Manufacturer Specific Packet Data" ],
     "GAP/ADV/BV-05-C":       [ gap_adv_bv_05_c,       "Advertising with AD Type – TX Power Level" ],
-    "GAP/ADV/BV-08-C":       [ gap_adv_bv_08_c,       "Advertising with AD Type – Slave Connection Interval Range" ],
+    "GAP/ADV/BV-08-C":       [ gap_adv_bv_08_c,       "Advertising with AD Type – Peripheral Connection Interval Range" ],
     "GAP/ADV/BV-09-C":       [ gap_adv_bv_09_c,       "Advertising with AD Type - Service Solicitation" ],
     "GAP/ADV/BV-10-C":       [ gap_adv_bv_10_c,       "Advertising with AD Type – Service Packet Data" ],
     "GAP/ADV/BV-11-C":       [ gap_adv_bv_11_c,       "Advertising with AD Type – Appearance" ],

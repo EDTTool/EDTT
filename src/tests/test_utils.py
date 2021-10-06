@@ -107,10 +107,10 @@ def readRemoteVersionInformation(transport, idx, handle, trace):
     trace.trace(6, "Read Remote Version Information returns status: 0x%02X" % status);
     return verifyAndShowEvent(transport, idx, Events.BT_HCI_EVT_CMD_STATUS, trace) and (status == 0);
 
-def addAddressesToWhiteList(transport, idx, addresses, trace):
+def addAddressesToAllowList(transport, idx, addresses, trace):
 
     _addresses = [ [ _.type, toNumber(_.address) ] for _ in addresses ];
-    return preamble_specific_white_listed(transport, idx, _addresses, trace);
+    return preamble_specific_filter_accept_listed(transport, idx, _addresses, trace);
 
 """
     Send a DATA package...
