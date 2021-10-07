@@ -104,10 +104,14 @@ def send_multiple_small_sdu_cis(transport, transmitter, receiver, trace, cis_han
     success = le_iso_data_write_rsp(transport, transmitter, 100) == 0 and success
     success = le_iso_data_write_rsp(transport, transmitter, 100) == 0 and success
 
+    # The ISO interval is significant in those test cases (few seconds) thus we wait here long enough to be sure the
+    # packet has been sent. The timeout equal to four ISO Intervals is determined experimentally.
+    transport.wait(int(4 * params.ISO_Interval * 1.25))
+
     success = verifyAndShowEvent(transport, transmitter, Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS, trace) and success
 
     # Shall receive only one Number of Completed Packets event
-    success = not has_event(transport, transmitter, params.SDU_Interval_P_To_C)[0] and success
+    success = not has_event(transport, transmitter, 100)[0] and success
 
     # Check the data received
     s, handle, pbflags, rx_sdu = iso_receive_payload_pdu(transport, receiver, trace, params.SDU_Interval_P_To_C)
@@ -1195,9 +1199,9 @@ __tests__ = {
     "IAL/CIS/FRA/PER/BV-05-C": [ial_cis_fra_per_bv_05_c, "Send Large SDU, CIS"],
     "IAL/CIS/FRA/PER/BV-29-C": [ial_cis_fra_per_bv_29_c, "Send Large SDU, CIS"],
     "IAL/CIS/FRA/PER/BV-46-C": [ial_cis_fra_per_bv_46_c, "Send Large SDU, CIS"],
-    # "IAL/CIS/FRA/PER/BV-07-C": [ial_cis_fra_per_bv_07_c, "Send Multiple, Small SDUs, CIS"],  # FIXME: Controller crash
-    # "IAL/CIS/FRA/PER/BV-31-C": [ial_cis_fra_per_bv_31_c, "Send Multiple, Small SDUs, CIS"],  # FIXME: Controller crash
-    # "IAL/CIS/FRA/PER/BV-47-C": [ial_cis_fra_per_bv_47_c, "Send Multiple, Small SDUs, CIS"],  # FIXME: Controller crash
+    "IAL/CIS/FRA/PER/BV-07-C": [ial_cis_fra_per_bv_07_c, "Send Multiple, Small SDUs, CIS"],
+    "IAL/CIS/FRA/PER/BV-31-C": [ial_cis_fra_per_bv_31_c, "Send Multiple, Small SDUs, CIS"],
+    "IAL/CIS/FRA/PER/BV-47-C": [ial_cis_fra_per_bv_47_c, "Send Multiple, Small SDUs, CIS"],
     "IAL/CIS/UNF/PER/BV-09-C": [ial_cis_unf_per_bv_09_c, "Receive Single SDU, CIS"],
     "IAL/CIS/UNF/PER/BV-33-C": [ial_cis_unf_per_bv_33_c, "Receive Single SDU, CIS"],
     "IAL/CIS/FRA/PER/BV-10-C": [ial_cis_fra_per_bv_10_c, "Receive Single SDU, CIS"],
