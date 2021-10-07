@@ -605,8 +605,11 @@ def set_isochronous_channels_host_support(transport, device, trace, value):
     return getCommandCompleteEvent(transport, device, trace) and (status == 0x00)
 
 
-def establish_acl_connection(transport, central, peripheral, trace):
+def establish_acl_connection(transport, central, peripheral, trace, supervision_timeout=None):
     advertiser, initiator = setPublicInitiator(transport, central, trace, Advertising.CONNECTABLE_UNDIRECTED)
+    if supervision_timeout:
+        initiator.supervisionTimeout = supervision_timeout
+
     success = advertiser.enable()
     connected = initiator.connect()
     success = success and connected
@@ -704,6 +707,21 @@ def establish_cis_connection(transport, central, peripheral, trace, params, acl_
     return success, cisConnectionHandles
 
 
+def calc_supervision_timeout(iso_interval_ms):
+    """
+    Calculate the Supervision timeout for the LE Link that can be used to create a CIG with given ISO_Interval
+    :param iso_interval_ms: ISO_Interval in milliseconds
+    :return: Supervision timeout for the LE Link
+    """
+    # TS 4.10.1.2 Timing Requirements
+    # "The connSupervisionTimeout for an ACL with associated CISes shall be greater than twice that of the
+    #  ISO_Intervals of the associated CISes."
+    supervision_timeout_ms = int(iso_interval_ms * 2 + 250)
+    assert (supervision_timeout_ms < 32000)
+
+    return int(supervision_timeout_ms / 10)
+
+
 def state_connected_isochronous_stream_peripheral(transport, upperTester, lowerTester, trace, params,
                                                   setup_iso_data_path=True):
     # The Isochronous Channels (Host Support) FeatureSet bit is set.
@@ -711,7 +729,8 @@ def state_connected_isochronous_stream_peripheral(transport, upperTester, lowerT
     success = set_isochronous_channels_host_support(transport, lowerTester, trace, 1) and success
 
     ### ACL Connection Established. IUT (upperTester) is Peripheral. ###
-    s, advertiser, initiator = establish_acl_connection(transport, lowerTester, upperTester, trace)
+    s, advertiser, initiator = establish_acl_connection(transport, lowerTester, upperTester, trace,
+                                                        calc_supervision_timeout(params.ISO_Interval * 1.25))
     success = s and success
     if not initiator:
         return success, None, [0xFFFF] * params.CIS_Count
