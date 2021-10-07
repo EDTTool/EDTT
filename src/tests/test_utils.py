@@ -675,7 +675,7 @@ def establish_cis_connection(transport, central, peripheral, trace, params, acl_
         success = verifyAndShowEvent(transport, peripheral, Events.BT_HCI_EVT_CMD_STATUS, trace) and (status == 0) and success
 
         # LT: Wait for HCI_EVT_LE_CIS_ESTABLISHED
-        s, event = verifyAndFetchMetaEvent(transport, central, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace, 1000)
+        s, event = verifyAndFetchMetaEvent(transport, central, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace, 2000)
         success = s and (event.decode()[0] == 0x00) and success
 
         # UT: Wait for HCI_EVT_LE_CIS_ESTABLISHED
