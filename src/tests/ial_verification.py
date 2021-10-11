@@ -1194,8 +1194,8 @@ __tests__ = {
     "IAL/CIS/FRA/PER/BV-26-C": [ial_cis_fra_per_bv_26_c, "Send Single SDU, CIS"],
     "IAL/CIS/UNF/PER/BV-47-C": [ial_cis_unf_per_bv_47_c, "Send Single SDU, CIS"],
     "IAL/CIS/FRA/PER/BV-45-C": [ial_cis_fra_per_bv_45_c, "Send Single SDU, CIS"],
-    # "IAL/CIS/UNF/PER/BV-04-C": [ial_cis_unf_per_bv_04_c, "Send Large SDU, CIS"],  # Failed to create CIG
-    # "IAL/CIS/UNF/PER/BV-28-C": [ial_cis_unf_per_bv_28_c, "Send Large SDU, CIS"],  # Failed to create CIG
+    "IAL/CIS/UNF/PER/BV-04-C": [ial_cis_unf_per_bv_04_c, "Send Large SDU, CIS"],
+    "IAL/CIS/UNF/PER/BV-28-C": [ial_cis_unf_per_bv_28_c, "Send Large SDU, CIS"],
     "IAL/CIS/FRA/PER/BV-05-C": [ial_cis_fra_per_bv_05_c, "Send Large SDU, CIS"],
     "IAL/CIS/FRA/PER/BV-29-C": [ial_cis_fra_per_bv_29_c, "Send Large SDU, CIS"],
     "IAL/CIS/FRA/PER/BV-46-C": [ial_cis_fra_per_bv_46_c, "Send Large SDU, CIS"],
