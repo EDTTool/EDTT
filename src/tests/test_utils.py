@@ -800,142 +800,14 @@ def state_connected_isochronous_stream_peripheral(transport, upperTester, lowerT
     [CIS Setup Response Procedure, Peripheral]
 """
 def cis_setup_response_procedure_peripheral(transport, upperTester, lowerTester, trace, params):
-    # Establish Initial Condition
-    #
-    # The Isochronous Channels (Host Support) FeatureSet bit is set.
-    #
-    # An ACL connection has been established between the IUT and Lower Tester with a valid Connection
-    # Handle on the PHY specified in Table 4.115: Peripheral Test Case Direction Specific Configurations.
-    #
-    # The Lower Tester sets the parameters specified in Table 4.115: Peripheral Test Case Direction Specific
-    # Configurations and Table 4.116: Peripheral Test Case Additional Configurations. Any otherwise
-    # unspecified values are specified in Section 4.10.1.3 Default Values for Set CIG Parameters
-    # Commands, except for default values for cis_offset_mn and cis_offset_mx. The CIS offset values are
-    # specified in Section 4.10.1.2 Timing Requirements.
-    #
-    # The Lower Tester is configured as the Central.
-
-    # TODO: Instead of steps 1-9, consider using state_connected_isochronous_stream_peripheral
-
-    SDU_Interval_C_To_P     = params.SDU_Interval_C_To_P
-    SDU_Interval_P_To_C     = params.SDU_Interval_P_To_C
-    ISO_Interval            = params.ISO_Interval
-    CIS_Count               = params.CIS_Count
-    Worst_Case_SCA          = params.Worst_Case_SCA
-    Packing                 = params.Packing
-    Framing                 = params.Framing
-    NSE                     = params.NSE
-    Max_PDU_C_To_P          = params.Max_PDU_C_To_P
-    Max_PDU_P_To_C          = params.Max_PDU_P_To_C
-    PHY_C_To_P              = params.PHY_C_To_P
-    PHY_P_To_C              = params.PHY_P_To_C
-    FT_C_To_P               = params.FT_C_To_P
-    FT_P_To_C               = params.FT_P_To_C
-    BN_C_To_P               = params.BN_C_To_P
-    BN_P_To_C               = params.BN_P_To_C
-    Max_SDU_C_To_P          = params.Max_SDU_C_To_P
-    Max_SDU_P_To_C          = params.Max_SDU_P_To_C
-
-    success = True
-
-    status = le_set_host_feature(transport, lowerTester, FeatureSupport.ISOCHRONOUS_CHANNELS, 1, 100)
-    success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
-
-    status = le_set_host_feature(transport, upperTester, FeatureSupport.ISOCHRONOUS_CHANNELS, 1, 100)
-    success = getCommandCompleteEvent(transport, upperTester, trace) and (status == 0x00) and success
-
-    advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED)
-    success = advertiser.enable() and success
-    connected = initiator.connect()
-    success = success and connected
-
-    if not connected:
-        success = advertiser.disable() and success
-        return success
-
-    # 1. The Upper Tester sends an HCI_LE_Set_Event_Mask command with all events enabled,
-    #    including the HCI_LE_CIS_Request event. The IUT sends a successful
-    #    HCI_Command_Complete in response.
-    #
-    # NOTE: This is already performed during the preamble step
-
-    # 2. The Lower Tester sends an LL_CIS_REQ to the IUT with the contents specified in Table 4.115.
-    # NOTE: CIG_ID is hardcoded to 0
-    status, cigId, cisCount, cisConnectionHandles = \
-    le_set_cig_parameters_test(transport, lowerTester, 0,
-                               SDU_Interval_C_To_P, SDU_Interval_P_To_C,
-                               FT_C_To_P, FT_P_To_C,
-                               ISO_Interval,
-                               Worst_Case_SCA,
-                               Packing, Framing,
-                               CIS_Count,
-                               list(range(CIS_Count)),
-                               NSE,
-                               Max_SDU_C_To_P, Max_SDU_P_To_C,
-                               Max_PDU_C_To_P, Max_PDU_P_To_C,
-                               PHY_C_To_P, PHY_P_To_C,
-                               BN_C_To_P, BN_P_To_C, 100)
-    success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
-    aclConnectionHandles = [initiator.handles[0]] * CIS_Count
-
-    status = le_create_cis(transport, lowerTester, 1, cisConnectionHandles, aclConnectionHandles, 100)
-    success = verifyAndShowEvent(transport, lowerTester, Events.BT_HCI_EVT_CMD_STATUS, trace) and (status == 0) and success
-
-    # 3. The Upper Tester receives an HCI_LE_CIS_Request event from the IUT and the parameters
-    #    include CIS_Connection_Handle assigned by the IUT.
-    s, event = verifyAndFetchMetaEvent(transport, upperTester, MetaEvents.BT_HCI_EVT_LE_CIS_REQUEST, trace)
-    success = s and success
-    aclConnectionHandle, cisConnectionHandle, cigId, cisId = event.decode()
-
-    # 4. The Upper Tester sends an HCI_LE_Accept_CIS_Request command to the IUT, with the
-    #    Connection_Handle field set to the value of the CIS_Connection_Handle received in step 3.
-    status = le_accept_cis_request(transport, upperTester, cisConnectionHandle, 100)
-
-    # 5. The Upper Tester expects the IUT to send a successful Command Status.
-    success = verifyAndShowEvent(transport, upperTester, Events.BT_HCI_EVT_CMD_STATUS, trace) and (status == 0) and success
-
-    # 6. The Lower Tester receives an LL_CIS_RSP PDU from the IUT. In the message, the
-    #    CIS_Offset_Min field and the CIS_Offset_Max field are equal to or a subset of the values
-    #    received in the LL_CIS_REQ sent in step 2.
-    #
-    # NOTE: Timing is not possible to validate/control
-    s, event = verifyAndFetchMetaEvent(transport, lowerTester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace, 1000)
-    success = s and (event.decode()[0] == 0x00) and success
-
-    # 7. The Lower Tester sends an LL_CIS_IND where the CIS_Offset is the time (ms) from the start of
-    #    the ACL connection event in connEvent Count to the first CIS anchor point, the CIS_Sync_Delay
-    #    is CIG_Sync_Delay minus the offset from the CIG reference point to the CIS anchor point in us,
-    #    and the connEventCount is the CIS_Offset reference point.
-    #
-    # NOTE: Timing is not possible to validate/control
-
-    # 8. The Upper Tester receives a successful HCI_LE_CIS_Established event from the IUT, after the
-    #    first CIS packet sent by the LT. The Connection_Handle parameter is the
-    #    CIS_Connection_Handle value provided in the HCI_LE_CIS_Request event.
-    #
-    # NOTE: Timing is not possible to validate/control
-    s, event = verifyAndFetchMetaEvent(transport, upperTester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace)
-    success = s and (event.decode()[0] == 0x00) and success
-
-    # 9. The Upper Tester sends an HCI_LE_Setup_ISO_Data_Path command to the IUT with the output
-    #    path enabled and receives a successful HCI_Command_Complete in response.
-    # UT: Setup Data Path - Data_Path_Direction=1 (Output) Data_Path_ID=0 (HCI) Codec_ID=0 Controller_Delay=0
-    #     Codec_Configuration_Length=0 Codec_Configuration=NULL
-    status, _ = le_setup_iso_data_path(transport, upperTester, cisConnectionHandle, 1, 0, [0, 0, 0, 0, 0], 0, 0, [],
-                                       100)
-    success = getCommandCompleteEvent(transport, upperTester, trace) and (status == 0x00) and success
-
-    # LT: Setup Data Path - Data_Path_Direction=0 (Input) Data_Path_ID=0 (HCI) Codec_ID=0 Controller_Delay=0
-    #     Codec_Configuration_Length=0 Codec_Configuration=NULL
-    status, _ = le_setup_iso_data_path(transport, lowerTester, cisConnectionHandle, 0, 0, [0, 0, 0, 0, 0], 0, 0, [],
-                                       100)
-    success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
+    success, initiator, (cisConnectionHandle,) = \
+        state_connected_isochronous_stream_peripheral(transport, upperTester, lowerTester, trace, params)
 
     # 10. The Lower Tester sends data packets to the IUT.
     # 11. The Upper Tester IUT sends an ISO data packet to the Upper Tester.
     def lt_send_data_packet(pkt_seq_num):
-        return iso_send_payload_pdu(transport, lowerTester, upperTester, trace, cisConnectionHandle, Max_SDU_C_To_P[0],
-                                    SDU_Interval_C_To_P, pkt_seq_num)
+        return iso_send_payload_pdu(transport, lowerTester, upperTester, trace, cisConnectionHandle,
+                                    params.Max_SDU_C_To_P[0], params.SDU_Interval_C_To_P, pkt_seq_num)
 
     # 12. Perform either Alternative 12A or 12B depending on whether P_To_C Payload (PDU) in Table 4.146 is 0:
     #     Alternative 12A (P_To_C Payload (PDU) is not equal to 0):
@@ -1045,4 +917,3 @@ class SetCIGParameters:
                 self.Worst_Case_SCA, self.Packing, self.Framing, self.CIS_Count, list(range(self.CIS_Count)), self.NSE,
                 self.Max_SDU_C_To_P, self.Max_SDU_P_To_C, self.Max_PDU_C_To_P, self.Max_PDU_P_To_C, self.PHY_C_To_P,
                 self.PHY_P_To_C, self.BN_C_To_P, self.BN_P_To_C)
-
