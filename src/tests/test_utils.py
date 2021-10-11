@@ -733,34 +733,6 @@ def state_connected_isochronous_stream_peripheral(transport, upperTester, lowerT
 
 
 """
-    [CIS Setup Response Procedure, Peripheral]
-"""
-def cis_setup_response_procedure_peripheral(transport, upperTester, lowerTester, trace, params):
-    success, initiator, (cisConnectionHandle,) = \
-        state_connected_isochronous_stream_peripheral(transport, upperTester, lowerTester, trace, params)
-
-    # 10. The Lower Tester sends data packets to the IUT.
-    # 11. The Upper Tester IUT sends an ISO data packet to the Upper Tester.
-    def lt_send_data_packet(pkt_seq_num):
-        return iso_send_payload_pdu(transport, lowerTester, upperTester, trace, cisConnectionHandle,
-                                    params.Max_SDU_C_To_P[0], params.SDU_Interval_C_To_P, pkt_seq_num)
-
-    # 12. Perform either Alternative 12A or 12B depending on whether P_To_C Payload (PDU) in Table 4.146 is 0:
-    #     Alternative 12A (P_To_C Payload (PDU) is not equal to 0):
-    #       12A.1. TODO: The IUT sends an Ack to the Lower Tester.
-    #     Alternative 12B (P_To_C Payload (PDU) is equal to 0):
-    #       12B.1. TODO: The IUT sends a CIS Null PDU to the Lower Tester.
-
-    # 13. Repeat steps 10-12 a total of 50 times.
-    for j in range(50):
-        success = lt_send_data_packet(j) and success
-
-    ### TERMINATION ###
-    success = initiator.disconnect(0x13) and success
-
-    return success
-
-"""
 LL.TS.p17
 4.10.1.3     Default Values for Set CIG Parameters Commands
 When using either the HCI_LE_Set_CIG_Parameters or HCI_LE_Set_CIG_Parameters_Test commands,
