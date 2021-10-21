@@ -125,8 +125,9 @@ def unpack_bitfield(fmt, value):
     return tuple(result)
 
 
-AdvPdu = ('ADV_IND', 'ADV_DIRECT_IND', 'CONNECT_IND')
-LlControlPdu = ('LL_TERMINATE_IND', 'LL_CIS_REQ', 'LL_CIS_RSP', 'LL_CIS_IND', 'LL_CIS_TERMINATE_IND')
+AdvPdu = ('ADV_UNKNOWN_PDU', 'ADV_IND', 'ADV_DIRECT_IND', 'CONNECT_IND')
+LlControlPdu = ('LL_CONTROL_UNKNOWN_PDU', 'LL_TERMINATE_IND', 'LL_CIS_REQ', 'LL_CIS_RSP', 'LL_CIS_IND',
+                'LL_CIS_TERMINATE_IND')
 IsoPdu = ('ISOC_SDU',)
 PacketType = IntEnum('PacketType', ','.join(AdvPdu + LlControlPdu + IsoPdu))
 
@@ -199,8 +200,11 @@ def parse_adv_pdu(direction, idx, ts, aa, channel_num, phy, data):
     header = Header(pdu_type, ch_sel, tx_add, rx_add, payload_len)
     data = data[2:2 + payload_len]
     if channel_num in [0, 12, 39]:
-        payload_type, func = adv_legacy_pdu_dict[pdu_type]
-        payload = func(data)
+        if pdu_type in adv_legacy_pdu_dict:
+            payload_type, func = adv_legacy_pdu_dict[pdu_type]
+            payload = func(data)
+        else:
+            payload_type, payload = PacketType.ADV_UNKNOWN_PDU, data
     else:
         return None
     return Packet(direction, idx, ts, aa, channel_num, phy, data, payload_type, header, payload)
@@ -279,8 +283,11 @@ def parse_data_pdu(direction, idx, ts, aa, channel_num, phy, data):
     if llid == 0b11:
         Payload = namedtuple('Payload', 'Opcode, CtrData')
         opcode = data[0]
-        payload_type, func = ll_control_pdu_dict[opcode]
-        payload = Payload(opcode, func(data[1:]))
+        if opcode in ll_control_pdu_dict:
+            payload_type, func = ll_control_pdu_dict[opcode]
+            payload = Payload(opcode, func(data[1:]))
+        else:
+            payload_type, payload = PacketType.LL_CONTROL_UNKNOWN_PDU, Payload(opcode, data[1:])
     else:
         return None
     return Packet(direction, idx, ts, aa, channel_num, phy, data, payload_type, header, payload)
