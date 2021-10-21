@@ -268,14 +268,6 @@ ll_control_pdu_dict = {
 }
 
 
-def get_ll_control_pdu_payload(data):
-    Payload = namedtuple('Payload', 'Opcode, CtrData')
-    opcode = data[0]
-    payload_type, func = ll_control_pdu_dict[opcode]
-    ctr_data = func(data[1:])
-    return payload_type, Payload(opcode, ctr_data)
-
-
 def parse_data_pdu(direction, idx, ts, aa, channel_num, phy, data):
     Header = namedtuple('Header', 'LLID, NESN, SN, MD, CP, Length, CTEInfo')
     llid, nesn, sn, md, cp, rfu, payload_length = \
