@@ -5615,39 +5615,9 @@ def ll_cis_per_bv_02_c(transport, upperTester, lowerTester, trace):
     #    the IUT.
     # NOTE: CIG_ID is hardcoded to 0
     params = SetCIGParameters()
-    SDU_Interval_C_To_P     = params.SDU_Interval_C_To_P
-    SDU_Interval_P_To_C     = params.SDU_Interval_P_To_C
-    ISO_Interval            = params.ISO_Interval
-    CIS_Count               = params.CIS_Count
-    Worst_Case_SCA          = params.Worst_Case_SCA
-    Packing                 = params.Packing
-    Framing                 = params.Framing
-    NSE                     = params.NSE
-    Max_PDU_C_To_P          = params.Max_PDU_C_To_P
-    Max_PDU_P_To_C          = params.Max_PDU_P_To_C
-    PHY_C_To_P              = params.PHY_C_To_P
-    PHY_P_To_C              = params.PHY_P_To_C
-    FT_C_To_P               = params.FT_C_To_P
-    FT_P_To_C               = params.FT_P_To_C
-    BN_C_To_P               = params.BN_C_To_P
-    BN_P_To_C               = params.BN_P_To_C
-    Max_SDU_C_To_P          = params.Max_SDU_C_To_P
-    Max_SDU_P_To_C          = params.Max_SDU_P_To_C
 
     status, cigId, cisCount, cisConnectionHandle = \
-    le_set_cig_parameters_test(transport, lowerTester, 0,
-                               SDU_Interval_C_To_P, SDU_Interval_P_To_C,
-                               FT_C_To_P, FT_P_To_C,
-                               ISO_Interval,
-                               Worst_Case_SCA,
-                               Packing, Framing,
-                               CIS_Count,
-                               list(range(CIS_Count)),
-                               NSE,
-                               Max_SDU_C_To_P, Max_SDU_P_To_C,
-                               Max_PDU_C_To_P, Max_PDU_P_To_C,
-                               PHY_C_To_P, PHY_P_To_C,
-                               BN_C_To_P, BN_P_To_C, 100)
+    le_set_cig_parameters_test(transport, lowerTester, 0, *params.get_cig_parameters_test(), 100)
     success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
 
     status = le_create_cis(transport, lowerTester, 1, cisConnectionHandle, [initiator.handles[0]], 100)
