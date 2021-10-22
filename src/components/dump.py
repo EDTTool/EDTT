@@ -438,9 +438,9 @@ class Packets:
             else:
                 return
 
-    def get(self, packet_filter=()):
+    def find(self, packet_type=None):
         try:
-            return next(self.fetch(packet_filter))
+            return next(self.fetch(packet_type))
         except StopIteration:
             return None
 
