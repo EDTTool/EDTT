@@ -382,59 +382,84 @@ class PacketParser:
 
 class SortedDumps:
     class Dump:
-        def __init__(self, generator, dump):
-            self.generator, self.dump = generator, dump
+        def __init__(self, file):
+            self.file = file
+            self.generator = self.file.fetch()
+            self.dump = None
 
-    def __init__(self, files):
-        self.files = []
-        for file in files:
-            try:
-                file.open()
-                self.files.append(file)
-            except FileNotFoundError:
-                print('{} so such file'.format(file))
-                continue
+    def __init__(self):
+        self.dumps = []
 
     def __del__(self):
-        for file in self.files:
-            file.close()
+        for dump in self.dumps:
+            dump.file.close()
+
+    def __open(self, file):
+        try:
+            file.open()
+            self.dumps.append(self.Dump(file))
+        except FileNotFoundError:
+            print('{} so such file'.format(file))
+            return
+
+    def add_tx(self, idx, file_path):
+        self.__open(DeviceDumpFileTx(idx, file_path))
+
+    def add_rx(self, idx, file_path):
+        # TODO
+        pass
+
+    def flush(self):
+        for dump in self.dumps:
+            while next(dump.generator):
+                pass
+
+            dump.dump = None
 
     def fetch(self):
-        dumps = []
-        for file in self.files:
-            dump = self.Dump(file.fetch(), None)
-            try:
-                dump.dump = next(dump.generator)
-            except StopIteration:
-                return
-            dumps.append(dump)
-
         while True:
+            for dump in self.dumps:
+                if not dump.dump:
+                    try:
+                        dump.dump = next(dump.generator)
+                    except StopIteration:
+                        pass
+
             # sort by timestamp
-            dumps.sort(key=lambda entry: entry.dump.ts if entry.dump else sys.maxsize)
-            next_dump = dumps[0]
-            yield next_dump.dump
-            try:
-                next_dump.dump = next(next_dump.generator)
-            except StopIteration:
+            self.dumps.sort(key=lambda entry: entry.dump.ts if entry.dump else sys.maxsize)
+            dump = self.dumps[0]
+            if not dump.dump:
                 return
+
+            yield dump.dump
+            dump.dump = None
 
 
 class Packets:
-    def __init__(self, dumps, parser):
-        self.__filter = ()
-        self.__packets = self.__generator_func(dumps, parser)
+    def __init__(self, dumps):
+        self.__dumps = dumps
+        self.__dumps.flush()
+        self.__parser = PacketParser()
+        self.__packets = []
 
     def fetch(self, packet_filter=()):
         try:
             iter(packet_filter)
         except TypeError:
-            self.__filter = (packet_filter,)
+            packet_filter = (packet_filter,)
         else:
-            self.__filter = packet_filter
-        for packet in self.__packets:
-            if packet:
-                yield packet
+            packet_filter = packet_filter
+
+        i = 0
+        while True:
+            # Append new packets
+            for dump in self.__dumps.fetch():
+                self.__packets.append(self.__parser.parse(dump))
+
+            if i < len(self.__packets):
+                if self.__packets[i] and (not packet_filter or self.__packets[i].type.name in packet_filter):
+                    yield self.__packets[i]
+                i += 1
             else:
                 return
 
@@ -443,38 +468,3 @@ class Packets:
             return next(self.fetch(packet_type))
         except StopIteration:
             return None
-
-    def flush(self):
-        f = self.__filter
-        self.__filter = ()
-        while next(self.__packets):
-            pass
-        self.__filter = f
-
-    def __generator_func(self, dumps, parser):
-        for dump in dumps.fetch():
-            result = dump
-            if dump:
-                packet = parser.parse(dump)
-                if packet and (not self.__filter or packet.type.name in self.__filter):
-                    result = packet
-                else:
-                    continue
-            yield result
-
-
-class DeviceDumps:
-    def __init__(self):
-        self.__dump_files = []
-
-    def add_tx(self, idx, file_path):
-        self.__dump_files.append(DeviceDumpFileTx(idx, file_path))
-
-    def add_rx(self, idx, file_path):
-        # TODO
-        pass
-
-    def packets(self):
-        dumps = SortedDumps(self.__dump_files)
-        parser = PacketParser()
-        return Packets(dumps, parser)

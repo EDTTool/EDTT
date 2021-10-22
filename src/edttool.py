@@ -5,7 +5,7 @@
 import os;
 from components.btsnoop import Btsnoop, BtsnoopPriority
 from numpy import random;
-from components.dump import DeviceDumps
+from components.dump import SortedDumps, Packets
 from components.utils import toArray
 
 def parse_arguments():
@@ -91,7 +91,7 @@ def run_one_test(args, xtra_args, transport, trace, test_mod, test_spec, nameLen
     return result;
 
 # Attempt to load and run the tests
-def run_tests(args, xtra_args, transport, trace, packets):
+def run_tests(args, xtra_args, transport, trace, dumps):
     passed = 0;
     total = 0;
 
@@ -107,14 +107,14 @@ def run_tests(args, xtra_args, transport, trace, packets):
             random.shuffle(tests_list)
 
         for _,test_spec in tests_list:
-            result = run_one_test(args, xtra_args, transport, trace, test_mod, test_spec, nameLen, packets);
+            result = run_one_test(args, xtra_args, transport, trace, test_mod, test_spec, nameLen, Packets(dumps))
             passed += 1 if result == 0 else 0;
             total += 1;
             if result != 0 and args.stop_on_failure:
                 break;
 
     elif t in test_specs:
-        result = run_one_test(args, xtra_args, transport, trace, test_mod, test_specs[t], nameLen, packets);
+        result = run_one_test(args, xtra_args, transport, trace, test_mod, test_specs[t], nameLen, Packets(dumps))
         passed += 1 if result == 0 else 0;
         total += 1;
 
@@ -131,7 +131,7 @@ def run_tests(args, xtra_args, transport, trace, packets):
             if not t: #Skip empty lines, or those which had only comments
                 continue
             if t in test_specs:
-                result = run_one_test(args, xtra_args, transport, trace, test_mod, test_specs[t], nameLen, packets);
+                result = run_one_test(args, xtra_args, transport, trace, test_mod, test_specs[t], nameLen, Packets(dumps))
                 passed += 1 if result == 0 else 0;
                 total += 1;
                 if result != 0 and args.stop_on_failure:
@@ -193,14 +193,14 @@ def main():
         trace.btsnoop.send_index_added(0, toArray(address, 6), "UpperTester")
         trace.btsnoop.send_index_added(1, toArray(address, 6), "LowerTester")
 
-        device_dumps = DeviceDumps()
+        device_dumps = SortedDumps()
         device_dumps.add_rx(0, os.path.join(os.environ['BSIM_OUT_PATH'], 'results', transport.sim_id, 'd_2G4_01.Rx.csv'))
         device_dumps.add_tx(0, os.path.join(os.environ['BSIM_OUT_PATH'], 'results', transport.sim_id, 'd_2G4_01.Tx.csv'))
         device_dumps.add_rx(1, os.path.join(os.environ['BSIM_OUT_PATH'], 'results', transport.sim_id, 'd_2G4_02.Rx.csv'))
         device_dumps.add_tx(1, os.path.join(os.environ['BSIM_OUT_PATH'], 'results', transport.sim_id, 'd_2G4_02.Tx.csv'))
 
         trace.btsnoop.send_user_data(0, BtsnoopPriority.ALERT, "Testing session started")
-        result = run_tests(args, xtra_args, transport, trace, device_dumps.packets())
+        result = run_tests(args, xtra_args, transport, trace, device_dumps)
         trace.btsnoop.send_user_data(0, BtsnoopPriority.INFO, "Testing session completed ")
         trace.btsnoop.close()
         transport.close();

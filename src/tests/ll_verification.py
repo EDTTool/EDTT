@@ -6527,8 +6527,6 @@ def ll_cis_per_bv_12_c(transport, upper_tester, lower_tester, trace, packets):
     success = iso_send_payload_pdu(transport, lower_tester, upper_tester, trace, cis_conn_handle,
                                    params.Max_SDU_C_To_P[0], params.SDU_Interval_C_To_P, 0) and success
 
-    packets.flush()
-
     # 2. The Upper Tester sends an HCI_Disconnect to the IUT and receives HCI_Command_status IUT.
     reason_code = 0x13
     status = disconnect(transport, upper_tester, cis_conn_handle, reason_code, 200)
