@@ -751,7 +751,7 @@ def ll_ddi_scn_bv_01_c(transport, upperTester, lowerTester, trace):
         elif i == 1:
             advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEF) );
         elif i == 2:
-            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, address_scramble_OUI(0x456789ABCDEF) );
+            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, address_scramble_OUI(0x456789ABCDEF) | 0xC00000000000);
 
         if advertiser.ownAddress.type == ExtendedAddressType.PUBLIC:
             success = success and preamble_set_public_address(transport, lowerTester, toNumber(advertiser.ownAddress.address), trace);
@@ -792,11 +792,11 @@ def ll_ddi_scn_bv_02_c(transport, upperTester, lowerTester, trace):
         if   i == 0:
             advertiser.ownAddress = publicIdentityAddress(lowerTester);
         elif i == 1:
-            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, 0x456789ABCDEF );
+            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, 0x456789ABCDEF | 0xC00000000000);
         elif i == 2:
             advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEF) );
         elif i == 3:
-            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, address_exchange_OUI_LAP(0x456789ABCDEF) );
+            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, address_exchange_OUI_LAP(0x456789ABCDEF) | 0xC00000000000);
 
         if advertiser.ownAddress.type == ExtendedAddressType.PUBLIC:
             success = success and preamble_set_public_address(transport, lowerTester, toNumber(advertiser.ownAddress.address), trace);
@@ -968,7 +968,7 @@ def ll_ddi_scn_bv_10_c(transport, upperTester, lowerTester, trace):
         elif i == 1:
             advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEF) );
         elif i == 2:
-            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, address_scramble_OUI(0x456789ABCDEF) );
+            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, address_scramble_OUI(0x456789ABCDEF) | 0xC00000000000);
 
         if (advertiser.ownAddress.type == ExtendedAddressType.PUBLIC):
             success = success and preamble_set_public_address(transport, lowerTester, toNumber(advertiser.ownAddress.address), trace);
@@ -1009,7 +1009,7 @@ def ll_ddi_scn_bv_11_c(transport, upperTester, lowerTester, trace):
         elif i == 1:
             advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEF) );
         elif i == 2:
-            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, 0x456789ABCDEF );
+            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, 0x456789ABCDEF | 0xC00000000000 );
 
         if (advertiser.ownAddress.type == ExtendedAddressType.PUBLIC):
             success = success and preamble_set_public_address(transport, lowerTester, toNumber(advertiser.ownAddress.address), trace);
@@ -1052,7 +1052,7 @@ def ll_ddi_scn_bv_12_c(transport, upperTester, lowerTester, trace):
         elif i == 1:
             advertiser.ownAddress = Address( ExtendedAddressType.PUBLIC, address_scramble_LAP(0x456789ABCDEF) );
         elif i == 2:
-            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, address_scramble_OUI(0x456789ABCDEF) );
+            advertiser.ownAddress = Address( ExtendedAddressType.RANDOM, address_scramble_OUI(0x456789ABCDEF) | 0xC00000000000);
 
         if (advertiser.ownAddress.type == ExtendedAddressType.PUBLIC):
             success = success and preamble_set_public_address(transport, lowerTester, toNumber(advertiser.ownAddress.address), trace);
