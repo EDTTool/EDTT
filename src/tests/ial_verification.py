@@ -114,11 +114,11 @@ def send_multiple_small_sdu_cis(transport, transmitter, receiver, trace, cis_han
     success = not has_event(transport, transmitter, 100)[0] and success
 
     # Check the data received
-    s, handle, pbflags, rx_sdu = iso_receive_payload_pdu(transport, receiver, trace, params.SDU_Interval_P_To_C)
-    success = s and pbflags == 2 and tx_sdu_1 == rx_sdu and success
+    s, rx_sdu = iso_receive_sdu(transport, receiver, trace, params.SDU_Interval_P_To_C)
+    success = s and tx_sdu_1 == rx_sdu and success
 
-    s, handle, pbflags, rx_sdu = iso_receive_payload_pdu(transport, receiver, trace, params.SDU_Interval_P_To_C)
-    success = s and pbflags == 2 and tx_sdu_2 == rx_sdu and success
+    s, rx_sdu = iso_receive_sdu(transport, receiver, trace, params.SDU_Interval_P_To_C)
+    success = s and tx_sdu_2 == rx_sdu and success
 
     return success
 

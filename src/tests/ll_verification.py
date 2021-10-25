@@ -5762,14 +5762,12 @@ def sending_and_receiving_data_complete(transport, central, peripheral, trace, p
 
     # Fetch and verify the payloads received
     for conn_handle_p, payload_sent_p in packets_sent[peripheral]:
-        s, conn_handle_c, pb_flags, payload_received_c = iso_receive_payload_pdu(transport, central, trace,
-                                                                                 params.SDU_Interval_P_To_C)
-        success = s and success and payload_sent_p == payload_received_c and pb_flags == 2
+        s, payload_received_c = iso_receive_sdu(transport, central, trace, params.SDU_Interval_P_To_C)
+        success = s and success and payload_sent_p == payload_received_c
 
     for conn_handle_c, payload_sent_c in packets_sent[central]:
-        s, conn_handle_p, pb_flags, payload_received_p = iso_receive_payload_pdu(transport, peripheral, trace,
-                                                                                 params.SDU_Interval_C_To_P)
-        success = s and success and payload_sent_c == payload_received_p and pb_flags == 2
+        s, payload_received_p = iso_receive_sdu(transport, peripheral, trace, params.SDU_Interval_C_To_P)
+        success = s and success and payload_sent_c == payload_received_p
 
     return success
 

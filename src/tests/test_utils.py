@@ -478,39 +478,6 @@ def fetch_number_of_completed_packets(transport, idx, trace, number_of_packets_w
     return len(number_of_completed_packets), number_of_completed_packets.keys(), number_of_completed_packets.values()
 
 
-def iso_receive_payload_pdu(transport, idx, trace, sdu_interval):
-    success, handle, pbflags, rx_iso_sdu = le_iso_data_ready(transport, idx, sdu_interval * 2), -1, -1, []
-    if success:
-        # Receiver: RX SDU
-        time, handle, pbflags, tsflag, rx_iso_data_load = le_iso_data_read(transport, idx, sdu_interval * 2)
-        rx_iso_data_load = bytearray(rx_iso_data_load)
-
-        # Unpack ISO_Data_Load
-        rx_offset = 0
-        # a. Get Time_Stamp if present
-        if tsflag:
-            fmt = '<I'
-            (time_stamp,) = struct.unpack_from(fmt, rx_iso_data_load)
-            rx_offset += struct.calcsize(fmt)
-
-        # b. Get Packet_Sequence_Number, ISO_SDU_Length and Packet_Status_Flag
-        fmt = '<HH'
-        rx_packet_sequence_number, rx_iso_sdu_length = struct.unpack_from(fmt, rx_iso_data_load, rx_offset)
-        rx_offset += struct.calcsize(fmt)
-        rx_packet_status_flag = rx_iso_sdu_length >> 14
-        rx_iso_sdu_length &= 0xfff  # 12 bits valid
-
-        # c. Get ISO_SDU
-        fmt = '<{ISO_SDU_Length}B'.format(ISO_SDU_Length=rx_iso_sdu_length)
-        rx_iso_sdu = struct.unpack_from(fmt, rx_iso_data_load, rx_offset)
-
-        # Valid data. The complete ISO_SDU was received correctly.
-        success = (rx_packet_status_flag == 0x00)
-
-    # TX and RX match
-    return success, handle, pbflags, rx_iso_sdu
-
-
 class PbFlags(IntEnum):
     FIRST = 0
     CONTINUATION = 1
@@ -619,11 +586,11 @@ def iso_send_payload_pdu_parallel(transport, idx_1, idx_2, trace, conn_handle_1,
     success = verifyAndShowEvent(transport, idx_2, Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS, trace) and success
 
     # Check the data received
-    s, handle, pbflags, rx_iso_sdu = iso_receive_payload_pdu(transport, idx_1, trace, sdu_interval)
-    success = s and pbflags == 2 and tx_iso_sdu == rx_iso_sdu and success
+    s, rx_iso_sdu = iso_receive_sdu(transport, idx_1, trace, sdu_interval)
+    success = s and tx_iso_sdu == rx_iso_sdu and success
 
-    s, handle, pbflags, rx_iso_sdu = iso_receive_payload_pdu(transport, idx_2, trace, sdu_interval)
-    success = s and pbflags == 2 and tx_iso_sdu == rx_iso_sdu and success
+    s, rx_iso_sdu = iso_receive_sdu(transport, idx_2, trace, sdu_interval)
+    success = s and tx_iso_sdu == rx_iso_sdu and success
 
     return success
 
