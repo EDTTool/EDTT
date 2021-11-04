@@ -128,7 +128,7 @@ def unpack_bitfield(fmt, value):
 AdvPdu = ('ADV_UNKNOWN_PDU', 'ADV_IND', 'ADV_DIRECT_IND', 'CONNECT_IND')
 LlControlPdu = ('LL_CONTROL_UNKNOWN_PDU', 'LL_TERMINATE_IND', 'LL_CIS_REQ', 'LL_CIS_RSP', 'LL_CIS_IND',
                 'LL_CIS_TERMINATE_IND')
-IsoPdu = ('ISOC_SDU',)
+IsoPdu = ('ISOC_UNKNOWN_PDU', 'ISOC_UNFRAMED_PDU', 'ISOC_FRAMED_PDU')
 PacketType = IntEnum('PacketType', ','.join(AdvPdu + LlControlPdu + IsoPdu))
 
 
@@ -298,8 +298,19 @@ def parse_isoc_pdu(direction, idx, ts, aa, channel_num, phy, data):
     llid, nesn, sn, cie, rfu_1, npi, rfu_2, payload_length = \
         unpack_bitfield('2,1,1,1,1,1,1,8', int.from_bytes(data[:2], 'little', signed=False))
     header = Header(llid, nesn, sn, cie, npi, payload_length)
-    payload_type = PacketType.ISOC_SDU
-    payload = data[2:2 + payload_length]
+    if llid == 0b00 or llid == 0b01:
+        payload_type = PacketType.ISOC_UNFRAMED_PDU
+        payload = data[2:2 + payload_length]
+    elif llid == 0b10:
+        payload_type = PacketType.ISOC_FRAMED_PDU
+        SegmentationHeader = namedtuple('SegmentationHeader', 'SC, CMPLT, RFU, Length')
+        sc, cmplt, rfu, payload_length = unpack_bitfield('1,1,6,8', int.from_bytes(data[2:4], 'little', signed=False))
+        segmentation_header = SegmentationHeader(sc, cmplt, rfu, payload_length)
+        Payload = namedtuple('Payload', 'SegmentationHeader, Payload')
+        payload = Payload(segmentation_header, data[4:4 + payload_length])
+    else:
+        payload_type = PacketType.ISOC_UNKNOWN_PDU
+        payload = data[2:2 + payload_length]
     return Packet(direction, idx, ts, aa, channel_num, phy, data, payload_type, header, payload)
 
 
