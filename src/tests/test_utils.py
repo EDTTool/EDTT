@@ -715,24 +715,24 @@ def enable_encryption(transport, central, peripheral, trace, conn_handle_c, keys
     return success
 
 
-def state_connected_isochronous_stream_peripheral(transport, upperTester, lowerTester, trace, params,
-                                                  setup_iso_data_path=True, enc_keys=None, use_test_cmd=True):
+def state_connected_isochronous_stream(transport, peripheral, central, trace, params,
+                                       setup_iso_data_path=True, enc_keys=None, use_test_cmd=True):
     # The Isochronous Channels (Host Support) FeatureSet bit is set.
-    success = set_isochronous_channels_host_support(transport, upperTester, trace, 1)
-    success = set_isochronous_channels_host_support(transport, lowerTester, trace, 1) and success
+    success = set_isochronous_channels_host_support(transport, peripheral, trace, 1)
+    success = set_isochronous_channels_host_support(transport, central, trace, 1) and success
 
     ### ACL Connection Established. IUT (upperTester) is Peripheral. ###
-    s, advertiser, initiator = establish_acl_connection(transport, lowerTester, upperTester, trace,
+    s, advertiser, initiator = establish_acl_connection(transport, central, peripheral, trace,
                                                         calc_supervision_timeout(params.ISO_Interval * 1.25))
     success = s and success
     if not initiator:
         return success, None, [0xFFFF] * params.CIS_Count
 
     if enc_keys:
-        success = enable_encryption(transport, lowerTester, upperTester, trace, initiator.handles[0], enc_keys) and success
+        success = enable_encryption(transport, central, peripheral, trace, initiator.handles[0], enc_keys) and success
 
     s, central_cis_handles, peripheral_cis_handles = \
-        establish_cis_connection(transport, lowerTester, upperTester, trace, params, initiator.handles[0],
+        establish_cis_connection(transport, central, peripheral, trace, params, initiator.handles[0],
                                  setup_iso_data_path, use_test_cmd)
 
     return s and success, initiator, peripheral_cis_handles, central_cis_handles
