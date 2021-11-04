@@ -767,8 +767,8 @@ class SetCIGParameters:
         ('FT_P_To_C',                       'ft_s2m',      False,   1),
         ('BN_C_To_P',                       'bn_m2s',      True,    1),
         ('BN_P_To_C',                       'bn_s2m',      True,    1),
-        ('Max_Transport_Latency_C_To_P',    None,          True,    40000),  # 40 ms
-        ('Max_Transport_Latency_P_To_C',    None,          True,    40000),  # 40 ms
+        ('Max_Transport_Latency_C_To_P',    None,          False,   40000),  # 40 ms
+        ('Max_Transport_Latency_P_To_C',    None,          False,   40000),  # 40 ms
         ('RTN_C_To_P',                      None,          True,    3),
         ('RTN_P_To_C',                      None,          True,    3),
         ('Max_SDU_Supported',               None,          False,   247),  # Maximum ISOAL SDU length
