@@ -5605,27 +5605,17 @@ def ll_cis_per_bv_01_c(transport, upperTester, lowerTester, trace):
 
     return cis_setup_response_procedure_peripheral(transport, upperTester, lowerTester, trace, params)
 
-"""
-    LL/CIS/PER/BV-02-C [CIS Setup Response Procedure, Peripheral, Reject Response]
-"""
-def ll_cis_per_bv_02_c(transport, upperTester, lowerTester, trace):
-    # Establish Initial Condition
-    #
-    # The Isochronous Channels (Host Support) FeatureSet bit is set.
-    #
-    # An ACL connection has been established between the IUT and Lower Tester with a valid Connection
-    # Handle.
-    #
-    # The Lower Tester acts in the Central role.
+
+def cis_setup_peripheral_rejected(transport, peripheral, central, trace):
     success = True
 
-    status = le_set_host_feature(transport, lowerTester, FeatureSupport.ISOCHRONOUS_CHANNELS, 1, 100)
-    success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
+    status = le_set_host_feature(transport, central, FeatureSupport.ISOCHRONOUS_CHANNELS, 1, 100)
+    success = getCommandCompleteEvent(transport, central, trace) and (status == 0x00) and success
 
-    status = le_set_host_feature(transport, upperTester, FeatureSupport.ISOCHRONOUS_CHANNELS, 1, 100)
-    success = getCommandCompleteEvent(transport, upperTester, trace) and (status == 0x00) and success
+    status = le_set_host_feature(transport, peripheral, FeatureSupport.ISOCHRONOUS_CHANNELS, 1, 100)
+    success = getCommandCompleteEvent(transport, peripheral, trace) and (status == 0x00) and success
 
-    advertiser, initiator = setPublicInitiator(transport, lowerTester, trace, Advertising.CONNECTABLE_UNDIRECTED)
+    advertiser, initiator = setPublicInitiator(transport, central, trace, Advertising.CONNECTABLE_UNDIRECTED)
     success = advertiser.enable() and success
     connected = initiator.connect()
     success = success and connected
@@ -5646,27 +5636,27 @@ def ll_cis_per_bv_02_c(transport, upperTester, lowerTester, trace):
     # NOTE: CIG_ID is hardcoded to 0
     params = SetCIGParameters()
 
-    status, cigId, cisCount, cis_handle_lower_tester = \
-    le_set_cig_parameters_test(transport, lowerTester, 0, *params.get_cig_parameters_test(), 100)
-    success = getCommandCompleteEvent(transport, lowerTester, trace) and (status == 0x00) and success
+    status, cigId, cisCount, cis_handle_central = \
+    le_set_cig_parameters_test(transport, central, 0, *params.get_cig_parameters_test(), 100)
+    success = getCommandCompleteEvent(transport, central, trace) and (status == 0x00) and success
 
-    status = le_create_cis(transport, lowerTester, 1, cis_handle_lower_tester, [initiator.handles[0]], 100)
-    success = verifyAndShowEvent(transport, lowerTester, Events.BT_HCI_EVT_CMD_STATUS, trace) and (status == 0) and success
+    status = le_create_cis(transport, central, 1, cis_handle_central, [initiator.handles[0]], 100)
+    success = verifyAndShowEvent(transport, central, Events.BT_HCI_EVT_CMD_STATUS, trace) and (status == 0) and success
 
     # 3. The Upper Tester receives an HCI_LE_CIS_Request event from the IUT.
-    s, event = verifyAndFetchMetaEvent(transport, upperTester, MetaEvents.BT_HCI_EVT_LE_CIS_REQUEST, trace)
+    s, event = verifyAndFetchMetaEvent(transport, peripheral, MetaEvents.BT_HCI_EVT_LE_CIS_REQUEST, trace)
     success = s and success
-    aclConnectionHandle, cis_handle_upper_tester, cigId, cisId = event.decode()
+    aclConnectionHandle, cis_handle_peripheral, cigId, cisId = event.decode()
 
     # 4. The Upper Tester sends an HCI_LE_Reject_CIS_Request command to the IUT with a valid
     #    reason code and receives a successful return status.
-    status, _ = le_reject_cis_request(transport, upperTester, cis_handle_upper_tester, 0x0D, 100)
+    status, _ = le_reject_cis_request(transport, peripheral, cis_handle_peripheral, 0x0D, 100)
 
     # 5. The Upper Tester receives an HCI_Command_Complete event from the IUT.
-    success = getCommandCompleteEvent(transport, upperTester, trace) and (status == 0x00) and success
+    success = getCommandCompleteEvent(transport, peripheral, trace) and (status == 0x00) and success
 
     # 6. The Lower Tester receives an LL_REJECT_EXT_IND from the IUT with a valid reason code.
-    s, event = verifyAndFetchMetaEvent(transport, lowerTester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace)
+    s, event = verifyAndFetchMetaEvent(transport, central, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace)
     success = s and (event.decode()[0] == 0x0D) and success
 
     ### TERMINATION ###
@@ -5675,7 +5665,12 @@ def ll_cis_per_bv_02_c(transport, upperTester, lowerTester, trace):
     return success
 
 
-def test_cis_map_update(transport, upper_tester, lower_tester, trace, bn_c_to_p, nse, sdu_interval_c_to_p):
+def ll_cis_per_bv_02_c(transport, upperTester, lowerTester, trace):
+    """LL/CIS/PER/BV-02-C [CIS Setup Response Procedure, Peripheral, Reject Response]"""
+    return cis_setup_peripheral_rejected(transport, upperTester, lowerTester, trace)
+
+
+def test_cis_map_update(transport, peripheral, central, trace, bn_c_to_p, nse, sdu_interval_c_to_p):
     params = SetCIGParameters(
         SDU_Interval_C_To_P     = sdu_interval_c_to_p,
         ISO_Interval            = int(100 // 1.25),  # 100 ms
@@ -5686,28 +5681,24 @@ def test_cis_map_update(transport, upper_tester, lower_tester, trace, bn_c_to_p,
     )
 
     success, initiator, _, (cis_conn_handle,) = \
-        state_connected_isochronous_stream(transport, upper_tester, lower_tester, trace, params)
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params)
     if not initiator:
         return success
 
     acl_handle = initiator.handles[1]
+    channel_map_new = 0x1249249249
+    success = channelMapUpdate(transport, central, channel_map_new, trace) and success
 
-    # 1. The Lower Tester sends an LL_CHANNEL_MAP_IND command to the IUT with the ChM field in CtrData field value
-    #    0x1249249249 and a valid instant field value.
-    success = channelMapUpdate(transport, lower_tester, 0x1249249249, trace) and success
-
-    # 2. After the instant has passed, the Upper Tester sends an HCI_LE_Read_Channel_Map command to IUT.
     instant_to = initiator.prevInterval * 10  # TODO: calculate based on LL_CHANNEL_MAP_IND PDU instant
     transport.wait(instant_to)
-    status, handle, channel_map = le_read_channel_map(transport, upper_tester, acl_handle, 100)
-    success = getCommandCompleteEvent(transport, upper_tester, trace) and status == 0x00 and handle == acl_handle and success
+    status, handle, channel_map = le_read_channel_map(transport, peripheral, acl_handle, 100)
+    success = getCommandCompleteEvent(transport, peripheral, trace) and status == 0x00 and handle == acl_handle and success
 
-    # 3. The Lower Upper Tester receives the return parameter Channel_Map, which has the value 0x1249249249.
-    success = channel_map == 0x1249249249 and success
+    success = channel_map == channel_map_new and success
 
     # 4. The Lower Tester sends data packets to the IUT.
     for pkt_seq_num in range(50):
-        success = iso_send_payload_pdu(transport, lower_tester, upper_tester, trace, cis_conn_handle,
+        success = iso_send_payload_pdu(transport, central, peripheral, trace, cis_conn_handle,
                                        params.Max_SDU_C_To_P[0], params.SDU_Interval_C_To_P, pkt_seq_num) and success
 
     ### TERMINATION ###
@@ -5949,16 +5940,18 @@ def ll_cis_per_bv_07_c(transport, upper_tester, lower_tester, trace):
     return success
 
 
-"""
-    LL/CIS/PER/BV-18-C [CIS Updating Peer Clock Accuracy]
-"""
-def ll_cis_per_bv_18_c(transport, upper_tester, lower_tester, trace):
+def cis_updating_peer_clock_accuracy(transport, upper_tester, lower_tester, trace, role):
+    assert role == "Peripheral" or role == "Central"
     # Initial Condition
 
     # Connected in the relevant role.
     # An ACL connection has been established between the IUT and Lower Tester with a valid Connection Handle.
-    success, advertiser, initiator = establish_acl_connection(transport, lower_tester, upper_tester, trace)
-    acl_conn_handle = initiator.handles[1]
+    if role == "Peripheral":
+        success, advertiser, initiator = establish_acl_connection(transport, lower_tester, upper_tester, trace)
+        acl_conn_handle = initiator.handles[1]
+    else:
+        success, advertiser, initiator = establish_acl_connection(transport, upper_tester, lower_tester, trace)
+        acl_conn_handle = initiator.handles[0]
 
     # 1. The Upper Tester sends an HCI_LE_Request_Peer_SCA command to the IUT with a valid Connection_Handle.
     # 2. The Upper Tester receives the Command Status event.
@@ -5987,6 +5980,11 @@ def ll_cis_per_bv_18_c(transport, upper_tester, lower_tester, trace):
     success = initiator.disconnect(0x13) and success
 
     return success
+
+
+def ll_cis_per_bv_18_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/PER/BV-18-C [CIS Updating Peer Clock Accuracy]"""
+    return cis_updating_peer_clock_accuracy(transport, upper_tester, lower_tester, trace, "Peripheral")
 
 
 """
@@ -6479,35 +6477,8 @@ def ll_cis_per_bv_40_c(transport, upper_tester, lower_tester, trace):
     return cis_setup_response_procedure_peripheral(transport, upper_tester, lower_tester, trace, params)
 
 
-"""
-    LL/CIS/PER/BV-12-C [Cis Terminate Procedure, Initiated - Peripheral]
-"""
-def ll_cis_per_bv_12_c(transport, upper_tester, lower_tester, trace, packets):
-    # Initial Condition
-    #
-    # Connected in the relevant role as defined in the following initial states:
-    #
-    # State: Connected Isochronous Stream, Peripheral (values as specified in Table)
-    #
-    # +-------------------------+----------------+
-    # | State Variable Value(s) |                |
-    # +-------------------------+----------------+
-    # | sdu_int_m2s             | 0x4E20 (20 ms) |
-    # | sdu_int_s2m             | 0x4E20 (20 ms) |
-    # | ft_m2s                  | 1              |
-    # | ft_s2m                  | 1              |
-    # | iso_int                 | 0x10 (20 ms)   |
-    # | packing                 | default        |
-    # | framing                 | default        |
-    # | cis_cnt                 | 1              |
-    # | nse[]                   | 0x01           |
-    # | mx_pdu_m2s[]            | 130            |
-    # | mx_pdu_s2m[]            | 130            |
-    # | phy_m2s[]               | 0x01           |
-    # | phy_s2m[]               | 0x01           |
-    # | bn_m2s[]                | 0x01           |
-    # | bn_s2m[]                | 0x01           |
-    # +-------------------------+----------------+
+def cis_terminate_procedure_initiated(transport, upper_tester, lower_tester, trace, role, packets):
+    assert role == "Peripheral" or role == "Central"
     params = SetCIGParameters(
             SDU_Interval_C_To_P     = 20000,
             SDU_Interval_P_To_C     = 20000,
@@ -6525,32 +6496,85 @@ def ll_cis_per_bv_12_c(transport, upper_tester, lower_tester, trace, packets):
             BN_P_To_C               = 1,
     )
 
-    success, initiator, (upper_tester_cis_handle,), (lower_tester_cis_handle,) = \
-        state_connected_isochronous_stream(transport, upper_tester, lower_tester, trace, params)
+    if role == "Peripheral":
+        success, initiator, (upper_tester_cis_handle,), (lower_tester_cis_handle,) = \
+            state_connected_isochronous_stream(transport, upper_tester, lower_tester, trace, params)
+    else:
+        success, initiator, (lower_tester_cis_handle,), (upper_tester_cis_handle,) = \
+            state_connected_isochronous_stream(transport, lower_tester, upper_tester, trace, params)
+
     if not initiator:
-        return success;
+        return success
 
     # Test procedure
     # 1. A payload PDU and Ack is sent between the IUT and Lower Tester
     success = iso_send_payload_pdu(transport, lower_tester, upper_tester, trace, lower_tester_cis_handle,
                                    params.Max_SDU_C_To_P[0], params.SDU_Interval_C_To_P, 0) and success
 
-    # 2. The Upper Tester sends an HCI_Disconnect to the IUT and receives HCI_Command_status IUT.
+    # 2. If IUT is Peripheral, skip to step 5.
+    if role == "Central":
+        # 3. The Upper Tester sends an HCI_LE_Remove_CIG command with the CIG_ID value obtained when the CIG was
+        #       established.
+        status, _ = le_remove_cig(transport, upper_tester, 0, 100)  # CIG_ID is hardcoded to 0
+        # 4. The Upper Tester receives an HCI_Command_Complete event with error code Command Disallowed (0x0C).
+        success = verifyAndShowEvent(transport, upper_tester, Events.BT_HCI_EVT_CMD_COMPLETE, trace) and success
+        success = status == 0x0C and success
+
+    # 5. The Upper Tester sends an HCI_Disconnect to the IUT and receives HCI_Command_status IUT.
     reason_code = 0x13
     status = disconnect(transport, upper_tester, upper_tester_cis_handle, reason_code, 200)
     success = verifyAndShowEvent(transport, upper_tester, Events.BT_HCI_EVT_CMD_STATUS, trace) and (status == 0) and success
 
-    # 3. The Lower Tester receives an LL_CIS_TERMINATE_IND PDU from the IUT and the ErrorCode
+    # 6. The Lower Tester receives an LL_CIS_TERMINATE_IND PDU from the IUT and the ErrorCode
     #        field in the CtrData field matches the Reason code value the Upper Tester sent in step 45.
     def check_ll_cis_terminate_ind():
         packet = packets.find('LL_CIS_TERMINATE_IND')
         return packet and packet.payload.CtrData.ErrorCode == reason_code
-    # 4. The Lower Tester sends an Ack to the IUT.
+    # 7. The Lower Tester sends an Ack to the IUT.
 
-    # 5. The Upper Tester receives an HCI_Disconnection_Complete event from the IUT.
+    # 8. The Upper Tester receives an HCI_Disconnection_Complete event from the IUT.
     s, event = verifyAndFetchEvent(transport, upper_tester, Events.BT_HCI_EVT_DISCONN_COMPLETE, trace)
     status, handle, reason = event.decode()
     success = s and (status == 0x00) and handle == upper_tester_cis_handle and success
+
+    success = verifyAndShowEvent(transport, lower_tester, Events.BT_HCI_EVT_DISCONN_COMPLETE, trace) and success
+
+    # 9. If IUT is Central, proceed to step 10. If IUT is Peripheral, test is complete.
+    if role == "Central":
+        # 10. The Upper Tester sends an HCI_LE_Create_CIS command to the IUT with the CIS Connection_Handle in step 5
+        #       and receives a successful HCI_Command_Status event from the IUT in response.
+        success = le_create_cis(transport, upper_tester, 1, [upper_tester_cis_handle], [initiator.handles[0]], 100) == 0
+        success = verifyAndShowEvent(transport, upper_tester, Events.BT_HCI_EVT_CMD_STATUS, trace) and success
+        # 11. The IUT sends an LL_CIS_REQ PDU to the Lower Tester with all fields set to valid values.
+        # 12. The Lower Tester sends an LL_CIS_RSP PDU to the IUT.
+        # 13. The IUT sends an LL_CIS_IND PDU to the Lower Tester.
+        # 14. The IUT sends a Null ISO Data packet to the Lower Tester.
+        # 15. The Lower Tester sends an LL ACK to the IUT.
+        # LT: Wait for HCI_EVT_LE_CIS_REQUEST
+        s, event = verifyAndFetchMetaEvent(transport, lower_tester, MetaEvents.BT_HCI_EVT_LE_CIS_REQUEST, trace)
+        success = s and success
+        lower_tester_cis_handle = event.decode()[1]
+
+        # LT: Accept CIS Request
+        success = le_accept_cis_request(transport, lower_tester, lower_tester_cis_handle, 100) == 0 and success
+        success = verifyAndShowEvent(transport, lower_tester, Events.BT_HCI_EVT_CMD_STATUS, trace) and success
+
+        # 16. The IUT sends an HCI_LE_CIS_Established event to the Upper Tester with the CIS_Connection_Handle set to
+        #       the value in step 10.
+        s, event = verifyAndFetchMetaEvent(transport, upper_tester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace, 2000)
+        success = s and (event.decode()[0] == 0x00) and (event.decode()[1] == upper_tester_cis_handle) and success
+
+        # LT: Wait for HCI_EVT_LE_CIS_ESTABLISHED
+        s, event = verifyAndFetchMetaEvent(transport, lower_tester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace)
+        success = s and (event.decode()[0] == 0x00) and success
+
+        # 17. The Upper Tester begins providing data to the IUT to send to the Lower Tester.
+        # 18. The IUT sends the data to the Lower Tester.
+        # 19. The Lower Tester sends isochronous data to the IUT.
+        # 20. The IUT provides the Lower Tester’s isochronous data to the Upper Tester.
+        success = iso_send_payload_pdu_parallel(transport, upper_tester, lower_tester, trace, upper_tester_cis_handle,
+                                                lower_tester_cis_handle, params.Max_SDU_C_To_P[0],
+                                                params.SDU_Interval_C_To_P, 0) and success
 
     ### LL VERIFICATION ###
     success = check_ll_cis_terminate_ind() and success
@@ -6561,36 +6585,13 @@ def ll_cis_per_bv_12_c(transport, upper_tester, lower_tester, trace, packets):
     return success
 
 
-"""
-    LL/CIS/PER/BV-13-C [CIS Terminate Procedure, Accepting, Peripheral]
-"""
-def ll_cis_per_bv_13_c(transport, upper_tester, lower_tester, trace):
-    # Initial Condition
-    #
-    # Connected in the relevant role as defined in the following initial states:
-    #
-    # State: Connected Isochronous Stream, Peripheral (values as specified in Table)
-    #
-    # +-------------------------+----------------+
-    # | State Variable Value(s) |                |
-    # +-------------------------+----------------+
-    # | sdu_int_m2s             | 0x4E20 (20 ms) |
-    # | sdu_int_s2m             | 0x4E20 (20 ms) |
-    # | ft_m2s                  | 1              |
-    # | ft_s2m                  | 1              |
-    # | iso_int                 | 0x10 (20 ms)   |
-    # | packing                 | default        |
-    # | framing                 | default        |
-    # | cis_cnt                 | 1              |
-    # | nse[]                   | 0x01           |
-    # | mx_pdu_m2s[]            | 130            |
-    # | mx_pdu_s2m[]            | 130            |
-    # | phy_m2s[]               | 0x01           |
-    # | phy_s2m[]               | 0x01           |
-    # | bn_m2s[]                | 0x01           |
-    # | bn_s2m[]                | 0x01           |
-    # +-------------------------+----------------+
+def ll_cis_per_bv_12_c(transport, upper_tester, lower_tester, trace, packets):
+    """LL/CIS/PER/BV-12-C [Cis Terminate Procedure, Initiated - Peripheral]"""
+    return cis_terminate_procedure_initiated(transport, upper_tester, lower_tester, trace, "Peripheral", packets)
 
+
+def cis_terminate_procedure_accepting(transport, upper_tester, lower_tester, trace, role):
+    assert role == "Peripheral" or role == "Central"
     params = SetCIGParameters(
         SDU_Interval_C_To_P     = 20000,  # 20 ms
         SDU_Interval_P_To_C     = 20000,  # 20 ms
@@ -6606,8 +6607,13 @@ def ll_cis_per_bv_13_c(transport, upper_tester, lower_tester, trace):
         BN_P_To_C               = 1,
     )
 
-    success, initiator, (upper_tester_cis_handle,), (lower_tester_cis_handle,) = \
-        state_connected_isochronous_stream(transport, upper_tester, lower_tester, trace, params)
+    if role == "Peripheral":
+        success, initiator, (upper_tester_cis_handle,), (lower_tester_cis_handle,) = \
+            state_connected_isochronous_stream(transport, upper_tester, lower_tester, trace, params)
+    else:
+        success, initiator, (lower_tester_cis_handle,), (upper_tester_cis_handle,) = \
+            state_connected_isochronous_stream(transport, lower_tester, upper_tester, trace, params)
+
     if not initiator:
         return success
 
@@ -6648,7 +6654,12 @@ def ll_cis_per_bv_13_c(transport, upper_tester, lower_tester, trace):
     return success
 
 
-def iso_transmit_receive_test_mode(transport, transmitter, receiver, trace, transmitter_cis_handle, receiver_cis_handle,
+def ll_cis_per_bv_13_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/PER/BV-13-C [CIS Terminate Procedure, Accepting, Peripheral]"""
+    return cis_terminate_procedure_accepting(transport, upper_tester, lower_tester, trace, "Peripheral")
+
+
+def iso_test_mode_common_procedure(transport, transmitter, receiver, trace, transmitter_cis_handle, receiver_cis_handle,
                                    payload_type):
     # 1. The Transmitter sends the HCI_LE_ISO_Transmit_Test command with PayloadType as specified in Table and
     # receives a successful HCI_Command_Complete event from the IUT in response.
@@ -6701,118 +6712,871 @@ def iso_transmit_receive_test_mode(transport, transmitter, receiver, trace, tran
     return success, received_sdu_count, missed_sdu_count, failed_sdu_count
 
 
-"""
-    LL/IST/PER/BV-01-C [ISO Transmit Test Mode, CIS]
-"""
-def ll_ist_per_bv_01_c(transport, upper_tester, lower_tester, trace):
-    # Initial Condition
-    #
-    # State: Connected Isochronous Stream, Peripheral ((...) Default Values for Set CIG Parameters Commands),
-    # with the exception that the HCI_LE_Setup_ISO_Data_Path command is not executed once the CIG is established.
-    params = SetCIGParameters()  # Default parameters
+def iso_transmit_test_mode_cis(transport, upper_tester, lower_tester, trace, is_upper_tester_central):
+    params = SetCIGParameters()
 
-    success, initiator, (upper_tester_cis_handle,), (lower_tester_cis_handle,) =\
-        state_connected_isochronous_stream(transport, upper_tester, lower_tester, trace, params,
-                                           setup_iso_data_path=False)
+    if is_upper_tester_central:
+        success, initiator, (lower_tester_cis_handle,), (upper_tester_cis_handle,) = \
+            state_connected_isochronous_stream(transport, lower_tester, upper_tester, trace, params,
+                                               setup_iso_data_path=False)
+    else:
+        success, initiator, (upper_tester_cis_handle,), (lower_tester_cis_handle,) = \
+            state_connected_isochronous_stream(transport, upper_tester, lower_tester, trace, params,
+                                               setup_iso_data_path=False)
     if not initiator:
         return success
 
-    # Test Procedure
-    # +-------+--------------+--------------------------------------------------------------------------------------+
-    # | Round | Payload_Type |                                                              Payload                 |
-    # +-------+--------------+--------------------------------------------------------------------------------------+
-    # |     1 |            0 | Each isochronous data PDU has a payload length = 0.                                  |
-    # |     2 |            1 | The first four octets of the isochronous data PDU contains a single 32-bit SDU count |
-    # |       |              | value. The remaining data is vendor specific.                                        |
-    # |     3 |            2 | The first four octets of the isochronous data PDU contains a single 32-bit SDU count |
-    # |       |              | value. The remaining data is vendor specific.                                        |
-    # +-------+--------------+--------------------------------------------------------------------------------------+
-    # For each round in Table execute steps 1–4:
-    payload_types = {
-        "Zero length payload": 0x00,
-        "Variable length payload": 0x01,
-        "Maximum length payload": 0x02,
-    }
-    for payload_name, payload_type in payload_types.items():
+    testData = namedtuple('testData', 'Name, Payload_Type')
+    rounds = [
+        testData("Zero length payload", 0x00),
+        testData("Variable length payload", 0x01),
+        testData("Maximum length payload", 0x02),
+    ]
+    for name, payload_type in rounds:
         success, received_sdu_count, missed_sdu_count, failed_sdu_count = \
-            iso_transmit_receive_test_mode(transport, upper_tester, lower_tester, trace, upper_tester_cis_handle,
+            iso_test_mode_common_procedure(transport, upper_tester, lower_tester, trace, upper_tester_cis_handle,
                                            lower_tester_cis_handle, payload_type)
 
         trace.trace(5, "%s done, received_sdu_count=%d missed_sdu_count=%d failed_sdu_count=%d" %
-                    (payload_name, received_sdu_count, missed_sdu_count, failed_sdu_count))
+                    (name, received_sdu_count, missed_sdu_count, failed_sdu_count))
 
     ### TERMINATION ###
     success = initiator.disconnect(0x13) and success
 
-    # Pass verdict
-    # - The Upper Tester successfully starts the ISO Transmit Test in step 1.
-    # - The IUT successfully sends five rounds of isochronous data PDUs to the Lower Tester.
     return success
 
 
-"""
-    LL/IST/PER/BV-03-C [ISO Receive Test Mode, CIS]
-"""
-def ll_ist_per_bv_03_c(transport, upper_tester, lower_tester, trace):
-    # Initial Condition
-    #
-    # State: Connected Isochronous Stream, Peripheral ((...) Default Values for Set CIG Parameters Commands),
-    # with the exception that the HCI_LE_Setup_ISO_Data_Path command is not executed once the CIG is established and
-    # ISO_Interval is set to 400 ms.
+def ll_ist_per_bv_01_c(transport, upper_tester, lower_tester, trace):
+    """LL/IST/PER/BV-01-C [ISO Transmit Test Mode, CIS]"""
+    return iso_transmit_test_mode_cis(transport, upper_tester, lower_tester, trace, False)
 
-    params = SetCIGParameters(
-        SDU_Interval_C_To_P = 400000,  # 400 ms
-        SDU_Interval_P_To_C = 400000,  # 400 ms
-        ISO_Interval        = int(400 // 1.25),  # 400 ms
-    )
 
-    initiator = None
+def iso_receive_test_mode_cis(transport, upper_tester, lower_tester, trace, is_upper_tester_central):
+    def establish_acl_and_cis(framing):
+        params = SetCIGParameters(
+            Framing                 = framing,
+            SDU_Interval_C_To_P     = 400000,  # 400 ms
+            SDU_Interval_P_To_C     = 400000,  # 400 ms
+            ISO_Interval            = int(400 // 1.25),  # 400 ms
+        )
 
-    # Test Procedure
-    # +-------+---------+--------------+--------------------+
-    # | Round | Framing | Payload_Type | Received_SDU_Count |
-    # +-------+---------+--------------+--------------------+
-    # |     1 |       0 |            0 |                  5 |
-    # |     2 |       0 |            1 |                  5 |
-    # |     3 |       0 |            2 |                  5 |
-    # |     4 |       1 |            2 |                  5 |
-    # |     5 |       1 |            1 |                  5 |
-    # +-------+---------+--------------+--------------------+
-    payload_types = {
-        "Zero length payload unframed": (0, 0x00),
-        "Variable length payload unframed": (0, 0x01),
-        "Maximum length payload unframed": (0, 0x02),
-        "Maximum length payload framed": (1, 0x02),
-        "Variable length payload framed": (1, 0x01),
-    }
-    # For each round in Table, execute steps 1–7:
-    for payload_name, (framing, payload_type) in payload_types.items():
-        # When Framing is changing between rounds, Isochronous link needs to be terminated and re-established with
-        # correct Framing, as framing cannot be changed after creation.
-        if framing != params.Framing:
-            params.Framing = framing
-            if initiator:
-                success = initiator.disconnect(0x13) and success
-                initiator = None
-
-        if not initiator:
-            success, initiator, _, (upper_tester_cis_handle,), (lower_tester_cis_handle,) = \
+        if is_upper_tester_central:
+            success, initiator, (lower_tester_cis_handle,), (upper_tester_cis_handle,) = \
+                state_connected_isochronous_stream(transport, lower_tester, upper_tester, trace, params,
+                                                   setup_iso_data_path=False)
+        else:
+            success, initiator, (upper_tester_cis_handle,), (lower_tester_cis_handle,) = \
                 state_connected_isochronous_stream(transport, upper_tester, lower_tester, trace, params,
                                                    setup_iso_data_path=False)
-            if not initiator:
-                return success
 
-        success, received_sdu_count, missed_sdu_count, failed_sdu_count = \
-            iso_transmit_receive_test_mode(transport, lower_tester, upper_tester, trace, lower_tester_cis_handle,
-                                           upper_tester_cis_handle, payload_type)
+        return success and initiator, initiator, upper_tester_cis_handle, lower_tester_cis_handle
+
+    testData = namedtuple('testData', 'Name, Framing, Payload_Type')
+    rounds = [
+        testData("Zero length payload unframed", 0, 0x00),
+        testData("Variable length payload unframed", 0, 0x01),
+        testData("Maximum length payload unframed", 0, 0x02),
+        testData("Maximum length payload framed", 1, 0x02),
+        testData("Variable length payload framed", 1, 0x01),
+    ]
+    previous = rounds[0]
+    success, initiator, upper_tester_cis_handle, lower_tester_cis_handle = establish_acl_and_cis(previous.Framing)
+    for current in rounds:
+        # When Framing is changing between rounds, Isochronous link needs to be terminated and re-established with
+        # correct Framing, as framing cannot be changed after creation.
+        if current.Framing != previous.Framing:
+            success = initiator.disconnect(0x13) and success
+
+            if is_upper_tester_central:
+                status, _ = le_remove_cig(transport, upper_tester, 0, 100)
+                success = getCommandCompleteEvent(transport, upper_tester, trace) and status == 0x00 and success
+            else:
+                status, _ = le_remove_cig(transport, lower_tester, 0, 100)
+                success = getCommandCompleteEvent(transport, lower_tester, trace) and status == 0x00 and success
+
+            s, initiator, upper_tester_cis_handle, lower_tester_cis_handle = establish_acl_and_cis(current.Framing)
+            success = s and success
+
+        s, received_sdu_count, missed_sdu_count, failed_sdu_count = \
+            iso_test_mode_common_procedure(transport, lower_tester, upper_tester, trace, lower_tester_cis_handle,
+                                           upper_tester_cis_handle, current.Payload_Type)
+        success = s and success
+
+        previous = current
 
         trace.trace(5, "%s done, received_sdu_count=%d missed_sdu_count=%d failed_sdu_count=%d" %
-                    (payload_name, received_sdu_count, missed_sdu_count, failed_sdu_count))
+                    (current.Name, received_sdu_count, missed_sdu_count, failed_sdu_count))
 
     ### TERMINATION ###
     success = initiator.disconnect(0x13) and success
 
     return success
+
+
+def ll_ist_per_bv_03_c(transport, upper_tester, lower_tester, trace):
+    """LL/IST/PER/BV-03-C [ISO Receive Test Mode, CIS]"""
+    return iso_receive_test_mode_cis(transport, upper_tester, lower_tester, trace, False)
+
+
+def cis_setup_procedure_central_initiated(transport, upper_tester, lower_tester, trace, params):
+    success, initiator, (cis_handle,), _ = \
+        state_connected_isochronous_stream(transport, lower_tester, upper_tester, trace, params)
+
+    def lt_send_data_packet(pkt_seq_num):
+        return iso_send_payload_pdu(transport, upper_tester, lower_tester, trace, cis_handle,
+                                    params.Max_SDU_C_To_P[0], params.SDU_Interval_C_To_P, pkt_seq_num)
+
+    for j in range(50 // params.BN_C_To_P[0]):
+        success = lt_send_data_packet(j) and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
+
+
+def ll_cis_cen_bv_01_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-01-C [CIS Setup Procedure, Central Initiated]"""
+    max_cis_nse = get_ixit_value(transport, upper_tester, IXITS["TSPX_max_cis_nse"], 100)
+    params = SetCIGParameters(
+        PHY_C_To_P              = 1,
+        BN_C_To_P               = 2,
+        FT_C_To_P               = 1,
+        Max_PDU_C_To_P          = 130,
+        PHY_P_To_C              = 1,
+        BN_P_To_C               = 2,
+        FT_P_To_C               = 1,
+        Max_PDU_P_To_C          = 130,
+        NSE                     = min(4, max_cis_nse),
+        SDU_Interval_C_To_P     = 0x2710,  # 10 ms
+        SDU_Interval_P_To_C     = 0x2710,  # 10 ms
+        ISO_Interval            = 0x10,  # 20 ms
+    )
+
+    return cis_setup_procedure_central_initiated(transport, upper_tester, lower_tester, trace, params)
+
+
+def ll_cis_cen_bv_02_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-02-C [CIS Setup Procedure, Central Initiated]"""
+    max_cis_nse = get_ixit_value(transport, upper_tester, IXITS["TSPX_max_cis_nse"], 100)
+    params = SetCIGParameters(
+        PHY_C_To_P              = 2,
+        BN_C_To_P               = 2,
+        FT_C_To_P               = 2,
+        Max_PDU_C_To_P          = 251,
+        PHY_P_To_C              = 2,
+        BN_P_To_C               = 2,
+        FT_P_To_C               = 1,
+        Max_PDU_P_To_C          = 251,
+        NSE                     = min(4, max_cis_nse),
+        SDU_Interval_C_To_P     = 0x4E20,  # 20 ms
+        SDU_Interval_P_To_C     = 0x2710,  # 10 ms
+        ISO_Interval            = 0x10,  # 20 ms
+    )
+
+    return cis_setup_procedure_central_initiated(transport, upper_tester, lower_tester, trace, params)
+
+
+def ll_cis_cen_bv_31_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-31-C [CIS Setup Procedure, Central Initiated]"""
+    max_cis_nse = get_ixit_value(transport, upper_tester, IXITS["TSPX_max_cis_nse"], 100)
+    params = SetCIGParameters(
+        PHY_C_To_P              = 2,
+        BN_C_To_P               = 2,
+        FT_C_To_P               = 1,
+        Max_PDU_C_To_P          = 130,
+        PHY_P_To_C              = 1,
+        BN_P_To_C               = 2,
+        FT_P_To_C               = 1,
+        Max_PDU_P_To_C          = 130,
+        NSE                     = min(4, max_cis_nse),
+        SDU_Interval_C_To_P     = 0x2710,  # 10 ms
+        SDU_Interval_P_To_C     = 0x2710,  # 10 ms
+        ISO_Interval            = 0x10,  # 20 ms
+    )
+
+    return cis_setup_procedure_central_initiated(transport, upper_tester, lower_tester, trace, params)
+
+
+def ll_cis_cen_bv_39_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-39-C [CIS Setup Procedure, Central Initiated]"""
+    params = SetCIGParameters(
+        PHY_C_To_P              = 2,
+        BN_C_To_P               = 1,
+        FT_C_To_P               = 1,
+        Max_PDU_C_To_P          = 130,
+        PHY_P_To_C              = 2,
+        BN_P_To_C               = 1,
+        FT_P_To_C               = 1,
+        Max_PDU_P_To_C          = 50,
+        NSE                     = 1,
+        SDU_Interval_C_To_P     = 0x4E20,  # 20 ms
+        SDU_Interval_P_To_C     = 0x4E20,  # 20 ms
+        ISO_Interval            = 0x10,  # 20 ms
+    )
+
+    return cis_setup_procedure_central_initiated(transport, upper_tester, lower_tester, trace, params)
+
+
+def ll_cis_cen_bv_03_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-03-C [CIS Setup Procedure, Central Initiated, Rejected]"""
+    return cis_setup_peripheral_rejected(transport, lower_tester, upper_tester, trace)
+
+
+def ll_cis_cen_bv_04_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-04-C [New Channel Map]"""
+    max_cis_nse = get_ixit_value(transport, upper_tester, IXITS["TSPX_max_cis_nse"], 100)
+    return test_cis_map_update(transport, lower_tester, upper_tester, trace, 2, min(3, max_cis_nse), 100000)
+
+
+def ll_cis_cen_bv_40_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-40-C [New Channel Map]"""
+    return test_cis_map_update(transport, lower_tester, upper_tester, trace, 1, 1, 200000)
+
+
+def ll_cis_cen_bv_07_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-07-C [Sending and Receiving Data in Bidirectional CIS]"""
+    return test_sending_and_receiving_data_in_bidirectional_cis(transport, upper_tester, lower_tester, trace)
+
+
+def ll_cis_cen_bv_35_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-35-C [Sending and Receiving Data in Bidirectional CIS, Encryption]"""
+    return test_sending_and_receiving_data_in_bidirectional_cis(transport, upper_tester, lower_tester, trace, ENC_KEYS)
+
+
+def ll_cis_cen_bv_47_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-47-C [Sending and Receiving Data in Bidirectional CIS, BN = 1]"""
+    return test_sending_and_receiving_data_in_bidirectional_cis_bn_1(transport, upper_tester, lower_tester, trace)
+
+
+def ll_cis_cen_bv_48_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-48-C [Sending and Receiving Data in Bidirectional CIS, BN = 1, Encryption]"""
+    return test_sending_and_receiving_data_in_bidirectional_cis_bn_1(transport, upper_tester, lower_tester, trace,
+                                                                     ENC_KEYS)
+
+
+def ll_cis_cen_bv_45_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-45-C [Sending Data in Unidirectional CIS, BN = 1]"""
+    params = SetCIGParameters(
+        SDU_Interval_C_To_P     = 0x186A0,  # 100 ms
+        SDU_Interval_P_To_C     = 0x186A0,  # 100 ms
+        FT_C_To_P               = 1,
+        FT_P_To_C               = 1,
+        ISO_Interval            = 0x50,  # 100 ms
+        CIS_Count               = 1,
+        NSE                     = 1,
+        Max_PDU_C_To_P          = 251,
+        Max_PDU_P_To_C          = 0,
+        PHY_C_To_P              = 1,
+        PHY_P_To_C              = 1,
+        BN_C_To_P               = 1,
+        BN_P_To_C               = 0,
+    )
+
+    success, initiator, _, (cis_conn_handle,) = \
+        state_connected_isochronous_stream(transport, lower_tester, upper_tester, trace, params)
+    if not initiator:
+        return success
+
+    success = iso_send_payload_pdu(transport, upper_tester, lower_tester, trace, cis_conn_handle,
+                                   params.Max_SDU_C_To_P[0], params.SDU_Interval_C_To_P, 0) and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
+
+
+def ll_cis_cen_bv_06_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-06-C [Receiving Data in Unidirectional CIS]"""
+    max_cis_nse = get_ixit_value(transport, upper_tester, IXITS["TSPX_max_cis_nse"], 100)
+    params = SetCIGParameters(
+        SDU_Interval_C_To_P     = 0xC350,  # 50 ms
+        SDU_Interval_P_To_C     = 0xC350,  # 50 ms
+        FT_C_To_P               = 1,
+        FT_P_To_C               = 1,
+        ISO_Interval            = 0x50,  # 100 ms
+        CIS_Count               = 1,
+        NSE                     = min(4, max_cis_nse),
+        Max_PDU_C_To_P          = 0,
+        # Max_PDU_P_To_C          = default,
+        PHY_C_To_P              = 1,
+        PHY_P_To_C              = 1,
+        BN_C_To_P               = 0,
+        BN_P_To_C               = 2,
+    )
+
+    success, initiator, (cis_conn_handle,), _ = \
+        state_connected_isochronous_stream(transport, lower_tester, upper_tester, trace, params)
+    if not initiator:
+        return success
+
+    for seq_num in range(2):
+        success = iso_send_payload_pdu(transport, lower_tester, upper_tester, trace, cis_conn_handle,
+                                       params.Max_SDU_P_To_C[0], params.SDU_Interval_P_To_C, seq_num) and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
+
+
+def ll_cis_cen_bv_46_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-46-C [Receiving Data in Unidirectional CIS, BN = 1]"""
+    params = SetCIGParameters(
+        SDU_Interval_C_To_P     = 0x186A0,  # 100 ms
+        SDU_Interval_P_To_C     = 0x186A0,  # 100 ms
+        FT_C_To_P               = 1,
+        FT_P_To_C               = 1,
+        ISO_Interval            = 0x50,  # 100 ms
+        CIS_Count               = 1,
+        NSE                     = 1,
+        Max_PDU_C_To_P          = 0,
+        Max_PDU_P_To_C          = 251,
+        PHY_C_To_P              = 1,
+        PHY_P_To_C              = 1,
+        BN_C_To_P               = 0,
+        BN_P_To_C               = 1,
+    )
+
+    success, initiator, (cis_conn_handle,), _ = \
+        state_connected_isochronous_stream(transport, lower_tester, upper_tester, trace, params)
+    if not initiator:
+        return success
+
+    success = iso_send_payload_pdu(transport, lower_tester, upper_tester, trace, cis_conn_handle,
+                                   params.Max_SDU_P_To_C[0], params.SDU_Interval_P_To_C, 0) and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
+
+
+def central_send_and_receive_data_in_multi_cises_single_cig_single_conn_interleaved(transport, central, peripheral,
+                                                                                    trace, bn, sdu_interval, nse):
+    params = SetCIGParameters(
+        SDU_Interval_C_To_P     = sdu_interval,
+        SDU_Interval_P_To_C     = sdu_interval,
+        FT_C_To_P               = 1,
+        FT_P_To_C               = 1,
+        ISO_Interval            = 0x50,  # 100 ms
+        Packing                 = 1,  # Interleaved
+        CIS_Count               = 2,
+        NSE                     = nse,
+        PHY_C_To_P              = 1,
+        PHY_P_To_C              = 1,
+        BN_C_To_P               = bn,
+        BN_P_To_C               = bn,
+    )
+
+    return test_sending_and_receiving_data_in_multiple_cises(transport, central, peripheral, trace, params, 1)
+
+
+def ll_cis_cen_bv_08_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-08-C [Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG,
+     Central]"""
+    return central_send_and_receive_data_in_multi_cises_single_cig_single_conn_interleaved(
+        transport, upper_tester, lower_tester, trace, 2, 0xC350, 4)
+
+
+def ll_cis_cen_bv_43_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-43-C [Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG,
+     Central]"""
+    return central_send_and_receive_data_in_multi_cises_single_cig_single_conn_interleaved(
+        transport, upper_tester, lower_tester, trace, 1, 0x186A0, 1)
+
+
+def ll_cis_cen_bv_44_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-44-C [Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG,
+     Central, BN > 1, NSE = 2]"""
+    return central_send_and_receive_data_in_multi_cises_single_cig_single_conn_interleaved(
+        transport, upper_tester, lower_tester, trace, 2, 0x0C350, 2)
+
+
+def ll_cis_cen_bv_09_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-09-C [Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Sequential,
+     Central]"""
+    max_cis_nse = get_ixit_value(transport, upper_tester, IXITS["TSPX_max_cis_nse"], 100)
+    params = SetCIGParameters(
+        SDU_Interval_C_To_P     = 0x0C350,  # 50 ms
+        SDU_Interval_P_To_C     = 0x186A0,  # 100 ms
+        FT_C_To_P               = 1,
+        FT_P_To_C               = 1,
+        ISO_Interval            = 0x50,  # 100 ms
+        Packing                 = 0,  # Sequential
+        CIS_Count               = 2,
+        NSE                     = min(max_cis_nse, 4),
+        PHY_C_To_P              = 1,
+        PHY_P_To_C              = 1,
+        BN_C_To_P               = 2,
+        BN_P_To_C               = 1,
+    )
+
+    return test_sending_and_receiving_data_in_multiple_cises(transport, upper_tester, lower_tester, trace, params, 2)
+
+
+def ll_cis_cen_bv_24_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-24-C [CIS Updating Peer Clock Accuracy]"""
+    return cis_updating_peer_clock_accuracy(transport, upper_tester, lower_tester, trace, "Central")
+
+
+def ll_cis_cen_bv_15_c(transport, upper_tester, lower_tester, trace, packets):
+    """LL/CIS/CEN/BV-15-C [CIS Terminate Procedure, Initiated]"""
+    return cis_terminate_procedure_initiated(transport, upper_tester, lower_tester, trace, "Central", packets)
+
+
+def ll_cis_cen_bv_16_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-16-C [CIS Terminate Procedure, Accepting]"""
+    return cis_terminate_procedure_accepting(transport, upper_tester, lower_tester, trace, "Central")
+
+
+def ll_cis_cen_bv_30_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-30-C [Isochronous Channels Host Support Feature Bit]"""
+    params = SetCIGParameters()
+    success = set_isochronous_channels_host_support(transport, lower_tester, trace, 0b1)
+
+    # 1. The Upper Tester sends an HCI_LE_Set_Host_Feature with Bit_Number set to 30 (not a host controlled feature bit)
+    #       and Bit_Value set to 0b1. The Upper Tester receives an HCI_Command_Complete response with an error code
+    #       Unsupported Feature or Parameter Value (0x11).
+    status = le_set_host_feature(transport, upper_tester, FeatureSupport.ISOCHRONOUS_BROADCASTER, 0b1, 100)
+    success = getCommandCompleteEvent(transport, upper_tester, trace) and status == 0x11 and success
+
+    # 2. The IUT establishes an ACL connection with the Lower Tester as Peripheral.
+    s, _, initiator = establish_acl_connection(transport, upper_tester, lower_tester, trace)
+    success = s and success
+    if not initiator:
+        return False
+
+    # 3. The Upper Tester sends an HCI_LE_Set_Host_Feature with Bit_Number set to 32 (Isochronous Channels feature bit)
+    #       and Bit_Value set to 0b1. The Upper Tester receives an HCI_Command_Complete response with an error code
+    #       Command Disallowed (0x0C).
+    status = le_set_host_feature(transport, upper_tester, FeatureSupport.ISOCHRONOUS_CHANNELS, 0b1, 100)
+    success = getCommandCompleteEvent(transport, upper_tester, trace) and status == 0x0C and success
+
+    # 4. The IUT disconnects the ACL connection from the Lower Tester.
+    success = initiator.disconnect(0x13) and success
+
+    testData = namedtuple('testData', 'Set_Feature_Enable, Bit_Value, CIS_Created')
+    table = [
+        testData(False, None, False),
+        testData(True, 0b1, True),
+        testData(True, 0b0, False),
+    ]
+
+    # 5. Repeat steps 6–13 for each round specified in Table
+    for set_feature_enable, bit_value, cis_created in table:
+        # 6. If the table indicates “Set Feature Enable” is true for this round, then the Upper Tester sends an
+        #       HCI_LE_Set_Host_Feature command to the IUT with the Bit_Number set to 32 (Isochronous Channels) and the
+        #       Bit_Value set to the value specified in the table. The Upper Tester receives an HCI_Command_Complete
+        #       event from the IUT.
+        if set_feature_enable:
+            status = le_set_host_feature(transport, upper_tester, FeatureSupport.ISOCHRONOUS_CHANNELS, bit_value, 100)
+            success = getCommandCompleteEvent(transport, upper_tester, trace) and status == 0x00 and success
+
+        # 7. The IUT establishes an ACL connection with the Lower Tester as Peripheral.
+        s, _, initiator = establish_acl_connection(transport, upper_tester, lower_tester, trace)
+        success = s and success
+        if not initiator:
+            return False
+
+        # 8. The Upper Tester sends an HCI_LE_Set_CIG_Parameters command to the IUT using the default parameters
+        #       specified in Section 4.10.1.3 Default Values for Set CIG Parameters Commands and receives a successful
+        #       HCI_Command_Complete event.
+        status, cig_id, cis_count, cis_handles = le_set_cig_parameters_test(transport, upper_tester, 0,
+                                                                            *params.get_cig_parameters_test(), 100)
+        success = getCommandCompleteEvent(transport, upper_tester, trace) and status == 0x00 and success
+
+        # 9. The Upper Tester sends an HCI_LE_Create_CIS command with the ACL_Connection_Handle of the established ACL
+        #       and valid Connection_Handle
+        status = le_create_cis(transport, upper_tester, cis_count, cis_handles, cis_count * [initiator.handles[0]], 100)
+        success = verifyAndShowEvent(transport, upper_tester, Events.BT_HCI_EVT_CMD_STATUS, trace) and success
+
+        if cis_created:
+           # 10. The Upper Tester receives a successful HCI_Command_Status event.
+           success = status == 0x00 and success
+
+           # 11. The IUT establishes a CIS with the Lower Tester.
+           s, event = verifyAndFetchMetaEvent(transport, lower_tester, MetaEvents.BT_HCI_EVT_LE_CIS_REQUEST, trace)
+           success = s and success
+
+           status = le_accept_cis_request(transport, lower_tester, event.decode()[1], 100)
+           s = verifyAndShowEvent(transport, lower_tester, Events.BT_HCI_EVT_CMD_STATUS, trace)
+           success = status == 0 and s and success
+
+           s, event = verifyAndFetchMetaEvent(transport, upper_tester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace,
+                                              2000)
+           success = s and (event.decode()[0] == 0x00) and success
+
+           s, event = verifyAndFetchMetaEvent(transport, lower_tester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace)
+           success = s and (event.decode()[0] == 0x00) and success
+        else:
+            # 10. The Upper Tester receives an HCI_Command_Status event with the status set to error code Command
+            #       Disallowed (0x0C).
+            success = status == 0x0C and success
+
+        # 12. The IUT disconnects the ACL connection from the Lower Tester.
+        success = initiator.disconnect(0x13) and success
+
+        # 13. If the table indicates that a CIS is not created this round, then the Upper Tester sends an
+        #       HCI_LE_Remove_CIG command to the IUT with the CIG_ID set to the CIG_ID in step 8 and receives
+        #       a successful HCI_Command_Complete event.
+        if not cis_created:
+            status, _ = le_remove_cig(transport, upper_tester, 0, 100)
+            success = getCommandCompleteEvent(transport, upper_tester, trace) and status == 0x00 and success
+
+    return success
+
+
+def ll_cis_cen_bv_20_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-20-C [Set Encryption After CIS Established]"""
+    params = SetCIGParameters(
+        SDU_Interval_C_To_P     = 0x4E20,  # 20 ms
+        SDU_Interval_P_To_C     = 0x4E20,  # 20 ms
+        FT_C_To_P               = 1,
+        FT_P_To_C               = 1,
+        ISO_Interval            = 0x10,  # 20 ms
+        CIS_Count               = 1,
+        NSE                     = 1,
+        Max_PDU_C_To_P          = 130,
+        Max_PDU_P_To_C          = 130,
+        PHY_C_To_P              = 1,
+        PHY_P_To_C              = 1,
+        BN_C_To_P               = 1,
+        BN_P_To_C               = 1,
+    )
+
+    success, initiator, _, _ = \
+        state_connected_isochronous_stream(transport, lower_tester, upper_tester, trace, params,
+                                           setup_iso_data_path=False, enc_keys=None)
+    if not initiator:
+        return False
+
+    rand, ediv, ltk = ENC_KEYS
+    status = le_start_encryption(transport, upper_tester, initiator.handles[0], rand, ediv, ltk, 100)
+    success = verifyAndShowEvent(transport, upper_tester, Events.BT_HCI_EVT_CMD_STATUS, trace, 1000) and status == 0x0C
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
+
+
+def ll_cis_cen_bv_51_c(transport, upper_tester, lower_tester, trace):
+    """LL/CIS/CEN/BV-51-C [CIS Setup Procedure, Central Initiated, CIG ID Reuse]"""
+    params = SetCIGParameters(
+        CIS_Count               = 2,
+    )
+
+    success, initiator, _, (connection_handle_1, connection_handle_2) = \
+        state_connected_isochronous_stream(transport, lower_tester, upper_tester, trace, params)
+
+    if not initiator:
+        return False
+
+    # 2. The Upper Tester sends an HCI_Disconnect command to the IUT with Connection_Handle_1 and Reason Code set to
+    #       any valid value.
+    # 3. The IUT sends a successful HCI_Command_Status event to the Upper Tester.
+    # 4. The IUT sends an LL_CIS_TERMINATE_IND PDU to the Lower Tester with the ErrorCode field in the CtrData field
+    #       set to match the Reason Code value in step 2.
+    # 5. The Lower Tester sends an Ack to the IUT.
+    success = disconnect(transport, upper_tester, connection_handle_1, 0x13, 200) == 0 and success
+    success = verifyAndShowEvent(transport, upper_tester, Events.BT_HCI_EVT_CMD_STATUS, trace) and success
+
+    # 6. The IUT sends a successful HCI_Disconnection_Complete event to the Upper Tester with Connection_Handle_1
+    #       and Reason Code set to Connection Terminated by Local Host (0x16).
+    s, event = verifyAndFetchEvent(transport, upper_tester, Events.BT_HCI_EVT_DISCONN_COMPLETE, trace)
+    status, handle, reason = event.decode()
+    success = s and status == 0x00 and handle == connection_handle_1 and success and reason == 0x16
+
+    success = verifyAndShowEvent(transport, lower_tester, Events.BT_HCI_EVT_DISCONN_COMPLETE, trace) and success
+
+    # 8. The IUT sends an LL_CIS_REQ PDU to the Lower Tester with CIG_ID set to CIG_ID_1 and CIS_ID set to CIS_ID_1.
+    #       The re-created CIS may be different from the CIS disconnected previously using Connection_Handle_1,
+    #       but it still complies with the Default Values for Set CIG Parameters Commands.
+    status = le_create_cis(transport, lower_tester, 1, [connection_handle_1], [initiator.handles[0]], 100)
+    success = status == 0 and success
+    success = verifyAndShowEvent(transport, lower_tester, Events.BT_HCI_EVT_CMD_STATUS, trace) and success
+
+    # 9. The Lower Tester sends an LL_CIS_RSP PDU to the IUT.
+    # 10. The IUT sends an LL_CIS_IND PDU to the Lower Tester. The Access Address provided in CtrData is different from
+    #       AA_1. The new Access Address is identified as AA_1new.
+    # 11. The IUT sends an ISO Data Packet to the Lower Tester.
+    # 12. The Lower Tester sends an LL Ack to the IUT.
+    # 13. The IUT sends an HCI_LE_CIS_Established event to the Upper Tester with Status set to 0x00 and
+    #       Connection_Handle set to Connection_Handle_1.
+    s, event = verifyAndFetchMetaEvent(transport, lower_tester, MetaEvents.BT_HCI_EVT_LE_CIS_REQUEST, trace)
+    success = s and success
+
+    status = le_accept_cis_request(transport, lower_tester, event.decode()[1], 100)
+    s = verifyAndShowEvent(transport, lower_tester, Events.BT_HCI_EVT_CMD_STATUS, trace)
+    success = status == 0 and s and success
+
+    s, event = verifyAndFetchMetaEvent(transport, upper_tester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace,
+                                       2000)
+    success = s and (event.decode()[0] == 0x00) and success
+
+    s, event = verifyAndFetchMetaEvent(transport, lower_tester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace)
+    success = s and (event.decode()[0] == 0x00) and success
+
+    # 14. The Upper Tester sends an HCI_Disconnect command to the IUT with Connection_Handle_1 and Reason Code set to
+    #       any valid value.
+    # 15. The IUT sends a successful HCI_Command_Status event to the Upper Tester.
+    success = disconnect(transport, upper_tester, connection_handle_1, 0x13, 200) == 0 and success
+    success = verifyAndShowEvent(transport, upper_tester, Events.BT_HCI_EVT_CMD_STATUS, trace) and success
+
+    # 16. The IUT sends an LL_CIS_TERMINATE_IND PDU to the Lower Tester with the ErrorCode field in the CtrData field
+    #       set to match the Reason Code value in step 14.
+    # 17. The Lower Tester sends an Ack to the IUT.
+    # 18. The IUT sends a successful HCI_Disconnection_Complete event to the Upper Tester with Connection_Handle_1 and
+    #       Reason Code set to Connection Terminated by Local Host (0x16).
+    s, event = verifyAndFetchEvent(transport, upper_tester, Events.BT_HCI_EVT_DISCONN_COMPLETE, trace)
+    status, handle, reason = event.decode()
+    success = s and status == 0x00 and handle == connection_handle_1 and reason == 0x16 and success
+
+    success = verifyAndShowEvent(transport, lower_tester, Events.BT_HCI_EVT_DISCONN_COMPLETE, trace) and success
+
+    # 19. The Upper Tester sends an HCI_Disconnect command to the IUT with Connection_Handle_2 and Reason Code set to
+    #       any valid value.
+    # 20. The IUT sends a successful HCI_Command_Status event to the Upper Tester.
+    success = disconnect(transport, upper_tester, connection_handle_2, 0x13, 200) == 0 and success
+    success = verifyAndShowEvent(transport, upper_tester, Events.BT_HCI_EVT_CMD_STATUS, trace) and success
+
+    # 21. The IUT sends an LL_CIS_TERMINATE_IND PDU to the Lower Tester with the ErrorCode field in the CtrData field
+    #       set to match the Reason code value the Upper Tester sent in step 19.
+    # 22. The Lower Tester sends an Ack to the IUT.
+    # 23. The IUT sends a successful HCI_Disconnection_Complete event to the Upper Tester with Connection_Handle_2 and
+    #       Reason Code set to Connection Terminated by Local Host (0x16).
+    s, event = verifyAndFetchEvent(transport, upper_tester, Events.BT_HCI_EVT_DISCONN_COMPLETE, trace)
+    status, handle, reason = event.decode()
+    success = s and status == 0x00 and handle == connection_handle_2 and success and reason == 0x16
+
+    success = verifyAndShowEvent(transport, lower_tester, Events.BT_HCI_EVT_DISCONN_COMPLETE, trace) and success
+
+    # 24. The Upper Tester sends an HCI_LE_Remove_CIG command to the IUT with CIG_ID set to the value of CIG_ID_1
+    #       and receives a successful HCI_Command_Complete event from the IUT in response.
+    status, _ = le_remove_cig(transport, upper_tester, 0, 100)
+    success = getCommandCompleteEvent(transport, upper_tester, trace) and status == 0x00 and success
+
+    # 25. The Upper Tester sends an HCI_LE_Set_CIG_Parameters command to the IUT with values as specified in Section 4.10.1.3, Default Values for Set CIG Parameters Commands. The CIG_ID is
+    # to be set to CIG_ID_1 in step 1, CIS_ID is set to CIS_ID_1.
+    params = SetCIGParameters()
+    status, cig_id, cis_count, (connection_handle_3,) = \
+        le_set_cig_parameters_test(transport, lower_tester, 0, *params.get_cig_parameters_test(), 100)
+
+    # 26. The IUT sends a successful HCI_Command_Complete event to the Upper Tester with CIG_ID set to CIG_ID_1,
+    #       CIS_Count set to 1, and the connection handle for CIS_ID_1, which is saved and referenced as
+    #       Connection_Handle_3 in the following steps.
+    success = cig_id == 0 and cis_count == 1 and success
+    success = getCommandCompleteEvent(transport, lower_tester, trace) and status == 0x00 and success
+
+    # 27. The Upper Tester sends an HCI_LE_Create_CIS command to the IUT with CIS_Count set to 1 and Connection_Handle
+    #       set to Connection_Handle_3 from step 26, and it receives a successful HCI_Command_Status in response.
+    status = le_create_cis(transport, lower_tester, 1, [connection_handle_3], [initiator.handles[0]], 100)
+    success = status == 0 and success
+    success = verifyAndShowEvent(transport, lower_tester, Events.BT_HCI_EVT_CMD_STATUS, trace) and success
+
+    # 28. The IUT sends an LL_CIS_REQ PDU to the Lower Tester with CIG_ID set to CIG_ID_1 and CIS_ID set to CIS_ID_3.
+    # 29. The Lower Tester sends an LL_CIS_RSP PDU to the IUT.
+    # 30. The IUT sends an LL_CIS_IND PDU to the Lower Tester. The Access Address provided in CtrData is different from
+    #       AA_1, AA_1new, and AA_2.
+    # 31. The IUT sends an ISO Data Packet to the Lower Tester.
+    # 32. The Lower Tester sends an LL Ack to the IUT.
+    # 33. The IUT sends an HCI_LE_CIS_Established event to the Upper Tester with Status set to 0x00 and
+    #       Connection_Handle set to Connection_Handle_3.
+    s, event = verifyAndFetchMetaEvent(transport, lower_tester, MetaEvents.BT_HCI_EVT_LE_CIS_REQUEST, trace)
+    success = s and success
+
+    status = le_accept_cis_request(transport, lower_tester, event.decode()[1], 100)
+    s = verifyAndShowEvent(transport, lower_tester, Events.BT_HCI_EVT_CMD_STATUS, trace)
+    success = status == 0 and s and success
+
+    s, event = verifyAndFetchMetaEvent(transport, upper_tester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace,
+                                       2000)
+    success = s and (event.decode()[0] == 0x00) and success
+
+    s, event = verifyAndFetchMetaEvent(transport, lower_tester, MetaEvents.BT_HCI_EVT_LE_CIS_ESTABLISHED, trace)
+    success = s and (event.decode()[0] == 0x00) and success
+
+    if connection_handle_3 == connection_handle_1:
+        # Alternative 34A (The value of Connection_Handle_3 equals the value of Connection_Handle_1):
+        # 34A.1. The Upper Tester sends an HCI_LE_Create_CIS command to the IUT with CIS_Count set to 1,
+        #       ACL_Connection_Handle set to the current ACL Connection Handle value, and CIS_Connection_Handle set to
+        #       Connection_Handle_2.
+        status = le_create_cis(transport, lower_tester, 1, [connection_handle_2], [initiator.handles[0]], 100)
+        success = verifyAndShowEvent(transport, lower_tester, Events.BT_HCI_EVT_CMD_STATUS, trace) and success
+
+        # 34A.2. The IUT sends an HCI_Command_Status event to the Upper Tester with Status set to Unknown Connection
+        #       Identifier (0x02).
+        success = status == 0x02 and success
+    elif connection_handle_3 == connection_handle_2:
+        # Alternative 34B (The value of Connection_Handle_3 equals the value of Connection_Handle_2):
+        # 34B.1. The Upper Tester sends an HCI_LE_Create_CIS command to the IUT with CIS_Count set to 1,
+        #       ACL_Connection_Handle set to the current ACL Connection Handle value, and CIS_Connection_Handle set to
+        #       the value of Connection_Handle_1.
+        status = le_create_cis(transport, lower_tester, 1, [connection_handle_1], [initiator.handles[0]], 100)
+        success = verifyAndShowEvent(transport, lower_tester, Events.BT_HCI_EVT_CMD_STATUS, trace) and success
+
+        # 34B.2 The IUT sends an HCI_Command_Status event to the Upper Tester with Status set to Unknown Connection
+        #       Identifier (0x02).
+        success = status == 0x02 and success
+    else:
+        # Alternative 34C (The value of Connection_Handle is different than Connection_Handle_1 or Connection_Handle_2):
+        # 34C.1 The test ends with a Pass verdict.
+        pass
+
+    # TODO: Verify CIS Access Addresses
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    return success
+
+
+def connected_isochronous_stream_using_non_test_command(transport, upper_tester, lower_tester, trace, packets, phy,
+                                                        max_transport_latency):
+    params = SetCIGParameters(
+        Framing                         = 1,
+        PHY_C_To_P                      = phy,
+        PHY_P_To_C                      = phy,
+        Max_Transport_Latency_C_To_P    = max_transport_latency,
+        Max_Transport_Latency_P_To_C    = max_transport_latency,
+        Max_SDU_C_To_P                  = 16,
+        Max_SDU_P_To_C                  = 16,
+    )
+
+    success, initiator, _, (cis_handle_upper_tester,) = \
+        state_connected_isochronous_stream(transport, lower_tester, upper_tester, trace, params, use_test_cmd=False)
+    if not initiator:
+        return False
+
+    for seq_num in range(3):
+        success = iso_send_payload_pdu(transport, upper_tester, lower_tester, trace, cis_handle_upper_tester,
+                                       params.Max_SDU_C_To_P[0], params.SDU_Interval_C_To_P, seq_num) and success
+
+    success = disconnect(transport, upper_tester, cis_handle_upper_tester, 0x13, 200) == 0 and success
+    success = verifyAndShowEvent(transport, upper_tester, Events.BT_HCI_EVT_CMD_STATUS, trace) and success
+    success = verifyAndShowEvent(transport, upper_tester, Events.BT_HCI_EVT_DISCONN_COMPLETE, trace) and success
+    success = verifyAndShowEvent(transport, lower_tester, Events.BT_HCI_EVT_DISCONN_COMPLETE, trace) and success
+
+    status, cig_id = le_remove_cig(transport, upper_tester, 0, 100)
+    success = getCommandCompleteEvent(transport, upper_tester, trace) and status == 0x00 and cig_id == 0 and success
+
+    params = SetCIGParameters(
+        Framing                         = 1,
+        PHY_C_To_P                      = phy,
+        PHY_P_To_C                      = phy,
+        Max_Transport_Latency_C_To_P    = max_transport_latency,
+        Max_Transport_Latency_P_To_C    = max_transport_latency,
+        Max_SDU_C_To_P                  = 0,
+        Max_SDU_P_To_C                  = 16,
+    )
+
+    s, _, (cis_handle_lower_tester,) = establish_cis_connection(transport, upper_tester, lower_tester, trace, params,
+                                                                initiator.handles[0], use_test_cmd=False)
+    success = s and success
+
+    for seq_num in range(50):
+        success = iso_send_payload_pdu(transport, lower_tester, upper_tester, trace, cis_handle_lower_tester,
+                                       params.Max_SDU_P_To_C[0], params.SDU_Interval_P_To_C, seq_num) and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    trace.trace(4, "Host verification " + ("PASS" if success else "FAIL"))
+
+    ### LL VERIFICATION ###
+    isoc_framed_pdu_num = 0
+    for packet in packets.fetch(packet_filter=('LL_CIS_REQ', 'ISOC_FRAMED_PDU')):
+        if packet.type.name == 'LL_CIS_REQ':
+            success = packet.payload.CtrData.Framed == 1 and success
+        elif packet.payload.SegmentationHeader.CMPLT == 1:
+            isoc_framed_pdu_num += 1
+
+    success = isoc_framed_pdu_num == 53 and success
+
+    trace.trace(4, "LL verification " + ("PASS" if success else "FAIL"))
+
+    return success
+
+
+def ll_cis_cen_bv_26_c(transport, upper_tester, lower_tester, trace, packets):
+    """LL/CIS/CEN/BV-26-C [Connected Isochronous Stream Using Non-Test Command, Central Initiated]"""
+    return connected_isochronous_stream_using_non_test_command(transport, upper_tester, lower_tester, trace, packets,
+                                                               1, 60)
+
+
+def ll_cis_cen_bv_27_c(transport, upper_tester, lower_tester, trace, packets):
+    """LL/CIS/CEN/BV-27-C [Connected Isochronous Stream Using Non-Test Command, Central Initiated]"""
+    return connected_isochronous_stream_using_non_test_command(transport, upper_tester, lower_tester, trace, packets,
+                                                               2, 60)
+
+
+def connected_isochronous_stream_using_non_test_command_force_framed_pdus(transport, upper_tester, lower_tester, trace,
+                                                                          packets, phy):
+    params = SetCIGParameters(
+        SDU_Interval_C_To_P             = 10884,  # 10.884 ms
+        SDU_Interval_P_To_C             = 10884,  # 10.884 ms
+        Max_SDU_C_To_P                  = 0x20,
+        Max_SDU_P_To_C                  = 0x20,
+        RTN_C_To_P                      = 0x03,
+        RTN_P_To_C                      = 0x03,
+        Max_Transport_Latency_C_To_P    = 40,
+        Max_Transport_Latency_P_To_C    = 40,
+        Framing                         = 0,  # Unframed
+        PHY_C_To_P                      = phy,
+        PHY_P_To_C                      = phy,
+    )
+
+    success, initiator, _, (cis_handle_upper_tester,) = \
+        state_connected_isochronous_stream(transport, lower_tester, upper_tester, trace, params, use_test_cmd=False)
+    if not initiator:
+        return False
+
+    for seq_num in range(3):
+        success = iso_send_payload_pdu(transport, upper_tester, lower_tester, trace, cis_handle_upper_tester,
+                                       params.Max_SDU_C_To_P[0], params.SDU_Interval_C_To_P, seq_num) and success
+
+    ### TERMINATION ###
+    success = initiator.disconnect(0x13) and success
+
+    trace.trace(4, "Host verification " + ("PASS" if success else "FAIL"))
+
+    ### LL VERIFICATION ###
+    isoc_framed_pdu_num = 0
+    for packet in packets.fetch(packet_filter=('LL_CIS_REQ', 'ISOC_FRAMED_PDU')):
+        if packet.type.name == 'LL_CIS_REQ':
+            success = packet.payload.CtrData.Framed == 1 and success
+        elif packet.payload.SegmentationHeader.CMPLT == 1:
+            isoc_framed_pdu_num += 1
+
+    success = isoc_framed_pdu_num == 3 and success
+
+    trace.trace(4, "LL verification " + ("PASS" if success else "FAIL"))
+
+    return success
+
+
+def ll_cis_cen_bv_36_c(transport, upper_tester, lower_tester, trace, packets):
+    """LL/CIS/CEN/BV-36-C [Connected Isochronous Stream Using Non-Test Command, Force Framed PDUs]"""
+    return connected_isochronous_stream_using_non_test_command_force_framed_pdus(transport, upper_tester, lower_tester,
+                                                                                 trace, packets, 1)
+
+
+def ll_cis_cen_bv_37_c(transport, upper_tester, lower_tester, trace, packets):
+    """LL/CIS/CEN/BV-37-C [Connected Isochronous Stream Using Non-Test Command, Force Framed PDUs]"""
+    return connected_isochronous_stream_using_non_test_command_force_framed_pdus(transport, upper_tester, lower_tester,
+                                                                                 trace, packets, 2)
+
+
+def ll_ist_cen_bv_01_c(transport, upper_tester, lower_tester, trace):
+    """LL/IST/CEN/BV-01-C [ISO Transmit Test Mode, CIS]"""
+    return iso_transmit_test_mode_cis(transport, upper_tester, lower_tester, trace, True)
+
+
+def ll_ist_cen_bv_03_c(transport, upper_tester, lower_tester, trace):
+    """LL/IST/CEN/BV-03-C [ISO Receive Test Mode, CIS]"""
+    return iso_receive_test_mode_cis(transport, upper_tester, lower_tester, trace, True)
 
 
 __tests__ = {
@@ -6941,6 +7705,34 @@ __tests__ = {
 #   "LL/SEC/ADV/BV-19-C": [ ll_sec_adv_bv_19_c, "Undirected Connectable Advertising with Local IRK and Peer IRK, accept Identity Address" ],
     "LL/SEC/ADV/BV-20-C": [ ll_sec_adv_bv_20_c, "Directed Connectable Advertising with resolvable private address; Connect to Identity Address" ],
     "LL/SEC/SCN/BV-01-C": [ ll_sec_scn_bv_01_c, "Changing Static Address while Scanning" ],
+    "LL/CIS/CEN/BV-01-C": [ ll_cis_cen_bv_01_c, "CIS Setup Procedure, Central Initiated" ],
+    "LL/CIS/CEN/BV-02-C": [ ll_cis_cen_bv_02_c, "CIS Setup Procedure, Central Initiated" ],
+    "LL/CIS/CEN/BV-31-C": [ ll_cis_cen_bv_31_c, "CIS Setup Procedure, Central Initiated" ],
+    "LL/CIS/CEN/BV-39-C": [ ll_cis_cen_bv_39_c, "CIS Setup Procedure, Central Initiated" ],
+    "LL/CIS/CEN/BV-03-C": [ ll_cis_cen_bv_03_c, "CIS Setup Procedure, Central Initiated, Rejected" ],
+    "LL/CIS/CEN/BV-04-C": [ ll_cis_cen_bv_04_c, "New Channel Map" ],
+    "LL/CIS/CEN/BV-40-C": [ ll_cis_cen_bv_40_c, "New Channel Map" ],
+    "LL/CIS/CEN/BV-20-C": [ ll_cis_cen_bv_20_c, "Set Encryption After CIS Established" ],
+    "LL/CIS/CEN/BV-26-C": [ ll_cis_cen_bv_26_c, "Connected Isochronous Stream Using Non-Test Command, Central Initiated" ],
+    "LL/CIS/CEN/BV-27-C": [ ll_cis_cen_bv_27_c, "Connected Isochronous Stream Using Non-Test Command, Central Initiated" ],
+    "LL/CIS/CEN/BV-30-C": [ ll_cis_cen_bv_30_c, "Isochronous Channels Host Support Feature Bit" ],
+    # "LL/CIS/CEN/BV-08-C": [ ll_cis_cen_bv_08_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG, Central" ],
+    "LL/CIS/CEN/BV-43-C": [ ll_cis_cen_bv_43_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG, Central" ],
+    # "LL/CIS/CEN/BV-09-C": [ ll_cis_cen_bv_09_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Sequential, Central" ],
+    "LL/CIS/CEN/BV-36-C": [ ll_cis_cen_bv_36_c, "Connected Isochronous Stream Using Non-Test Command, Force Framed PDUs" ],
+    "LL/CIS/CEN/BV-37-C": [ ll_cis_cen_bv_37_c, "Connected Isochronous Stream Using Non-Test Command, Force Framed PDUs" ],
+    "LL/CIS/CEN/BV-44-C": [ ll_cis_cen_bv_44_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG, Central, BN > 1, NSE = 2" ],
+    # "LL/CIS/CEN/BV-51-C": [ ll_cis_cen_bv_51_c, "CIS Setup Procedure, Central Initiated, CIG ID Reuse" ],
+    "LL/CIS/CEN/BV-06-C": [ ll_cis_cen_bv_06_c, "Receiving data in Unidirectional CIS" ],
+    "LL/CIS/CEN/BV-07-C": [ ll_cis_cen_bv_07_c, "Sending and Receiving Data in Bidirectional CIS" ],
+    "LL/CIS/CEN/BV-35-C": [ ll_cis_cen_bv_35_c, "Sending and Receiving Data in Bidirectional CIS, Encryption" ],
+    # "LL/CIS/CEN/BV-15-C": [ ll_cis_cen_bv_15_c, "CIS Terminate Procedure, Initiated" ],
+    "LL/CIS/CEN/BV-16-C": [ ll_cis_cen_bv_16_c, "CIS Terminate Procedure, Accepting" ],
+    "LL/CIS/CEN/BV-24-C": [ ll_cis_cen_bv_24_c, "CIS Updating Peer Clock Accuracy" ],
+    "LL/CIS/CEN/BV-45-C": [ ll_cis_cen_bv_45_c, "Sending Data in Unidirectional CIS, BN = 1" ],
+    "LL/CIS/CEN/BV-46-C": [ ll_cis_cen_bv_46_c, "Receiving Data in Unidirectional CIS, BN = 1" ],
+    "LL/CIS/CEN/BV-47-C": [ ll_cis_cen_bv_47_c, "Sending and Receiving Data in Bidirectional CIS, BN = 1" ],
+    "LL/CIS/CEN/BV-48-C": [ ll_cis_cen_bv_48_c, "Sending and Receiving Data in Bidirectional CIS, BN = 1, Encryption" ],
     "LL/CIS/PER/BV-01-C": [ ll_cis_per_bv_01_c, "CIS Setup Response Procedure, Peripheral" ],
     "LL/CIS/PER/BV-02-C": [ ll_cis_per_bv_02_c, "CIS Setup Response Procedure, Peripheral, Reject Response" ],
     "LL/CIS/PER/BV-03-C": [ ll_cis_per_bv_03_c, "CIS Map Update" ],
@@ -6965,7 +7757,9 @@ __tests__ = {
 #   "LL/CIS/PER/BV-40-C": [ ll_cis_per_bv_40_c, "CIS Setup Response Procedure, Peripheral" ],  # https://github.com/EDTTool/EDTT-le-audio/issues/85
     "LL/CIS/PER/BV-12-C": [ ll_cis_per_bv_12_c, "CIS Terminate Procedure, Initiated - Peripheral" ],
     "LL/CIS/PER/BV-13-C": [ ll_cis_per_bv_13_c, "CIS Terminate Procedure, Accepting, Peripheral" ],
+#   "LL/IST/CEN/BV-01-C": [ ll_ist_cen_bv_01_c, "ISO Transmit Test Mode, CIS" ],  # https://github.com/EDTTool/EDTT-le-audio/issues/86
 #   "LL/IST/PER/BV-01-C": [ ll_ist_per_bv_01_c, "ISO Transmit Test Mode, CIS" ],  # https://github.com/EDTTool/EDTT-le-audio/issues/86
+#   "LL/IST/CEN/BV-03-C": [ ll_ist_cen_bv_03_c, "ISO Receive Test Mode, CIS" ],  # https://github.com/EDTTool/packetcraft/issues/10
 #   "LL/IST/PER/BV-03-C": [ ll_ist_per_bv_03_c, "ISO Receive Test Mode, CIS" ],  # https://github.com/EDTTool/packetcraft/issues/10
 };
 
