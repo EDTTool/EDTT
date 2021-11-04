@@ -3360,7 +3360,10 @@ def le_set_cig_parameters(transport, idx, CigId, SduIntervalMToS, SduIntervalSTo
     edtt_send_cmd(transport, idx, Commands.CMD_LE_SET_CIG_PARAMETERS_REQ, 'HB3B3BBBBHHB' + CisCount * 'BHHBBBB',
                   cmd_parameters)
 
-    return edtt_wait_cmd_cmpl(transport, idx, Commands.CMD_LE_SET_CIG_PARAMETERS_RSP, f'BBB{CisCount}H', to)
+    status, cigId, cisCount, *cisConnectionHandle = \
+        edtt_wait_cmd_cmpl(transport, idx, Commands.CMD_LE_SET_CIG_PARAMETERS_RSP, f'BBB{CisCount}H', to)
+
+    return status, cigId, cisCount, cisConnectionHandle
 
 """
     The command is used by a master's Host to set the parameters of one or more
