@@ -5560,7 +5560,7 @@ def cis_setup_response_procedure_peripheral(transport, upper_tester, lower_teste
     [CIS Setup Response Procedure, Peripheral]
     """
     success, initiator, _, (cisConnectionHandle,) = \
-        state_connected_isochronous_stream_peripheral(transport, upper_tester, lower_tester, trace, params)
+        state_connected_isochronous_stream(transport, upper_tester, lower_tester, trace, params)
 
     # 10. The Lower Tester sends data packets to the IUT.
     # 11. The Upper Tester IUT sends an ISO data packet to the Upper Tester.
@@ -5686,7 +5686,7 @@ def test_cis_map_update(transport, upper_tester, lower_tester, trace, bn_c_to_p,
     )
 
     success, initiator, _, (cis_conn_handle,) = \
-        state_connected_isochronous_stream_peripheral(transport, upper_tester, lower_tester, trace, params)
+        state_connected_isochronous_stream(transport, upper_tester, lower_tester, trace, params)
     if not initiator:
         return success
 
@@ -5760,7 +5760,7 @@ def ll_cis_per_bv_05_c(transport, upperTester, lowerTester, trace):
     )
 
     success, initiator, _, (cisConnectionHandle,) = \
-        state_connected_isochronous_stream_peripheral(transport, upperTester, lowerTester, trace, params)
+        state_connected_isochronous_stream(transport, upperTester, lowerTester, trace, params)
     if not initiator:
         return success
 
@@ -5805,7 +5805,7 @@ def sending_and_receiving_data_complete(transport, central, peripheral, trace, p
 def test_sending_and_receiving_data_in_multiple_cises(transport, central, peripheral, trace, params,
                                                       num_iso_data_packets_per_cis, send_delay_c=0):
     success, initiator, peripheral_cis_handles, central_cis_handles = \
-        state_connected_isochronous_stream_peripheral(transport, peripheral, central, trace, params)
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params)
     if not initiator:
         return success
 
@@ -5868,7 +5868,7 @@ def test_sending_and_receiving_data_in_bidirectional_cis(transport, central, per
     )
 
     success, initiator, (peripheral_cis_handle,), (central_cis_handle,) = \
-        state_connected_isochronous_stream_peripheral(transport, peripheral, central, trace, params, enc_keys=enc_keys)
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params, enc_keys=enc_keys)
     if not initiator:
         return success
 
@@ -6245,7 +6245,7 @@ def test_sending_and_receiving_data_in_bidirectional_cis_bn_1(transport, central
     )
 
     success, initiator, (peripheral_cis_handle,), (central_cis_handle,) = \
-        state_connected_isochronous_stream_peripheral(transport, peripheral, central, trace, params, enc_keys=enc_keys)
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params, enc_keys=enc_keys)
     if not initiator:
         return success
 
@@ -6301,7 +6301,7 @@ def ll_cis_per_bv_33_c(transport, upper_tester, lower_tester, trace):
     )
 
     success, initiator, (cis_conn_handle,), _ = \
-        state_connected_isochronous_stream_peripheral(transport, upper_tester, lower_tester, trace, params)
+        state_connected_isochronous_stream(transport, upper_tester, lower_tester, trace, params)
     if not initiator:
         return success
 
@@ -6334,7 +6334,7 @@ def ll_cis_per_bv_34_c(transport, upper_tester, lower_tester, trace):
     )
 
     success, initiator, _, (cis_conn_handle,) = \
-        state_connected_isochronous_stream_peripheral(transport, upper_tester, lower_tester, trace, params)
+        state_connected_isochronous_stream(transport, upper_tester, lower_tester, trace, params)
     if not initiator:
         return success
 
@@ -6526,8 +6526,7 @@ def ll_cis_per_bv_12_c(transport, upper_tester, lower_tester, trace, packets):
     )
 
     success, initiator, (upper_tester_cis_handle,), (lower_tester_cis_handle,) = \
-        state_connected_isochronous_stream_peripheral(transport, upper_tester, lower_tester, trace, params)
-
+        state_connected_isochronous_stream(transport, upper_tester, lower_tester, trace, params)
     if not initiator:
         return success;
 
@@ -6608,7 +6607,7 @@ def ll_cis_per_bv_13_c(transport, upper_tester, lower_tester, trace):
     )
 
     success, initiator, (upper_tester_cis_handle,), (lower_tester_cis_handle,) = \
-        state_connected_isochronous_stream_peripheral(transport, upper_tester, lower_tester, trace, params)
+        state_connected_isochronous_stream(transport, upper_tester, lower_tester, trace, params)
     if not initiator:
         return success
 
@@ -6713,8 +6712,8 @@ def ll_ist_per_bv_01_c(transport, upper_tester, lower_tester, trace):
     params = SetCIGParameters()  # Default parameters
 
     success, initiator, (upper_tester_cis_handle,), (lower_tester_cis_handle,) =\
-        state_connected_isochronous_stream_peripheral(transport, upper_tester, lower_tester, trace, params,
-                                                      setup_iso_data_path=False)
+        state_connected_isochronous_stream(transport, upper_tester, lower_tester, trace, params,
+                                           setup_iso_data_path=False)
     if not initiator:
         return success
 
@@ -6798,8 +6797,8 @@ def ll_ist_per_bv_03_c(transport, upper_tester, lower_tester, trace):
 
         if not initiator:
             success, initiator, _, (upper_tester_cis_handle,), (lower_tester_cis_handle,) = \
-                state_connected_isochronous_stream_peripheral(transport, upper_tester, lower_tester, trace, params,
-                                                              setup_iso_data_path=False)
+                state_connected_isochronous_stream(transport, upper_tester, lower_tester, trace, params,
+                                                   setup_iso_data_path=False)
             if not initiator:
                 return success
 

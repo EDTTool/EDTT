@@ -23,8 +23,8 @@ global lowerIRK, upperIRK, lowerRandomAddress, upperRandomAddress
 
 
 def peripheral_send_single_sdu_cis(transport, peripheral, central, trace, params):
-    success, initiator, (cis_conn_handle,), _ = state_connected_isochronous_stream_peripheral(transport, peripheral,
-                                                                                              central, trace, params)
+    success, initiator, (cis_conn_handle,), _ = \
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params)
     if not initiator:
         return success
 
@@ -48,8 +48,8 @@ def central_receive_single_sdu_cis(transport, central, peripheral, trace, params
 
 
 def peripheral_receive_single_sdu_cis(transport, peripheral, central, trace, params):
-    success, initiator, _, (cis_conn_handle,) = state_connected_isochronous_stream_peripheral(transport, peripheral,
-                                                                                              central, trace, params)
+    success, initiator, _, (cis_conn_handle,) = \
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params)
     if not initiator:
         return success
 
@@ -68,7 +68,7 @@ def central_send_single_sdu_cis(transport, central, peripheral, trace, params):
 
 def peripheral_simultanous_sending_and_receiving_sdus(transport, peripheral, central, trace, params):
     success, initiator, (peripheral_cis_handle,), (central_cis_handle,) = \
-        state_connected_isochronous_stream_peripheral(transport, peripheral, central, trace, params)
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params)
     if not initiator:
         return success
 
@@ -137,8 +137,8 @@ def send_multiple_small_sdu_cis(transport, transmitter, receiver, trace, cis_han
 
 
 def peripheral_send_multiple_small_sdu_cis(transport, peripheral, central, trace, params):
-    success, initiator, (cis_handle,), _ = state_connected_isochronous_stream_peripheral(transport, peripheral, central,
-                                                                                         trace, params)
+    success, initiator, (cis_handle,), _ = \
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params)
     if not initiator:
         return success
 
@@ -156,8 +156,8 @@ def central_receive_multiple_small_sdu_cis(transport, central, peripheral, trace
 
 
 def peripheral_receive_multiple_small_sdu_cis(transport, peripheral, central, trace, params):
-    success, initiator, _, (cis_handle,) = state_connected_isochronous_stream_peripheral(transport, peripheral, central,
-                                                                                         trace, params)
+    success, initiator, _, (cis_handle,) = \
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params)
     if not initiator:
         return success
 
@@ -193,8 +193,8 @@ def central_send_large_sdu_cis(transport, central, peripheral, trace, params):
             params.Max_SDU_P_To_C[i] = 503
             params.Max_PDU_P_To_C[i] = 251
 
-    success, initiator, _, (cis_handle,) = state_connected_isochronous_stream_peripheral(transport, peripheral, central,
-                                                                                         trace, params)
+    success, initiator, _, (cis_handle,) = \
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params)
     if not initiator:
         return success
 
@@ -242,8 +242,8 @@ def peripheral_send_large_sdu_cis(transport, peripheral, central, trace, params)
             params.Max_SDU_P_To_C[i] = 503
             params.Max_PDU_P_To_C[i] = 251
 
-    success, initiator, (cis_conn_handle,), _ = state_connected_isochronous_stream_peripheral(transport, peripheral,
-                                                                                              central, trace, params)
+    success, initiator, (cis_conn_handle,), _ = \
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params)
     if not initiator:
         return success
 
@@ -291,8 +291,8 @@ def central_receive_large_sdu_cis_framed(transport, central, peripheral, trace, 
             params.Max_SDU_P_To_C[i] = 251
             params.Max_PDU_P_To_C[i] = 251
 
-    success, initiator, (cis_handle,), _ = state_connected_isochronous_stream_peripheral(transport, peripheral, central,
-                                                                                         trace, params)
+    success, initiator, (cis_handle,), _ = \
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params)
     if not initiator:
         return success
 
@@ -340,8 +340,8 @@ def peripheral_receive_large_sdu_cis_framed(transport, peripheral, central, trac
             params.Max_SDU_P_To_C[i] = 251
             params.Max_PDU_P_To_C[i] = 251
 
-    success, initiator, _, (cis_conn_handle,) = state_connected_isochronous_stream_peripheral(transport, peripheral,
-                                                                                              central, trace, params)
+    success, initiator, _, (cis_conn_handle,) = \
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params)
     if not initiator:
         return success
 
@@ -389,8 +389,8 @@ def central_receive_large_sdu_cis_unframed(transport, central, peripheral, trace
             params.Max_SDU_P_To_C[i] = 754
             params.Max_PDU_P_To_C[i] = 251
 
-    success, initiator, (cis_handle,), _, = state_connected_isochronous_stream_peripheral(transport, peripheral, central,
-                                                                                          trace, params)
+    success, initiator, (cis_handle,), _, = \
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params)
     if not initiator:
         return success
 
@@ -430,8 +430,8 @@ def peripheral_receive_large_sdu_cis_unframed(transport, peripheral, central, tr
             params.Max_SDU_P_To_C[i] = 754
             params.Max_PDU_P_To_C[i] = 251
 
-    success, initiator, _, (cis_conn_handle,) = state_connected_isochronous_stream_peripheral(transport, peripheral,
-                                                                                              central, trace, params)
+    success, initiator, _, (cis_conn_handle,) = \
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params)
     if not initiator:
         return success
 
@@ -453,8 +453,8 @@ def peripheral_receive_large_sdu_cis_unframed(transport, peripheral, central, tr
 
 
 def peripheral_send_zero_length_sdu_cis(transport, peripheral, central, trace, params):
-    success, initiator, (cis_conn_handle,), _ = state_connected_isochronous_stream_peripheral(transport, peripheral,
-                                                                                              central, trace, params)
+    success, initiator, (cis_conn_handle,), _ = \
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params)
     if not initiator:
         return success
 
@@ -476,8 +476,8 @@ def central_receive_zero_length_sdu_cis(transport, central, peripheral, trace, p
 
 
 def peripheral_receive_zero_length_sdu_cis(transport, peripheral, central, trace, params):
-    success, initiator, _, (cis_conn_handle,) = state_connected_isochronous_stream_peripheral(transport, peripheral,
-                                                                                              central, trace, params)
+    success, initiator, _, (cis_conn_handle,) = \
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params)
     if not initiator:
         return success
 
@@ -515,7 +515,7 @@ def peripheral_sending_and_receiving_unframed_empty_pdu_llid_0b01_cis(transport,
     )
 
     success, initiator, (peripheral_cis_handle,), (central_cis_handle,) = \
-        state_connected_isochronous_stream_peripheral(transport, peripheral, central, trace, params)
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params)
     if not initiator:
         return success
 
