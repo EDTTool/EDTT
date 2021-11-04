@@ -1081,7 +1081,7 @@ def ial_cis_unf_per_bv_33_c(transport, upper_tester, lower_tester, trace):
         SDU_Interval_P_To_C     = 0x2710,  # 10 ms
         SDU_Interval_C_To_P     = 0x2710,  # 10 ms
         ISO_Interval            = 0x18,  # 30 ms
-        Max_PDU_P_To_C          = 0,
+        Max_PDU_P_To_C          = 251,
         Max_PDU_C_To_P          = 251,
         Max_SDU_Supported       = 251,  # Force Max SDU to be 251 bytes
     )
