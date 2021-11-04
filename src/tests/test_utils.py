@@ -613,12 +613,18 @@ def establish_acl_connection(transport, central, peripheral, trace, supervision_
     return success, advertiser, initiator
 
 
-def establish_cis_connection(transport, central, peripheral, trace, params, acl_conn_handle, setup_iso_data_path=True):
+def establish_cis_connection(transport, central, peripheral, trace, params, acl_conn_handle, setup_iso_data_path=True,
+                             use_test_cmd=True):
     success = True
 
     # LT: Set CIG Parameters for Test
-    status, cigId, cisCount, central_cis_handles = \
-        le_set_cig_parameters_test(transport, central, 0, *params.get_cig_parameters_test(), 100)
+    if use_test_cmd:
+        status, cigId, cisCount, central_cis_handles = \
+            le_set_cig_parameters_test(transport, central, 0, *params.get_cig_parameters_test(), 100)
+    else:
+        status, cigId, cisCount, central_cis_handles = \
+            le_set_cig_parameters(transport, central, 0, *params.get_cig_parameters(), 100)
+
     success = getCommandCompleteEvent(transport, central, trace) and (status == 0x00) and success
     central_acl_handles = [acl_conn_handle] * cisCount
     peripheral_cis_handles = [-1] * cisCount
@@ -710,7 +716,7 @@ def enable_encryption(transport, central, peripheral, trace, conn_handle_c, keys
 
 
 def state_connected_isochronous_stream_peripheral(transport, upperTester, lowerTester, trace, params,
-                                                  setup_iso_data_path=True, enc_keys=None):
+                                                  setup_iso_data_path=True, enc_keys=None, use_test_cmd=True):
     # The Isochronous Channels (Host Support) FeatureSet bit is set.
     success = set_isochronous_channels_host_support(transport, upperTester, trace, 1)
     success = set_isochronous_channels_host_support(transport, lowerTester, trace, 1) and success
@@ -727,7 +733,7 @@ def state_connected_isochronous_stream_peripheral(transport, upperTester, lowerT
 
     s, central_cis_handles, peripheral_cis_handles = \
         establish_cis_connection(transport, lowerTester, upperTester, trace, params, initiator.handles[0],
-                                 setup_iso_data_path)
+                                 setup_iso_data_path, use_test_cmd)
 
     return s and success, initiator, peripheral_cis_handles, central_cis_handles
 
@@ -825,3 +831,9 @@ class SetCIGParameters:
                 self.Worst_Case_SCA, self.Packing, self.Framing, self.CIS_Count, list(range(self.CIS_Count)), self.NSE,
                 self.Max_SDU_C_To_P, self.Max_SDU_P_To_C, self.Max_PDU_C_To_P, self.Max_PDU_P_To_C, self.PHY_C_To_P,
                 self.PHY_P_To_C, self.BN_C_To_P, self.BN_P_To_C)
+
+    def get_cig_parameters(self):
+        return (self.SDU_Interval_C_To_P, self.SDU_Interval_P_To_C, self.Worst_Case_SCA, self.Packing, self.Framing,
+                self.Max_Transport_Latency_C_To_P, self.Max_Transport_Latency_P_To_C, self.CIS_Count,
+                list(range(self.CIS_Count)), self.Max_SDU_C_To_P, self.Max_SDU_P_To_C, self.PHY_C_To_P, self.PHY_P_To_C,
+                self.RTN_C_To_P, self.RTN_P_To_C)
