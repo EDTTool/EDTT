@@ -6972,7 +6972,8 @@ __tests__ = {
 
 _maxNameLength = max([ len(key) for key in __tests__ ]);
 
-_spec = { key: TestSpec(name = key, number_devices = 1, description = "#[" + __tests__[key][1] + "]", test_private = __tests__[key][0]) for key in __tests__ };
+_spec = {key: TestSpec(name=key, number_devices=2, description="#[" + __tests__[key][1] + "]",
+                       test_private=__tests__[key][0]) for key in __tests__}
 
 """
     Return the test spec which contains info about all the tests
