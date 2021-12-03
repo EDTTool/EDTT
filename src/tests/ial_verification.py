@@ -646,7 +646,7 @@ def ial_cis_unf_per_bv_25_c(transport, upper_tester, lower_tester, trace):
     """IAL/CIS/UNF/PER/BV-25-C"""
     params = SetCIGParameters(
         Framing                 = 0,
-        NSE                     = 3,
+        NSE                     = 5,
         BN_P_To_C               = 1,
         FT_P_To_C               = 2,
         # Max_PDU_P_To_C          = default,
