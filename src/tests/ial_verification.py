@@ -272,7 +272,7 @@ def peripheral_send_large_sdu_cis(transport, peripheral, central, trace, params)
     return success
 
 
-def central_receive_large_sdu_cis_framed(transport, central, peripheral, trace, params):
+def central_receive_large_sdu_cis_framed(transport, central, peripheral, trace, params, adjust_conn_interval=False):
     # As per TS:
     # "If the corresponding BN is not 0, then Max_SDU is set to 251 and Max_PDU is set to 251."
     # "If the corresponding BN is 0, then Max_SDU is set to 0 and Max_PDU is set to 0."
@@ -292,7 +292,8 @@ def central_receive_large_sdu_cis_framed(transport, central, peripheral, trace, 
             params.Max_PDU_P_To_C[i] = 251
 
     success, initiator, (cis_handle,), _ = \
-        state_connected_isochronous_stream(transport, peripheral, central, trace, params)
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params,
+                                           adjust_conn_interval=adjust_conn_interval)
     if not initiator:
         return success
 
@@ -515,7 +516,7 @@ def peripheral_sending_and_receiving_unframed_empty_pdu_llid_0b01_cis(transport,
     )
 
     success, initiator, (peripheral_cis_handle,), (central_cis_handle,) = \
-        state_connected_isochronous_stream(transport, peripheral, central, trace, params)
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params, adjust_conn_interval=True)
     if not initiator:
         return success
 
@@ -1794,7 +1795,7 @@ def ial_cis_fra_cen_bv_13_c(transport, upper_tester, lower_tester, trace):
         ISO_Interval            = 0x28,  # 50 ms
     )
 
-    return central_receive_large_sdu_cis_framed(transport, upper_tester, lower_tester, trace, params)
+    return central_receive_large_sdu_cis_framed(transport, upper_tester, lower_tester, trace, params, True)
 
 
 def ial_cis_fra_cen_bv_38_c(transport, upper_tester, lower_tester, trace):
@@ -2226,7 +2227,7 @@ __tests__ = {
     "IAL/CIS/UNF/PER/BV-12-C": [ial_cis_unf_per_bv_12_c, "Receive Large SDU, CIS, Unframed"],
     "IAL/CIS/UNF/CEN/BV-36-C": [ial_cis_unf_cen_bv_36_c, "Receive Large SDU, CIS, Unframed"],
     "IAL/CIS/UNF/PER/BV-36-C": [ial_cis_unf_per_bv_36_c, "Receive Large SDU, CIS, Unframed"],
-    # "IAL/CIS/FRA/CEN/BV-13-C": [ial_cis_fra_cen_bv_13_c, "Receive Large SDU, CIS, Framed"],  # https://github.com/EDTTool/EDTT-le-audio/issues/118
+    "IAL/CIS/FRA/CEN/BV-13-C": [ial_cis_fra_cen_bv_13_c, "Receive Large SDU, CIS, Framed"],
     "IAL/CIS/FRA/PER/BV-13-C": [ial_cis_fra_per_bv_13_c, "Receive Large SDU, CIS, Framed"],
     "IAL/CIS/FRA/CEN/BV-38-C": [ial_cis_fra_cen_bv_38_c, "Receive Large SDU, CIS, Framed"],
     "IAL/CIS/FRA/PER/BV-38-C": [ial_cis_fra_per_bv_38_c, "Receive Large SDU, CIS, Framed"],
@@ -2268,7 +2269,7 @@ __tests__ = {
     # "IAL/CIS/FRA/PER/BV-22-C": [ial_cis_fra_per_bv_22_c, "Simultaneous Sending and Receiving SDUs, CIS"],  # https://github.com/EDTTool/EDTT-le-audio/issues/117
     "IAL/CIS/UNF/CEN/BV-45-C": [ial_cis_unf_cen_bv_45_c, "Sending and Receiving Unframed Empty PDUs with LLID=0b01, CIS"],
     "IAL/CIS/UNF/PER/BV-45-C": [ial_cis_unf_per_bv_45_c, "Sending and Receiving Unframed Empty PDUs with LLID=0b01, CIS"],
-    # "IAL/CIS/UNF/PER/BV-46-C": [ial_cis_unf_per_bv_46_c, "Sending and Receiving Unframed Empty PDUs with LLID=0b01, CIS"],  # https://github.com/EDTTool/EDTT-le-audio/issues/53
+    "IAL/CIS/UNF/PER/BV-46-C": [ial_cis_unf_per_bv_46_c, "Sending and Receiving Unframed Empty PDUs with LLID=0b01, CIS"],
 }
 
 

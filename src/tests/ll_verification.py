@@ -5794,9 +5794,11 @@ def sending_and_receiving_data_complete(transport, central, peripheral, trace, p
 
 
 def test_sending_and_receiving_data_in_multiple_cises(transport, central, peripheral, trace, params,
-                                                      num_iso_data_packets_per_cis, send_delay_c=0):
+                                                      num_iso_data_packets_per_cis, send_delay_c=0,
+                                                      adjust_conn_interval=False):
     success, initiator, peripheral_cis_handles, central_cis_handles = \
-        state_connected_isochronous_stream(transport, peripheral, central, trace, params)
+        state_connected_isochronous_stream(transport, peripheral, central, trace, params,
+                                           adjust_conn_interval=adjust_conn_interval)
     if not initiator:
         return success
 
@@ -7054,7 +7056,8 @@ def ll_cis_cen_bv_46_c(transport, upper_tester, lower_tester, trace):
 
 
 def central_send_and_receive_data_in_multi_cises_single_cig_single_conn_interleaved(transport, central, peripheral,
-                                                                                    trace, bn, sdu_interval, nse):
+                                                                                    trace, bn, sdu_interval, nse,
+                                                                                    adjust_conn_interval=False):
     params = SetCIGParameters(
         SDU_Interval_C_To_P     = sdu_interval,
         SDU_Interval_P_To_C     = sdu_interval,
@@ -7070,14 +7073,15 @@ def central_send_and_receive_data_in_multi_cises_single_cig_single_conn_interlea
         BN_P_To_C               = bn,
     )
 
-    return test_sending_and_receiving_data_in_multiple_cises(transport, central, peripheral, trace, params, 1)
+    return test_sending_and_receiving_data_in_multiple_cises(transport, central, peripheral, trace, params, 1,
+                                                             adjust_conn_interval=adjust_conn_interval)
 
 
 def ll_cis_cen_bv_08_c(transport, upper_tester, lower_tester, trace):
     """LL/CIS/CEN/BV-08-C [Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG,
      Central]"""
     return central_send_and_receive_data_in_multi_cises_single_cig_single_conn_interleaved(
-        transport, upper_tester, lower_tester, trace, 2, 0xC350, 4)
+        transport, upper_tester, lower_tester, trace, 2, 0xC350, 4, adjust_conn_interval=True)
 
 
 def ll_cis_cen_bv_43_c(transport, upper_tester, lower_tester, trace):
@@ -7113,7 +7117,8 @@ def ll_cis_cen_bv_09_c(transport, upper_tester, lower_tester, trace):
         BN_P_To_C               = 1,
     )
 
-    return test_sending_and_receiving_data_in_multiple_cises(transport, upper_tester, lower_tester, trace, params, 2)
+    return test_sending_and_receiving_data_in_multiple_cises(transport, upper_tester, lower_tester, trace, params, 2,
+                                                             adjust_conn_interval=True)
 
 
 def ll_cis_cen_bv_24_c(transport, upper_tester, lower_tester, trace):
@@ -7716,7 +7721,7 @@ __tests__ = {
     "LL/CIS/CEN/BV-26-C": [ ll_cis_cen_bv_26_c, "Connected Isochronous Stream Using Non-Test Command, Central Initiated" ],
     "LL/CIS/CEN/BV-27-C": [ ll_cis_cen_bv_27_c, "Connected Isochronous Stream Using Non-Test Command, Central Initiated" ],
     "LL/CIS/CEN/BV-30-C": [ ll_cis_cen_bv_30_c, "Isochronous Channels Host Support Feature Bit" ],
-    # "LL/CIS/CEN/BV-08-C": [ ll_cis_cen_bv_08_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG, Central" ],
+    "LL/CIS/CEN/BV-08-C": [ ll_cis_cen_bv_08_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG, Central" ],
     "LL/CIS/CEN/BV-43-C": [ ll_cis_cen_bv_43_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG, Central" ],
     # "LL/CIS/CEN/BV-09-C": [ ll_cis_cen_bv_09_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Sequential, Central" ],
     "LL/CIS/CEN/BV-36-C": [ ll_cis_cen_bv_36_c, "Connected Isochronous Stream Using Non-Test Command, Force Framed PDUs" ],

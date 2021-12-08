@@ -598,8 +598,11 @@ def set_isochronous_channels_host_support(transport, device, trace, value):
     return getCommandCompleteEvent(transport, device, trace) and (status == 0x00)
 
 
-def establish_acl_connection(transport, central, peripheral, trace, supervision_timeout=None):
+def establish_acl_connection(transport, central, peripheral, trace, interval=None, supervision_timeout=None):
     advertiser, initiator = setPublicInitiator(transport, central, trace, Advertising.CONNECTABLE_UNDIRECTED)
+    if interval:
+        initiator.intervalMin = initiator.intervalMax = interval
+
     if supervision_timeout:
         initiator.supervisionTimeout = supervision_timeout
 
@@ -716,13 +719,20 @@ def enable_encryption(transport, central, peripheral, trace, conn_handle_c, keys
 
 
 def state_connected_isochronous_stream(transport, peripheral, central, trace, params,
-                                       setup_iso_data_path=True, enc_keys=None, use_test_cmd=True):
+                                       setup_iso_data_path=True, enc_keys=None, use_test_cmd=True,
+                                       adjust_conn_interval=False):
     # The Isochronous Channels (Host Support) FeatureSet bit is set.
     success = set_isochronous_channels_host_support(transport, peripheral, trace, 1)
     success = set_isochronous_channels_host_support(transport, central, trace, 1) and success
 
+    # Adjust connection interval to avoid CIG and ACL events collision
+    if adjust_conn_interval:
+        conn_interval = params.ISO_Interval
+    else:
+        conn_interval = None
+
     ### ACL Connection Established. IUT (upperTester) is Peripheral. ###
-    s, advertiser, initiator = establish_acl_connection(transport, central, peripheral, trace,
+    s, advertiser, initiator = establish_acl_connection(transport, central, peripheral, trace, conn_interval,
                                                         calc_supervision_timeout(params.ISO_Interval * 1.25))
     success = s and success
     if not initiator:
