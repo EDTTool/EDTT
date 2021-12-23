@@ -5765,7 +5765,7 @@ def ll_cis_per_bv_05_c(transport, upperTester, lowerTester, trace):
     return success
 
 
-def sending_and_receiving_data_complete(transport, central, peripheral, trace, params, packets_sent):
+def sending_and_receiving_data_complete(transport, central, peripheral, trace, params, cis_handle_pairs, packets_sent):
     # Fetch all the EDTT Write ISO Data command responses
     success = le_iso_data_write_complete(transport, peripheral, trace, len(packets_sent[peripheral]), 100)
     success = le_iso_data_write_complete(transport, central, trace, len(packets_sent[central]), 100) and success
@@ -5781,14 +5781,36 @@ def sending_and_receiving_data_complete(transport, central, peripheral, trace, p
                                           params.SDU_Interval_C_To_P)
     success = len(packets_sent[central]) == sum(num_packets_c) and success
 
-    # Fetch and verify the payloads received
-    for conn_handle_p, payload_sent_p in packets_sent[peripheral]:
-        s, payload_received_c = iso_receive_sdu(transport, central, trace, params.SDU_Interval_P_To_C)
-        success = s and success and payload_sent_p == payload_received_c
+    def cis_handle_central(cis_handle_peripheral):
+        for handle_p, handle_c in cis_handle_pairs:
+            if handle_p == cis_handle_peripheral:
+                return handle_c
+        return -1
 
-    for conn_handle_c, payload_sent_c in packets_sent[central]:
-        s, payload_received_p = iso_receive_sdu(transport, peripheral, trace, params.SDU_Interval_C_To_P)
-        success = s and success and payload_sent_c == payload_received_p
+    def cis_handle_peripheral(cis_handle_central):
+        for handle_p, handle_c in cis_handle_pairs:
+            if handle_c == cis_handle_central:
+                return handle_p
+        return -1
+
+    # Fetch and verify the payloads received
+    for _ in range(len(packets_sent[peripheral])):
+        s, cis_handle_c, payload = iso_receive_sdu(transport, central, trace, params.SDU_Interval_P_To_C)
+        cis_handle_p = cis_handle_peripheral(cis_handle_c)
+        if (cis_handle_p, payload) in packets_sent[peripheral]:
+            packets_sent[peripheral].remove((cis_handle_p, payload))
+            success = success and s
+        else:
+            success = False
+
+    for _ in range(len(packets_sent[central])):
+        s, cis_handle_p, payload = iso_receive_sdu(transport, peripheral, trace, params.SDU_Interval_C_To_P)
+        cis_handle_c = cis_handle_central(cis_handle_p)
+        if (cis_handle_c, payload) in packets_sent[central]:
+            packets_sent[central].remove((cis_handle_c, payload))
+            success = success and s
+        else:
+            success = False
 
     return success
 
@@ -5802,11 +5824,10 @@ def test_sending_and_receiving_data_in_multiple_cises(transport, central, periph
     if not initiator:
         return success
 
+    cis_handle_pairs = tuple(zip(peripheral_cis_handles, central_cis_handles))
+
     # Repeat all steps 3 times
     for round_num in range(3):
-        if not success:
-            break
-
         packets_sent = {
             peripheral: [],
             central: [],
@@ -5830,7 +5851,7 @@ def test_sending_and_receiving_data_in_multiple_cises(transport, central, periph
                 success = s and success
                 packets_sent[central].append((central_cis_handles[j], sdu))
 
-        success = sending_and_receiving_data_complete(transport, central, peripheral, trace, params,
+        success = sending_and_receiving_data_complete(transport, central, peripheral, trace, params, cis_handle_pairs,
                                                       packets_sent) and success
 
     ### TERMINATION ###
@@ -5865,6 +5886,8 @@ def test_sending_and_receiving_data_in_bidirectional_cis(transport, central, per
     if not initiator:
         return success
 
+    cis_handle_pairs = ((peripheral_cis_handle, central_cis_handle),)
+
     for round_num in range(cis_bn):
         if not success:
             break
@@ -5885,7 +5908,7 @@ def test_sending_and_receiving_data_in_bidirectional_cis(transport, central, per
         success = s and success
         packets_sent[peripheral].append((peripheral_cis_handle, sdu))
 
-        success = sending_and_receiving_data_complete(transport, central, peripheral, trace, params,
+        success = sending_and_receiving_data_complete(transport, central, peripheral, trace, params, cis_handle_pairs,
                                                       packets_sent) and success
 
     ### TERMINATION ###
@@ -7723,7 +7746,7 @@ __tests__ = {
     "LL/CIS/CEN/BV-30-C": [ ll_cis_cen_bv_30_c, "Isochronous Channels Host Support Feature Bit" ],
     "LL/CIS/CEN/BV-08-C": [ ll_cis_cen_bv_08_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG, Central" ],
     "LL/CIS/CEN/BV-43-C": [ ll_cis_cen_bv_43_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG, Central" ],
-    # "LL/CIS/CEN/BV-09-C": [ ll_cis_cen_bv_09_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Sequential, Central" ],
+    "LL/CIS/CEN/BV-09-C": [ ll_cis_cen_bv_09_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Sequential, Central" ],
     "LL/CIS/CEN/BV-36-C": [ ll_cis_cen_bv_36_c, "Connected Isochronous Stream Using Non-Test Command, Force Framed PDUs" ],
     "LL/CIS/CEN/BV-37-C": [ ll_cis_cen_bv_37_c, "Connected Isochronous Stream Using Non-Test Command, Force Framed PDUs" ],
     "LL/CIS/CEN/BV-44-C": [ ll_cis_cen_bv_44_c, "Sending and Receiving Data in Multiple CISes, Single CIG, Single Connection, Interleaved CIG, Central, BN > 1, NSE = 2" ],

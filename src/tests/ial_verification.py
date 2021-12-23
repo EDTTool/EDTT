@@ -127,10 +127,10 @@ def send_multiple_small_sdu_cis(transport, transmitter, receiver, trace, cis_han
     success = not has_event(transport, transmitter, 100)[0] and success
 
     # Check the data received
-    s, rx_sdu = iso_receive_sdu(transport, receiver, trace, sdu_interval)
+    s, _, rx_sdu = iso_receive_sdu(transport, receiver, trace, sdu_interval)
     success = s and tx_sdu_1 == rx_sdu and success
 
-    s, rx_sdu = iso_receive_sdu(transport, receiver, trace, sdu_interval)
+    s, _, rx_sdu = iso_receive_sdu(transport, receiver, trace, sdu_interval)
     success = s and tx_sdu_2 == rx_sdu and success
 
     return success

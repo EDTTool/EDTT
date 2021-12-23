@@ -524,7 +524,7 @@ def iso_receive_sdu(transport, idx, trace, sdu_interval):
 
         success = (len(iso_sdu) < iso_sdu_len) and success
 
-    return success, tuple(iso_sdu)
+    return success, handle, tuple(iso_sdu)
 
 
 def iso_send_payload_pdu(transport, transmitter, receiver, trace, conn_handle, max_sdu_size, sdu_interval, pkt_seq_num,
@@ -545,7 +545,7 @@ def iso_send_payload_pdu(transport, transmitter, receiver, trace, conn_handle, m
     success = verifyAndShowEvent(transport, transmitter, Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS, trace,
                                  sdu_interval * 2)
 
-    s, rx_iso_sdu = iso_receive_sdu(transport, receiver, trace, sdu_interval)
+    s, _, rx_iso_sdu = iso_receive_sdu(transport, receiver, trace, sdu_interval)
     success = s and success
 
     # Transmitter: No RX
@@ -584,10 +584,10 @@ def iso_send_payload_pdu_parallel(transport, idx_1, idx_2, trace, conn_handle_1,
     success = verifyAndShowEvent(transport, idx_2, Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS, trace) and success
 
     # Check the data received
-    s, rx_iso_sdu = iso_receive_sdu(transport, idx_1, trace, sdu_interval)
+    s, _, rx_iso_sdu = iso_receive_sdu(transport, idx_1, trace, sdu_interval)
     success = s and tx_iso_sdu == rx_iso_sdu and success
 
-    s, rx_iso_sdu = iso_receive_sdu(transport, idx_2, trace, sdu_interval)
+    s, _, rx_iso_sdu = iso_receive_sdu(transport, idx_2, trace, sdu_interval)
     success = s and tx_iso_sdu == rx_iso_sdu and success
 
     return success
