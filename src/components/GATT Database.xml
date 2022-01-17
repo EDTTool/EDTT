@@ -36,7 +36,7 @@
 						</Descriptors>
 					</Characteristic>
 					<Characteristic uuid="2B29" name="Client Features" handle="5" properties="10" permissions="3">00</Characteristic>
-					<Characteristic uuid="2B2A" name="Attribute Database Hash" handle="7" properties="2" permissions="1">85 F8 C8 2C E4 BA 28 9A 6C D5 42 D5 43 7F 91 75</Characteristic>
+					<Characteristic uuid="2B2A" name="Attribute Database Hash" handle="7" properties="2" permissions="1">F6 5E 40 DE 41 00 7C BC 88 71 E8 F3 06 B9 E0 26</Characteristic>
 				</Characteristics>
 			</Service>
 			<Service type="Primary Service" uuid="1800" name="Generic Access Profile" handle="9">
@@ -252,7 +252,7 @@
 						</Descriptors>
 					</Characteristic>
 					<Characteristic uuid="2B29" name="Client Features" handle="5" properties="10" permissions="3">00</Characteristic>
-					<Characteristic uuid="2B2A" name="Attribute Database Hash" handle="7" properties="2" permissions="1">81 F5 92 A4 3B 65 9D 3D 58 85 6C 8D 3A E7 50 AF</Characteristic>
+					<Characteristic uuid="2B2A" name="Attribute Database Hash" handle="7" properties="2" permissions="1">8C 6D CF 3B 2C 8A BB 3F 19 06 0B 92 70 A8 5F E0</Characteristic>
 				</Characteristics>
 			</Service>
 			<Service type="Primary Service" uuid="1800" name="Generic Access Profile" handle="9">
