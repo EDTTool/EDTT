@@ -182,7 +182,7 @@ def main():
     try:
         (args, xtra_args) = parse_arguments();
 
-        random.seed(args.seed);
+        random.seed(int(args.seed));
 
         trace = Trace(args.verbose);
 
