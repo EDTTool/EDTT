@@ -490,7 +490,11 @@ def iso_receive_sdu(transport, idx, trace, sdu_interval):
     iso_sdu_len = 0
     success = True
     while success:
-        time, handle, pbflags, tsflag, rx_iso_data_load = le_iso_data_read(transport, idx, sdu_interval * 2)
+        success = le_iso_data_ready(transport, idx, sdu_interval * 2) and success
+        if not success:
+            return success, -1, tuple([])
+
+        time, handle, pbflags, tsflag, rx_iso_data_load = le_iso_data_read(transport, idx, 100)
         rx_iso_data_load = bytearray(rx_iso_data_load)
 
         # Unpack ISO_Data_Load
