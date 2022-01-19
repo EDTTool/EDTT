@@ -7473,6 +7473,8 @@ def connected_isochronous_stream_using_non_test_command(transport, upper_tester,
         Max_SDU_P_To_C                  = 16,
     )
 
+    start_time = transport.get_time()
+
     success, initiator, _, (cis_handle_upper_tester,) = \
         state_connected_isochronous_stream(transport, lower_tester, upper_tester, trace, params, use_test_cmd=False)
     if not initiator:
@@ -7508,6 +7510,7 @@ def connected_isochronous_stream_using_non_test_command(transport, upper_tester,
         success = iso_send_payload_pdu(transport, lower_tester, upper_tester, trace, cis_handle_lower_tester,
                                        params.Max_SDU_P_To_C[0], params.SDU_Interval_P_To_C, seq_num) and success
 
+
     ### TERMINATION ###
     success = initiator.disconnect(0x13) and success
 
@@ -7516,7 +7519,9 @@ def connected_isochronous_stream_using_non_test_command(transport, upper_tester,
     ### LL VERIFICATION ###
     isoc_framed_pdu_num = 0
     for packet in packets.fetch(packet_filter=('LL_CIS_REQ', 'ISOC_FRAMED_PDU')):
-        if packet.type.name == 'LL_CIS_REQ':
+        if packet.ts/1000 < start_time:
+            trace.trace(4, "Drop %s" % str(packet))
+        elif packet.type.name == 'LL_CIS_REQ':
             success = packet.payload.CtrData.Framed == 1 and success
         elif packet.payload.SegmentationHeader.CMPLT == 1:
             isoc_framed_pdu_num += 1
@@ -7556,6 +7561,8 @@ def connected_isochronous_stream_using_non_test_command_force_framed_pdus(transp
         PHY_P_To_C                      = phy,
     )
 
+    start_time = transport.get_time()
+
     success, initiator, _, (cis_handle_upper_tester,) = \
         state_connected_isochronous_stream(transport, lower_tester, upper_tester, trace, params, use_test_cmd=False)
     if not initiator:
@@ -7573,7 +7580,9 @@ def connected_isochronous_stream_using_non_test_command_force_framed_pdus(transp
     ### LL VERIFICATION ###
     isoc_framed_pdu_num = 0
     for packet in packets.fetch(packet_filter=('LL_CIS_REQ', 'ISOC_FRAMED_PDU')):
-        if packet.type.name == 'LL_CIS_REQ':
+        if packet.ts/1000 < start_time:
+            trace.trace(4, "Drop %s" % str(packet))
+        elif packet.type.name == 'LL_CIS_REQ':
             success = packet.payload.CtrData.Framed == 1 and success
         elif packet.payload.SegmentationHeader.CMPLT == 1:
             isoc_framed_pdu_num += 1
