@@ -37,8 +37,8 @@ class Initiator:
         self.initiatorAddress = initiatorAddress;
         self.peerAddress = peerAddress;
         self.filterPolicy = filterPolicy;
-        
-        self.RPAs = [ [ 0 for _ in range(6) ], [ 0 for _ in range(6) ] ];        
+    
+        self.RPAs = [ [ 0 for _ in range(6) ], [ 0 for _ in range(6) ] ];    
         self.handles = [-1, -1];
         self.reasons = [-1, -1];
         self.txPhys, self.rxPhys = -1, -1;
@@ -68,7 +68,7 @@ class Initiator:
         self.updInitiatorRequest, self.updPeerRequest, self.checkPrematureDisconnect = False, False, True;
 
         self.cpr_handle, self.cpr_minInterval, self.cpr_maxInterval, self.cpr_latency, self.cpr_timeout = -1, 0, 0, 0, 0;
-        
+    
     """
         Private Event handler procedures...
 
@@ -115,7 +115,7 @@ class Initiator:
         Check for LE PHY Update Complete Event...
     """
     def __hasPhysUpdateCompleteEvent(self, idx, timeout):
-        
+    
         txPhys, rxPhys = -1, -1;
 
         success = has_event(self.transport, idx, timeout)[0];
@@ -136,7 +136,7 @@ class Initiator:
 
         handle, minInterval, maxInterval, latency, supervisionTimeout = -1, -1, -1, -1, -1;
 
-        success = has_event(self.transport, idx, timeout)[0]; 
+        success = has_event(self.transport, idx, timeout)[0];
         while success:
             event = get_event(self.transport, idx, 200);
             self.trace.trace(7, str(event));
@@ -158,7 +158,7 @@ class Initiator:
     """
     def __hasConnectionUpdateCompleteEvent(self, idx, timeout):
         status, handle, interval, latency, visionTimeout = -1, -1, -1, -1, -1;
-        
+    
         success = not self.__savedEvent[idx] is None;
         if success:
             event = self.__savedEvent[idx];
@@ -274,7 +274,7 @@ class Initiator:
             Initiator should receive a LE_PHY_Update_Complete event to signal that the command has been effectuated (could be no change)...
         """
         success, txPhys, rxPhys = self.__hasPhysUpdateCompleteEvent(self.initiator, 1000);
-                        
+                    
         if success and ((txPhys != self.txPhys) or (rxPhys != self.rxPhys)):
             self.txPhys = txPhys; self.rxPhys = rxPhys;
             """
@@ -330,9 +330,9 @@ class Initiator:
                 if initiatorDisconnected:
                     self.handles[0] = -1;
                     initiatorConnected = False;
-        
+    
         return success and initiatorConnected and peerConnected;
-        
+    
     """
         Carry out the connect procedure...
     """
@@ -356,14 +356,14 @@ class Initiator:
             initiatorDisconnected, handle, reason = self.__hasDisconnectCompleteEvent(self.initiator, 100 * int((99 + 10 * self.prevInterval * 1.25) / 100));
             if initiatorDisconnected:
                 self.handles[0] = -1; self.reasons[0] = reason;
-            
+        
             if not self.peer is None:
                 peerDisconnected, handle, reason = self.__hasDisconnectCompleteEvent(self.peer, 200);
                 if peerDisconnected:
                     self.handles[1] = -1; self.reasons[1] = reason;
             else:
                 peerDisconnected = True;
-                        
+                    
         return success and initiatorDisconnected and peerDisconnected;
 
     def cancelConnect(self):
@@ -393,13 +393,13 @@ class Initiator:
             else:
                 self.updPeerRequest = False;
         return self.updInitiatorRequest;
-    
+
     """
         Accept the request for connection parameters update, by responding to the LE Remote Connection Parameter Request Event...
     """
     def acceptUpdate(self):
         success = self.updInitiatorRequest and self.updPeerRequest;
-        
+    
         if success:
             """
                 Send a LL_CONNECTION_PARAM_RSP as a reaction to the LE Remote Connection Parameter Request Event...
@@ -418,7 +418,7 @@ class Initiator:
     """
     def rejectUpdate(self, reason):
         success = self.updInitiatorRequest and self.updPeerRequest;
-        
+    
         if success:
             """
                 Send a LL_REJECT_EXT_IND as a reaction to the LE Remote Connection Parameter Request Event...
@@ -462,10 +462,10 @@ class Initiator:
             success = initiatorUpdated and peerUpdated;
 
         return success;
- 
+
     def updatePhys(self, allPhys, txPhys, rxPhys, optionPhys):
         success = self.__updatePhys(allPhys, txPhys, rxPhys, optionPhys) if not self.handles[0] == -1 else False;
-        
+    
         if success:
             success = self.__updatedPhys();
 

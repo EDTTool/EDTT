@@ -100,7 +100,7 @@ class Advertiser:
         self.maxInterval = 32; # Maximum Advertise Interval = 32 x 0.625 ms = 20.00 ms
         self.filterPolicy = filterPolicy;
         self.status = 0;
-    
+
     def __verifyAndShowEvent(self, expectedEvent):
         event = get_event(self.transport, self.idx, 200);
         self.trace.trace(7, str(event));
@@ -108,7 +108,7 @@ class Advertiser:
 
     def __getCommandCompleteEvent(self):
         return self.__verifyAndShowEvent(Events.BT_HCI_EVT_CMD_COMPLETE);
-    
+
     def __confined_array(self, data, limit):
         dataSize = len(data) if len(data) <= limit else limit;
         dataCopy = data[ : ];
@@ -117,7 +117,7 @@ class Advertiser:
         elif len(data) > limit:
             dataCopy = dataCopy[:limit];
         return dataSize, dataCopy;
-    
+
     def __set_advertise_parameters(self):
 
         self.status = le_set_advertising_parameters(self.transport, self.idx, self.minInterval, self.maxInterval, self.advertiseType, self.ownAddress.type, \
@@ -136,13 +136,13 @@ class Advertiser:
     def __set_scan_response(self):
 
         dataSize, responseData = self.__confined_array(self.responseData, 31);
-                
+            
         self.status = le_set_scan_response_data(self.transport, self.idx, dataSize, responseData, 200);
         self.trace.trace(6, "LE Set Scan Response Data Command returns status: 0x%02X" % self.status);
         return self.__getCommandCompleteEvent() and (self.status == 0);
 
     def __advertise_enable(self, enable):
-        
+    
         self.status = le_set_advertising_enable(self.transport, self.idx, enable, 200);
         self.trace.trace(6, "LE Set Advertising Enable Command (%s) returns status: 0x%02X" % ("Enabling" if enable else "Disabling", self.status));
         return self.__getCommandCompleteEvent() and (self.status == 0);

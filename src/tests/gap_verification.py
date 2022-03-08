@@ -14,7 +14,7 @@ from components.advertiser import *;
 from components.scanner import *;
 from components.initiator import *;
 from components.preambles import *;
-from components.addata import *; 
+from components.addata import *;
 from components.pairing import *;
 from components.test_spec import TestSpec;
 
@@ -36,16 +36,16 @@ def gap_disc_nonm_bv_01_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
-        
+    
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
                                                                                       devices[address]["type"] ), devices[address]["name"]) );
         trace.trace(6, "Received %d advertising reports; %d scan responses" % (scanner.reports, scanner.responses));
         success = not success;
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -66,16 +66,16 @@ def gap_disc_nonm_bv_02_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
-        
+    
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
                                                                                       devices[address]["type"] ), devices[address]["name"]) );
         trace.trace(6, "Received %d advertising reports; %d scan responses" % (scanner.reports, scanner.responses));
         success = not success;
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -96,15 +96,15 @@ def gap_disc_limm_bv_01_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
-        
+    
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
                                                                                       devices[address]["type"] ), devices[address]["name"]) );
         trace.trace(6, "Received %d advertising reports; %d scan responses" % (scanner.reports, scanner.responses));
-               
+           
     success = success and advertiser.disable();
 
     return success;
@@ -125,15 +125,15 @@ def gap_disc_limm_bv_02_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
-        
+    
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
                                                                                       devices[address]["type"] ), devices[address]["name"]) );
         trace.trace(6, "Received %d advertising reports; %d scan responses" % (scanner.reports, scanner.responses));
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -154,9 +154,9 @@ def gap_disc_limm_bv_03_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
-        
+    
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
@@ -183,15 +183,15 @@ def gap_disc_limm_bv_04_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
-        
+    
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
                                                                                       devices[address]["type"] ), devices[address]["name"]) );
         trace.trace(6, "Received %d advertising reports; %d scan responses" % (scanner.reports, scanner.responses));
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -212,15 +212,15 @@ def gap_disc_genm_bv_01_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
-        
+    
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.LE_LIMITED_DISCOVERABLE);
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
                                                                                       devices[address]["type"] ), devices[address]["name"]) );
         trace.trace(6, "Received %d advertising reports; %d scan responses" % (scanner.reports, scanner.responses));
-               
+           
     success = success and advertiser.disable();
 
     return success;
@@ -241,9 +241,9 @@ def gap_disc_genm_bv_02_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
-        
+    
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
@@ -270,15 +270,15 @@ def gap_disc_genm_bv_03_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
-        
+    
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
                                                                                       devices[address]["type"] ), devices[address]["name"]) );
         trace.trace(6, "Received %d advertising reports; %d scan responses" % (scanner.reports, scanner.responses));
-               
+           
     success = success and advertiser.disable();
 
     return success;
@@ -299,9 +299,9 @@ def gap_disc_genm_bv_04_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
-        
+    
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
@@ -327,15 +327,15 @@ def gap_disc_limp_bv_01_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.responseData  = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
-        
+    
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
                                                                                       devices[address]["type"] ), devices[address]["name"]) );
         trace.trace(6, "Received %d advertising reports; %d scan responses" % (scanner.reports, scanner.responses));
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -354,16 +354,16 @@ def gap_disc_limp_bv_02_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.FLAGS, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.responseData  = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
-        
+    
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
                                                                                       devices[address]["type"] ), devices[address]["name"]) );
         trace.trace(6, "Received %d advertising reports; %d scan responses" % (scanner.reports, scanner.responses));
         success = not success;
-    
+
     success = success and advertiser.disable();
 
     return success;
@@ -383,16 +383,16 @@ def gap_disc_limp_bv_04_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
-        
+    
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
                                                                                       devices[address]["type"] ), devices[address]["name"]) );
         trace.trace(6, "Received %d advertising reports; %d scan responses" % (scanner.reports, scanner.responses));
         success = not success;
-    
+
     success = success and advertiser.disable();
 
     return success;
@@ -413,16 +413,16 @@ def gap_disc_limp_bv_05_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
-        
+    
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
                                                                                       devices[address]["type"] ), devices[address]["name"]) );
         trace.trace(6, "Received %d advertising reports; %d scan responses" % (scanner.reports, scanner.responses));
         success = not success;
-    
+
     success = success and advertiser.disable();
 
     return success;
@@ -441,15 +441,15 @@ def gap_disc_genp_bv_01_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.FLAGS, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.responseData  = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
-        
+    
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
                                                                                       devices[address]["type"] ), devices[address]["name"]) );
         trace.trace(6, "Received %d advertising reports; %d scan responses" % (scanner.reports, scanner.responses));
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -468,15 +468,15 @@ def gap_disc_genp_bv_02_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.FLAGS, ADFlag.LE_LIMITED_DISCOVERABLE | ADFlag.BR_EDR_NOT_SUPPORTED );
     advertiser.responseData  = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
-        
+    
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
                                                                                       devices[address]["type"] ), devices[address]["name"]) );
         trace.trace(6, "Received %d advertising reports; %d scan responses" % (scanner.reports, scanner.responses));
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -496,16 +496,16 @@ def gap_disc_genp_bv_04_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData  = adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData  = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
-        
+    
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
                                                                                       devices[address]["type"] ), devices[address]["name"]) );
         trace.trace(6, "Received %d advertising reports; %d scan responses" % (scanner.reports, scanner.responses));
         success = not success;
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -526,16 +526,16 @@ def gap_disc_genp_bv_05_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
-        
+    
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
                                                                                       devices[address]["type"] ), devices[address]["name"]) );
         trace.trace(6, "Received %d advertising reports; %d scan responses" % (scanner.reports, scanner.responses));
         success = not success;
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -560,7 +560,7 @@ def gap_disc_rpa_bv_01_c(transport, upperTester, lowerTester, trace):
     success = success and RPAs[upperTester].enable() and RPAs[lowerTester].enable();
     """
         Scan interval should be three times the average Advertise interval. Scan window should be the maximum possible.
-    """ 
+    """
     ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC );
     peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC );
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
@@ -572,15 +572,15 @@ def gap_disc_rpa_bv_01_c(transport, upperTester, lowerTester, trace):
     advertiser.advertiseData += adData.encode( ADType.TX_POWER_LEVEL, -4 );
     advertiser.advertiseData += adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
-        
+    
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
                                                                                       devices[address]["type"] ), devices[address]["name"]) );
         trace.trace(6, "Received %d advertising reports; %d scan responses" % (scanner.reports, scanner.responses));
-                
+            
     success = success and advertiser.disable();
     success = success and RPAs[upperTester].disable() and RPAs[lowerTester].disable();
 
@@ -630,7 +630,7 @@ def gap_conn_ncon_bv_02_c(transport, upperTester, lowerTester, trace):
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
 
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
@@ -644,7 +644,7 @@ def gap_conn_ncon_bv_02_c(transport, upperTester, lowerTester, trace):
             initiator = Initiator(transport, lowerTester, upperTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( devices[address]["type"], address ));
             connected = initiator.connect();
             success = success and not connected;
-        
+    
     success = success and advertiser.disable();
 
     return success;
@@ -667,7 +667,7 @@ def gap_conn_ncon_bv_03_c(transport, upperTester, lowerTester, trace):
     advertiser.responseData   = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Flødebolle' );
 
     success = advertiser.enable();
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
@@ -681,7 +681,7 @@ def gap_conn_ncon_bv_03_c(transport, upperTester, lowerTester, trace):
             initiator = Initiator(transport, lowerTester, upperTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( devices[address]["type"], address ));
             connected = initiator.connect();
             success = success and not connected;
-        
+    
     success = success and advertiser.disable();
 
     return success;
@@ -699,7 +699,7 @@ def gap_conn_dcon_bv_01_c(transport, upperTester, lowerTester, trace):
 
     success = advertising = advertiser.enable();
 
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000 );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
@@ -719,7 +719,7 @@ def gap_conn_dcon_bv_01_c(transport, upperTester, lowerTester, trace):
                 connected = not initiator.disconnect(0x13);
                 success = success and not connected;
 
-    if advertising:             
+    if advertising:         
         advertiser.disable();
 
     return success;
@@ -743,7 +743,7 @@ def gap_conn_ucon_bv_01_c(transport, upperTester, lowerTester, trace):
 
     success = advertising = advertiser.enable();
 
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000 );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
@@ -762,7 +762,7 @@ def gap_conn_ucon_bv_01_c(transport, upperTester, lowerTester, trace):
             connected = not initiator.disconnect(0x13);
             success = success and not connected;
 
-    if advertising:             
+    if advertising:         
         advertiser.disable();
 
     return success;
@@ -786,7 +786,7 @@ def gap_conn_ucon_bv_02_c(transport, upperTester, lowerTester, trace):
 
     success = advertising = advertiser.enable();
 
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
@@ -805,7 +805,7 @@ def gap_conn_ucon_bv_02_c(transport, upperTester, lowerTester, trace):
             connected = not initiator.disconnect(0x13);
             success = success and not connected;
 
-    if advertising:             
+    if advertising:         
         advertiser.disable();
 
     return success;
@@ -829,7 +829,7 @@ def gap_conn_ucon_bv_03_c(transport, upperTester, lowerTester, trace):
 
     success = advertising = advertiser.enable();
 
-    if success: 
+    if success:
         success, devices = scanner.discover( 2000, ADFlag.LE_GENERAL_DISCOVERABLE | ADFlag.LE_LIMITED_DISCOVERABLE );
         for address in devices:
             trace.trace(6, "Found device with address: %s complete local name: %s" % (formatAddress( toArray( address, 6 ), \
@@ -882,7 +882,7 @@ def gap_conn_acep_bv_01_c(transport, upperTester, lowerTester, trace):
         connected = not initiator.disconnect(0x13);
         success = success and not connected;
 
-    if advertising:             
+    if advertising:         
         advertiser.disable();
 
     return success;
@@ -929,7 +929,7 @@ def gap_conn_acep_bv_03_c(transport, upperTester, lowerTester, trace):
         connected = not initiator.disconnect(0x13);
         success = success and not connected;
 
-    if advertising:             
+    if advertising:         
         advertiser.disable();
 
     success = success and RPAs[upperTester].disable() and RPAs[lowerTester].disable();
@@ -978,7 +978,7 @@ def gap_conn_acep_bv_04_c(transport, upperTester, lowerTester, trace):
         connected = not initiator.disconnect(0x13);
         success = success and not connected;
 
-    if advertising:             
+    if advertising:         
         advertiser.disable();
 
     success = success and RPAs[upperTester].disable() and RPAs[lowerTester].disable();
@@ -995,17 +995,17 @@ def gap_conn_gcep_bv_01_c(transport, upperTester, lowerTester, trace):
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ));
- 
+
     success = advertising = advertiser.enable();
     connected = initiator.connect()
     success = success and connected;
     advertising = not connected;
 
-    if connected: 
+    if connected:
         connected = not initiator.disconnect(0x13);
         success = success and not connected;
 
-    if advertising:             
+    if advertising:         
         advertiser.disable();
 
     return success;
@@ -1020,17 +1020,17 @@ def gap_conn_gcep_bv_02_c(transport, upperTester, lowerTester, trace):
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ));
- 
+
     success = advertising = advertiser.enable();
     connected = initiator.connect()
     success = success and connected;
     advertising = not connected;
 
-    if connected: 
+    if connected:
         connected = not initiator.disconnect(0x13);
         success = success and not connected;
 
-    if advertising:             
+    if advertising:         
         advertiser.disable();
 
     return success;
@@ -1059,17 +1059,17 @@ def gap_conn_gcep_bv_05_c(transport, upperTester, lowerTester, trace):
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ));
- 
+
     success = advertising = advertiser.enable();
     connected = initiator.connect()
     success = success and connected;
     advertising = not connected;
 
-    if connected: 
+    if connected:
         connected = not initiator.disconnect(0x13);
         success = success and not connected;
 
-    if advertising:             
+    if advertising:         
         advertiser.disable();
 
     success = success and RPAs[upperTester].disable() and RPAs[lowerTester].disable();
@@ -1100,17 +1100,17 @@ def gap_conn_gcep_bv_06_c(transport, upperTester, lowerTester, trace):
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_UNDIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE);
     initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ));
- 
+
     success = advertising = advertiser.enable();
     connected = initiator.connect()
     success = success and connected;
     advertising = not connected;
 
-    if connected: 
+    if connected:
         connected = not initiator.disconnect(0x13);
         success = success and not connected;
 
-    if advertising:             
+    if advertising:         
         advertiser.disable();
 
     success = success and RPAs[upperTester].disable() and RPAs[lowerTester].disable();
@@ -1127,7 +1127,7 @@ def gap_conn_cpup_bv_01_c(transport, upperTester, lowerTester, trace):
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE)
     initiator = Initiator(transport, lowerTester, upperTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x123456789ABC ))
- 
+
     success = advertising = advertiser.enable()
     connected = initiator.connect()
     success = success and connected
@@ -1142,7 +1142,7 @@ def gap_conn_cpup_bv_01_c(transport, upperTester, lowerTester, trace):
             Setting new connection update parameters and send a LL_CONNECTION_PARAM_REQ
         """
         interval = 30
-        timeout = 3000 
+        timeout = 3000
         success = success and initiator.update(interval, interval, initiator.latency, timeout)
         """
             Accept the LE Remote Connection Parameter Request Event by issuing a LL_CONNECTION_PARAM_RSP...
@@ -1172,7 +1172,7 @@ def gap_conn_cpup_bv_02_c(transport, upperTester, lowerTester, trace):
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE)
     initiator = Initiator(transport, lowerTester, upperTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x123456789ABC ))
- 
+
     success = advertising = advertiser.enable()
     connected = initiator.connect()
     success = success and connected
@@ -1187,7 +1187,7 @@ def gap_conn_cpup_bv_02_c(transport, upperTester, lowerTester, trace):
             Setting new connection update parameters and send a LL_CONNECTION_PARAM_REQ
         """
         interval = 30
-        timeout = 3000 
+        timeout = 3000
         success = success and initiator.update(interval, interval, initiator.latency, timeout)
         """
             Verify if initiator received an LE Connection Update Complete Event
@@ -1215,7 +1215,7 @@ def gap_conn_cpup_bv_03_c(transport, upperTester, lowerTester, trace):
     advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE)
     initiator = Initiator(transport, lowerTester, upperTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x123456789ABC ))
- 
+
     success = advertising = advertiser.enable()
     connected = initiator.connect()
     success = success and connected
@@ -1227,7 +1227,7 @@ def gap_conn_cpup_bv_03_c(transport, upperTester, lowerTester, trace):
             Setting invalid connection update parameters (timeout > max_timeout) and send a LL_CONNECTION_PARAM_REQ
         """
         interval = 30
-        timeout = 3300 
+        timeout = 3300
         success = success and initiator.update(interval, interval, initiator.latency, timeout)
         """
             Try to accept the LE Remote Connection Parameter Request Event by issuing a LL_CONNECTION_PARAM_RSP...
@@ -1258,7 +1258,7 @@ def gap_conn_cpup_bv_04_c(transport, upperTester, lowerTester, trace):
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE)
     initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ))
- 
+
     success = advertising = advertiser.enable()
     connected = initiator.connect()
     success = success and connected
@@ -1301,7 +1301,7 @@ def gap_conn_cpup_bv_05_c(transport, upperTester, lowerTester, trace):
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE)
     initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ))
- 
+
     success = advertising = advertiser.enable()
     connected = initiator.connect()
     success = success and connected
@@ -1313,7 +1313,7 @@ def gap_conn_cpup_bv_05_c(transport, upperTester, lowerTester, trace):
             Setting invalid connection update parameters (timeout > max_timeout) and send a LL_CONNECTION_PARAM_REQ
         """
         interval = 30
-        timeout = 3300 
+        timeout = 3300
         success = success and initiator.update(interval, interval, initiator.latency, timeout)
         """
             Accept the LE Remote Connection Parameter Request Event by issuing a LL_CONNECTION_PARAM_RSP...
@@ -1344,7 +1344,7 @@ def gap_conn_cpup_bv_06_c(transport, upperTester, lowerTester, trace):
     advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, \
                             ownAddress, peerAddress, AdvertisingFilterPolicy.FILTER_NONE)
     initiator = Initiator(transport, upperTester, lowerTester, trace, Address( ExtendedAddressType.PUBLIC ), Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF ))
- 
+
     success = advertising = advertiser.enable()
     connected = initiator.connect()
     success = success and connected
@@ -1355,7 +1355,7 @@ def gap_conn_cpup_bv_06_c(transport, upperTester, lowerTester, trace):
             Setting invalid connection update parameters (timeout > max_timeout) and send a LL_CONNECTION_PARAM_REQ
         """
         interval = 30
-        timeout = 3000 
+        timeout = 3000
         success = success and initiator.update(interval, interval, initiator.latency, timeout)
         """
             Accept the LE Remote Connection Parameter Request Event by issuing a LL_CONNECTION_PARAM_RSP...
@@ -1389,7 +1389,7 @@ def gap_adv_bv_01_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.ILIST_UUIDS_16, 0x1234, 0x5678, 0x9ABC );
     advertiser.responseData = adData.encode( ADType.ILIST_UUIDS_16, 0x9ABC, 0x5678, 0x1234 );
-        
+    
     success = advertiser.enable();
 
     success = success and scanner.enable();
@@ -1397,12 +1397,12 @@ def gap_adv_bv_01_c(transport, upperTester, lowerTester, trace):
     success = success and scanner.disable();
     success = success and scanner.qualifyReports( 1 );
     success = success and scanner.qualifyResponses( 1, advertiser.responseData );
-                
+            
     success = success and advertiser.disable();
 
     advertiser.advertiseData = adData.encode( ADType.ILIST_UUIDS_128, 0x1429304977D74244AE6AD3873E4A3184 );
     advertiser.responseData = adData.encode( ADType.ILIST_UUIDS_128, 0x1429304977D74244AE6AD3873E4A3184 );
-        
+    
     success = advertiser.enable();
 
     success = success and scanner.enable();
@@ -1410,7 +1410,7 @@ def gap_adv_bv_01_c(transport, upperTester, lowerTester, trace):
     success = success and scanner.disable();
     success = success and scanner.qualifyReports( 1 );
     success = success and scanner.qualifyResponses( 1, advertiser.responseData );
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -1429,7 +1429,7 @@ def gap_adv_bv_02_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.SHORTENED_LOCAL_NAME, 'Blåbær' );
     advertiser.responseData = adData.encode( ADType.COMPLETE_LOCAL_NAME, 'Rødgrød med fløde' );
-        
+    
     success = advertiser.enable();
 
     success = success and scanner.enable();
@@ -1437,7 +1437,7 @@ def gap_adv_bv_02_c(transport, upperTester, lowerTester, trace):
     success = success and scanner.disable();
     success = success and scanner.qualifyReports( 1 );
     success = success and scanner.qualifyResponses( 1, advertiser.responseData );
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -1456,7 +1456,7 @@ def gap_adv_bv_03_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.FLAGS, 0x06 );
     advertiser.responseData = adData.encode( ADType.FLAGS, 0x1F );
-        
+    
     success = advertiser.enable();
 
     success = success and scanner.enable();
@@ -1464,7 +1464,7 @@ def gap_adv_bv_03_c(transport, upperTester, lowerTester, trace):
     success = success and scanner.disable();
     success = success and scanner.qualifyReports( 1 );
     success = success and scanner.qualifyResponses( 1, advertiser.responseData );
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -1483,7 +1483,7 @@ def gap_adv_bv_04_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.MANUFACTURER_DATA, 0x0107, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05 ); # Manufacturer Oticon
     advertiser.responseData = adData.encode( ADType.MANUFACTURER_DATA, 0x0107, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00 ); # Manufacturer Oticon
-        
+    
     success = advertiser.enable();
 
     success = success and scanner.enable();
@@ -1491,7 +1491,7 @@ def gap_adv_bv_04_c(transport, upperTester, lowerTester, trace):
     success = success and scanner.disable();
     success = success and scanner.qualifyReports( 1 );
     success = success and scanner.qualifyResponses( 1, advertiser.responseData );
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -1510,7 +1510,7 @@ def gap_adv_bv_05_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.TX_POWER_LEVEL, -20 );
     advertiser.responseData = adData.encode( ADType.TX_POWER_LEVEL, -40 );
-        
+    
     success = advertiser.enable();
 
     success = success and scanner.enable();
@@ -1518,7 +1518,7 @@ def gap_adv_bv_05_c(transport, upperTester, lowerTester, trace):
     success = success and scanner.disable();
     success = success and scanner.qualifyReports( 1 );
     success = success and scanner.qualifyResponses( 1, advertiser.responseData );
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -1537,7 +1537,7 @@ def gap_adv_bv_08_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.PERIPHERAL_CONNECT_INT, 20, 40 );
     advertiser.responseData = adData.encode( ADType.PERIPHERAL_CONNECT_INT, 10, 50 );
-        
+    
     success = advertiser.enable();
 
     success = success and scanner.enable();
@@ -1545,7 +1545,7 @@ def gap_adv_bv_08_c(transport, upperTester, lowerTester, trace):
     success = success and scanner.disable();
     success = success and scanner.qualifyReports( 1 );
     success = success and scanner.qualifyResponses( 1, advertiser.responseData );
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -1564,7 +1564,7 @@ def gap_adv_bv_09_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.SS_UUIDS_16, 0x1234, 0x5678, 0x9ABC );
     advertiser.responseData = adData.encode( ADType.SS_UUIDS_128, 0x1429304977D74244AE6AD3873E4A3184 );
-        
+    
     success = advertiser.enable();
 
     success = success and scanner.enable();
@@ -1572,7 +1572,7 @@ def gap_adv_bv_09_c(transport, upperTester, lowerTester, trace):
     success = success and scanner.disable();
     success = success and scanner.qualifyReports( 1 );
     success = success and scanner.qualifyResponses( 1, advertiser.responseData );
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -1591,7 +1591,7 @@ def gap_adv_bv_10_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.SERVICE_DATA_16, 0x1234, 0x01, 0x02, 0x03 );
     advertiser.responseData = adData.encode( ADType.SERVICE_DATA_128, 0x1429304977D74244AE6AD3873E4A3184, 0x04, 0x05, 0x06 );
-        
+    
     success = advertiser.enable();
 
     success = success and scanner.enable();
@@ -1599,7 +1599,7 @@ def gap_adv_bv_10_c(transport, upperTester, lowerTester, trace):
     success = success and scanner.disable();
     success = success and scanner.qualifyReports( 1 );
     success = success and scanner.qualifyResponses( 1, advertiser.responseData );
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -1618,7 +1618,7 @@ def gap_adv_bv_11_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.APPEARANCE, 640 );  # Media Player
     advertiser.responseData = adData.encode( ADType.APPEARANCE, 832 );   # Heart rate Sensor
-        
+    
     success = advertiser.enable();
 
     success = success and scanner.enable();
@@ -1626,7 +1626,7 @@ def gap_adv_bv_11_c(transport, upperTester, lowerTester, trace):
     success = success and scanner.disable();
     success = success and scanner.qualifyReports( 1 );
     success = success and scanner.qualifyResponses( 1, advertiser.responseData );
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -1645,7 +1645,7 @@ def gap_adv_bv_12_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.PUBLIC_ADDRESS, 0x456789ABCDEF, 0x123456789ABC );
     advertiser.responseData = adData.encode( ADType.PUBLIC_ADDRESS, 0x123456789ABC, 0x456789ABCDEF );
-        
+    
     success = advertiser.enable();
 
     success = success and scanner.enable();
@@ -1653,7 +1653,7 @@ def gap_adv_bv_12_c(transport, upperTester, lowerTester, trace):
     success = success and scanner.disable();
     success = success and scanner.qualifyReports( 1 );
     success = success and scanner.qualifyResponses( 1, advertiser.responseData );
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -1672,7 +1672,7 @@ def gap_adv_bv_13_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.RANDOM_ADDRESS, 0x456789ABCDEF, 0x123456789ABC );
     advertiser.responseData = adData.encode( ADType.RANDOM_ADDRESS, 0x123456789ABC, 0x456789ABCDEF );
-        
+    
     success = advertiser.enable();
 
     success = success and scanner.enable();
@@ -1680,7 +1680,7 @@ def gap_adv_bv_13_c(transport, upperTester, lowerTester, trace):
     success = success and scanner.disable();
     success = success and scanner.qualifyReports( 1 );
     success = success and scanner.qualifyResponses( 1, advertiser.responseData );
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -1699,7 +1699,7 @@ def gap_adv_bv_14_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.ADVERTISE_INT, 20 );
     advertiser.responseData = adData.encode( ADType.ADVERTISE_INT, 10 );
-        
+    
     success = advertiser.enable();
 
     success = success and scanner.enable();
@@ -1707,7 +1707,7 @@ def gap_adv_bv_14_c(transport, upperTester, lowerTester, trace):
     success = success and scanner.disable();
     success = success and scanner.qualifyReports( 1 );
     success = success and scanner.qualifyResponses( 1, advertiser.responseData );
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -1726,7 +1726,7 @@ def gap_adv_bv_15_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.DEVICE_ADDRESS, 0x123456789ABC, 0 ); # Public Device Address
     advertiser.responseData = adData.encode( ADType.DEVICE_ADDRESS, 0x123456789ABC, 1 );  # Random Device Address
-        
+    
     success = advertiser.enable();
 
     success = success and scanner.enable();
@@ -1734,7 +1734,7 @@ def gap_adv_bv_15_c(transport, upperTester, lowerTester, trace):
     success = success and scanner.disable();
     success = success and scanner.qualifyReports( 1 );
     success = success and scanner.qualifyResponses( 1, advertiser.responseData );
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -1753,7 +1753,7 @@ def gap_adv_bv_16_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.DEVICE_ROLE, ADRole.CENTRAL_PREFERRED );
     advertiser.responseData = adData.encode( ADType.DEVICE_ROLE, ADRole.PERIPHERAL_PREFERRED );
-        
+    
     success = advertiser.enable();
 
     success = success and scanner.enable();
@@ -1761,7 +1761,7 @@ def gap_adv_bv_16_c(transport, upperTester, lowerTester, trace):
     success = success and scanner.disable();
     success = success and scanner.qualifyReports( 1 );
     success = success and scanner.qualifyResponses( 1, advertiser.responseData );
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -1780,7 +1780,7 @@ def gap_adv_bv_17_c(transport, upperTester, lowerTester, trace):
     adData = ADData();
     advertiser.advertiseData = adData.encode( ADType.URI, 'http://www.bluetooth.org' );
     advertiser.responseData = adData.encode( ADType.URI, 'example://z.com/Ålborg' );
-        
+    
     success = advertiser.enable();
 
     success = success and scanner.enable();
@@ -1788,7 +1788,7 @@ def gap_adv_bv_17_c(transport, upperTester, lowerTester, trace):
     success = success and scanner.disable();
     success = success and scanner.qualifyReports( 1 );
     success = success and scanner.qualifyResponses( 1, advertiser.responseData );
-                
+            
     success = success and advertiser.disable();
 
     return success;
@@ -1805,7 +1805,7 @@ def gap_conn_enc(transport, upperTester, lowerTester, trace):
     ownAddress = Address( ExtendedAddressType.PUBLIC, 0x123456789ABC );
     peerAddress = Address( IdentityAddressType.PUBLIC, 0x456789ABCDEF );
     initiator = Initiator(transport, upperTester, lowerTester, trace, ownAddress, peerAddress);
- 
+
     success = advertising = advertiser.enable();
     connected = initiator.connect()
     success = success and connected;
@@ -1823,11 +1823,11 @@ def gap_conn_enc(transport, upperTester, lowerTester, trace):
     else:
         trace.trace(6, "Failed to encrypt link using LE Legacy Pairing!");
 
-    if connected: 
+    if connected:
         connected = not initiator.disconnect(0x13);
         success = success and not connected;
 
-    if advertising:             
+    if advertising:         
         advertiser.disable();
 
     return success;
@@ -1912,7 +1912,7 @@ def preamble(transport, trace):
     trace.trace(4, "preamble Standby " + ("PASS" if success else "FAIL"));
     success, upperIRK, upperRandomAddress = preamble_device_address_set(transport, 0, trace);
     trace.trace(4, "preamble Device Address Set " + ("PASS" if success else "FAIL"));
-    ok = ok and success;            
+    ok = ok and success;        
     success, lowerIRK, lowerRandomAddress = preamble_device_address_set(transport, 1, trace);
     trace.trace(4, "preamble Device Address Set " + ("PASS" if success else "FAIL"));
     return ok and success;
@@ -1923,7 +1923,7 @@ def preamble(transport, trace):
 def run_a_test(args, transport, trace, test_spec):
     try:
         success = preamble(transport, trace);
-    except Exception as e: 
+    except Exception as e:
         trace.trace(3, "Preamble generated exception: %s" % str(e));
         success = False;
 
@@ -1934,7 +1934,7 @@ def run_a_test(args, transport, trace, test_spec):
             success = success and test_f(transport, 0, 1, trace);
         else:
             success = success and test_f(transport, 0, trace);
-    except Exception as e: 
+    except Exception as e:
         import traceback
         traceback.print_exc()
         trace.trace(3, "Test generated exception: %s" % str(e));

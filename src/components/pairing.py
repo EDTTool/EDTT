@@ -296,7 +296,7 @@ class Pairing:
                 success = self.__request( self.initiator.peer, txrData );
                 if not success:
                     break;
- 
+
             success, rxiData = self.__response( self.initiator.initiator );
             if not success:
                 break;
@@ -424,7 +424,7 @@ class Pairing:
     """
         Encrypt the link.
 
-            
+        
     """
     def __encryptLink(self, rand, ediv, ltk):
         status = le_start_encryption(self.transport, self.initiator.initiator, self.initiator.handles[0], rand, ediv, toArray(ltk, 16), 200);
@@ -490,7 +490,7 @@ class Pairing:
 
     """
         Distribute Initiators keys...
-        
+    
             LTK, EDIV, Rand, IRK, Address and Address Type are send to the peer.
     """
     def __sendInitiatorKeys(self, ltk, ediv, rand, irk):
@@ -545,7 +545,7 @@ class Pairing:
         smpData = SMPData();
 
         LTKs, EDIVs, RANDs, IRKs, address, addressType = 0, 0, 0, 0, 0, 0;
-   
+
         mask  = (1<<SMPOpcode.SMP_ENCRYPTION_INFORMATION) | (1<<SMPOpcode.SMP_CENTRAL_IDENTIFICATION);
         mask |= (1<<SMPOpcode.SMP_IDENTITY_INFORMATION) | (1<<SMPOpcode.SMP_IDENTITY_ADDRESS_INFORMATION);
         recv = 0;
@@ -575,7 +575,7 @@ class Pairing:
                addressType = reply["type"];
             else:
                success = False;
-        
+    
             if not success:
                 break;
         return success, LTKs, EDIVs, RANDs, IRKs, address, addressType;
@@ -589,7 +589,7 @@ class Pairing:
         smpData = SMPData();
 
         LTKm, EDIVm, RANDm, IRKm, address, addressType = 0, 0, 0, 0, 0, 0;
-   
+
         mask  = (1<<SMPOpcode.SMP_ENCRYPTION_INFORMATION) | (1<<SMPOpcode.SMP_CENTRAL_IDENTIFICATION);
         mask |= (1<<SMPOpcode.SMP_IDENTITY_INFORMATION) | (1<<SMPOpcode.SMP_IDENTITY_ADDRESS_INFORMATION);
         recv = 0;
@@ -619,7 +619,7 @@ class Pairing:
                addressType = reply["type"];
             else:
                success = False;
-        
+    
             if not success:
                 break;
         return success, LTKm, EDIVm, RANDm, IRKm, address, addressType;
@@ -686,7 +686,7 @@ class Pairing:
             self.trace.trace(6, "Initiators  LTK = 0x%032X" % self.ltk);
             self.trace.trace(6, "Initiators EDIV = 0x%04X" % self.ediv);
             self.trace.trace(6, "Initiators RAND = 0x%016X" % self.rand);
-	
+
             if not success:
                 break;
 

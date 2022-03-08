@@ -15,7 +15,7 @@ class AddressResolution(IntEnum):
 class PrivacyMode(IntEnum):
     NETWORK_PRIVACY = 0
     DEVICE_PRIVACY  = 1
-    
+
 class ResolvableAddresses:
     """
         Resolvable Addresses handles some aspects of Resolvable Private Addresses.
@@ -78,12 +78,12 @@ class ResolvableAddresses:
         status = le_remove_device_from_resolving_list(self.transport, self.idx, peerAddress.type, peerAddress.address, 100);
         self.trace.trace(6, "LE Remove Device from Resolving List Command returns status: 0x%02X" % status);
         return self.__getCommandCompleteEvent() and (status == 0);
-        
+    
     def __enable(self, enable):
         status = le_set_address_resolution_enable(self.transport, self.idx, enable, 100);
         self.trace.trace(6, "LE Set Address Resolution " + ("Enable" if enable else "Disable") + " Command returns status: 0x%02X" % status);
         return self.__getCommandCompleteEvent() and (status == 0);
-        
+    
     """
         Enable Address Resolution via list of Resolvable Addresses
     """
