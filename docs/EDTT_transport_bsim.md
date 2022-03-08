@@ -98,7 +98,7 @@ And 2 from the bridge to each device
 * Device<device_id>.EDTTout
 
 Between the EDTT bsim transport and the bridge there is a simple protocol,
-in which the EDTT side is the master.
+in which the EDTT side is central/initiator.
 Any action performed by the bridge is initiated by the EDTT transport side.
 
 The protocol with the EDTTool is as follows:

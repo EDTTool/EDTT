@@ -12,12 +12,12 @@ from components.events import *;
 
 class ScanningFilterPolicy(IntEnum):
     FILTER_NONE          = 0       # Accept all advertising packets except directed advertising packets not addressed to this device (default).
-    FILTER_WHITE_LIST    = 1       # Accept only advertising packets from devices where the advertiser’s address is in the White List.
+    FILTER_ACCEPT_LIST    = 1       # Accept only advertising packets from devices where the advertiser’s address is in the Filter Accept List.
                                    # Directed advertising packets which are not addressed to this device shall be ignored.
     FILTER_ID_DIRECTED   = 2       # Accept all advertising packets except directed advertising packets where the initiator's identity address does not address this device.
                                    # Note: Directed advertising packets where the initiator's address is a resolvable private address that cannot be resolved are also accepted.
-    FILTER_ID_WHITE_LIST = 3       # Accept all advertising packets except:
-                                   # • advertising packets where the advertiser's identity address is not in the White List; and
+    FILTER_ID_FILTER_ACCEPT_LIST = 3       # Accept all advertising packets except:
+                                   # • advertising packets where the advertiser's identity address is not in the Filter Accept List; and
                                    # • directed advertising packets where the initiator's identity address does not address this device.
                                    # Note: Directed advertising packets where the initiator's address is a resolvable private address that cannot be resolved are also accepted.
 

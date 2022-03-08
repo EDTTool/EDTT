@@ -19,8 +19,8 @@ from components.test_spec import TestSpec;
 global lowerIRK, upperIRK, lowerRandomAddress, upperRandomAddress;
 
 class Role(IntEnum):
-    MASTER = 0
-    SLAVE  = 1
+    CENTRAL = 0
+    PERIPHERAL  = 1
 
 def __check_command_complete_event(transport, idx, trace):
     event = get_event(transport, idx, 100);
@@ -241,33 +241,33 @@ def hci_cin_bv_04_c(transport, idx, trace):
     return success;
 
 """
-    HCI/CIN/BV-06-C [Reported White List Size]
+    HCI/CIN/BV-06-C [Reported Filter Accept List Size]
 """
 def hci_cin_bv_06_c(transport, idx, trace):
 
-    status = le_clear_white_list(transport, idx, 100);
-    trace.trace(6, "LE Clear White List Command returns status: 0x%02X" % status);
+    status = le_clear_filter_accept_list(transport, idx, 100);
+    trace.trace(6, "LE Clear Filter Accept List Command returns status: 0x%02X" % status);
     success = __check_command_complete_event(transport, idx, trace) and (status == 0);
 
-    status, WlSize = le_read_white_list_size(transport, idx, 100);
-    trace.trace(6, "LE Read White List Size Command returns status: 0x%02X list size: %i" % (status, WlSize));
+    status, FalSize = le_read_filter_accept_list_size(transport, idx, 100);
+    trace.trace(6, "LE Read Filter Accept List Size Command returns status: 0x%02X list size: %i" % (status, FalSize));
     success = success and __check_command_complete_event(transport, idx, trace) and (status == 0);
 
-    for n in range(WlSize+1):
+    for n in range(FalSize+1):
         AddrType = 0;
         AVal = [random.randint(0,255) for _ in range(6)];
-        if n < WlSize:
+        if n < FalSize:
             lastAVal = AVal
-        status = le_add_device_to_white_list(transport, idx, AddrType, AVal, 100);
-        trace.trace(6, "LE Add Device to White List Command returns status: 0x%02X" % status);
-        success = success and __check_command_complete_event(transport, idx, trace) and ((status == 0) if n < WlSize else (status == 7));
+        status = le_add_device_to_filter_accept_list(transport, idx, AddrType, AVal, 100);
+        trace.trace(6, "LE Add Device to Filter Accept List Command returns status: 0x%02X" % status);
+        success = success and __check_command_complete_event(transport, idx, trace) and ((status == 0) if n < FalSize else (status == 7));
 
-        status = le_remove_device_from_white_list(transport, idx, AddrType, lastAVal, 100);
-        trace.trace(6, "LE Remove Device from White List Command returns status: 0x%02X" % status);
+        status = le_remove_device_from_filter_accept_list(transport, idx, AddrType, lastAVal, 100);
+        trace.trace(6, "LE Remove Device from Filter Accept List Command returns status: 0x%02X" % status);
         success = success and __check_command_complete_event(transport, idx, trace) and (status == 0);
 
-        status = le_add_device_to_white_list(transport, idx, AddrType, lastAVal, 100);
-        trace.trace(6, "LE Add Device to White List Command returns status: 0x%02X" % status);
+        status = le_add_device_to_filter_accept_list(transport, idx, AddrType, lastAVal, 100);
+        trace.trace(6, "LE Add Device to Filter Accept List Command returns status: 0x%02X" % status);
         success = success and __check_command_complete_event(transport, idx, trace) and (status == 0);
 
     return success;
@@ -653,17 +653,17 @@ def hci_cm_bv_01_c(transport, upperTester, lowerTester, trace):
     success = success and RPAs[upperTester].timeout(60) and RPAs[lowerTester].timeout(60);
     success = success and RPAs[upperTester].enable() and RPAs[lowerTester].enable();
 
-    for iutRole in [ Role.MASTER, Role.SLAVE ]:
-        ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC, 0x456789ABCDEF if iutRole is Role.MASTER else 0x123456789ABC);
-        peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC if iutRole is Role.MASTER else 0x456789ABCDEF);
-        if iutRole == Role.MASTER:
+    for iutRole in [ Role.CENTRAL, Role.PERIPHERAL ]:
+        ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC, 0x456789ABCDEF if iutRole is Role.CENTRAL else 0x123456789ABC);
+        peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC if iutRole is Role.CENTRAL else 0x456789ABCDEF);
+        if iutRole == Role.CENTRAL:
             advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, ownAddress, peerAddress);
         else:
             advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, ownAddress, peerAddress);
         advertiser.responseData = [ 0x04, 0x09 ] + [ ord(char) for char in "IUT" ];
 
         initiatorAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC );
-        if iutRole == Role.MASTER:
+        if iutRole == Role.CENTRAL:
             initiator = Initiator(transport, upperTester, lowerTester, trace, initiatorAddress, Address( IdentityAddressType.PUBLIC_IDENTITY, toNumber(ownAddress.address) ));
         else:
             initiator = Initiator(transport, lowerTester, upperTester, trace, initiatorAddress, Address( IdentityAddressType.PUBLIC_IDENTITY, toNumber(ownAddress.address) ));
@@ -677,7 +677,7 @@ def hci_cm_bv_01_c(transport, upperTester, lowerTester, trace):
         trace.trace(6, "LE Read Peer Resolvable Address Command returns status: 0x%02X RPA: %s" % (status, formatAddress(RPA)));
         success = success and __check_command_complete_event(transport, upperTester, trace) and (status == 0);
 
-        if iutRole == Role.MASTER:
+        if iutRole == Role.CENTRAL:
             success = success and (initiator.peerRPA() == RPA);
             if initiator.peerRPA() != RPA:
                 print((initiator.peerRPA()));
@@ -717,17 +717,17 @@ def hci_cm_bv_02_c(transport, upperTester, lowerTester, trace):
     success = success and RPAs[upperTester].timeout(60) and RPAs[lowerTester].timeout(60);
     success = success and RPAs[upperTester].enable() and RPAs[lowerTester].enable();
 
-    for iutRole in [ Role.MASTER, Role.SLAVE ]:
-        ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC, 0x456789ABCDEF if iutRole is Role.MASTER else 0x123456789ABC);
-        peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC if iutRole is Role.MASTER else 0x456789ABCDEF);
-        if iutRole == Role.MASTER:
+    for iutRole in [ Role.CENTRAL, Role.PERIPHERAL ]:
+        ownAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC, 0x456789ABCDEF if iutRole is Role.CENTRAL else 0x123456789ABC);
+        peerAddress = Address( SimpleAddressType.PUBLIC, 0x123456789ABC if iutRole is Role.CENTRAL else 0x456789ABCDEF);
+        if iutRole == Role.CENTRAL:
             advertiser = Advertiser(transport, lowerTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, ownAddress, peerAddress);
         else:
             advertiser = Advertiser(transport, upperTester, trace, AdvertiseChannel.ALL_CHANNELS, Advertising.CONNECTABLE_LDC_DIRECTED, ownAddress, peerAddress);
         advertiser.responseData = [ 0x04, 0x09 ] + [ ord(char) for char in "IUT" ];
 
         initiatorAddress = Address( ExtendedAddressType.RESOLVABLE_OR_PUBLIC );
-        if iutRole == Role.MASTER:
+        if iutRole == Role.CENTRAL:
             initiator = Initiator(transport, upperTester, lowerTester, trace, initiatorAddress, Address( IdentityAddressType.PUBLIC_IDENTITY, toNumber(ownAddress.address) ));
         else:
             initiator = Initiator(transport, lowerTester, upperTester, trace, initiatorAddress, Address( IdentityAddressType.PUBLIC_IDENTITY, toNumber(ownAddress.address) ));
@@ -741,7 +741,7 @@ def hci_cm_bv_02_c(transport, upperTester, lowerTester, trace):
         trace.trace(6, "LE Read Local Resolvable Address Command returns status: 0x%02X RPA: %s" % (status, formatAddress(RPA)));
         success = success and __check_command_complete_event(transport, upperTester, trace) and (status == 0);
 
-        if iutRole == Role.MASTER:
+        if iutRole == Role.CENTRAL:
             success = success and (initiator.localRPA() == RPA);
         else:
             success = success and (initiator.peerRPA() == RPA);
@@ -817,7 +817,7 @@ def hci_dsu_bv_02_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    HCI/DSU/BV-03-C [Reset Command received in Slave Role]
+    HCI/DSU/BV-03-C [Reset Command received in Peripheral Role]
 """
 def hci_dsu_bv_03_c(transport, upperTester, lowerTester, trace):
 
@@ -917,7 +917,7 @@ def hci_dsu_bv_05_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    HCI/DSU/BV-06-C [Reset Command received in Master Role]
+    HCI/DSU/BV-06-C [Reset Command received in Central Role]
 """
 def hci_dsu_bv_06_c(transport, upperTester, lowerTester, trace):
 
@@ -956,7 +956,7 @@ __tests__ = {
     "HCI/CIN/BV-01-C": [ hci_cin_bv_01_c, 'Features returned by Read Local Supported Features Command' ],
     "HCI/CIN/BV-03-C": [ hci_cin_bv_03_c, 'Supported Commands returned by Read Local Supported Commands Command' ],
     "HCI/CIN/BV-04-C": [ hci_cin_bv_04_c, 'Versions returned by Read Local Version Information Command' ],
-    "HCI/CIN/BV-06-C": [ hci_cin_bv_06_c, 'Reported White List Size' ],
+    "HCI/CIN/BV-06-C": [ hci_cin_bv_06_c, 'Reported Filter Accept List Size' ],
     "HCI/CIN/BV-09-C": [ hci_cin_bv_09_c, 'Feature Bits returned by Read LE Public Key Validation Feature Bit' ],
     "HCI/CM/BV-01-C":  [ hci_cm_bv_01_c,  'Handling LE Read Peer Resolvable Address Command' ],
     "HCI/CM/BV-02-C":  [ hci_cm_bv_02_c,  'Handling LE Read Local Resolvable Address Command' ],
@@ -965,10 +965,10 @@ __tests__ = {
     "HCI/DDI/BV-03-C": [ hci_ddi_bv_03_c, 'Disable Advertising with Set Advertising Enable Command' ],
     "HCI/DDI/BV-04-C": [ hci_ddi_bv_04_c, 'Disable Scanning with Set Scan Enable Command' ],
     "HCI/DSU/BV-02-C": [ hci_dsu_bv_02_c, 'Reset Command received in Advertising State' ],
-    "HCI/DSU/BV-03-C": [ hci_dsu_bv_03_c, 'Reset Command received in Slave Role' ],
+    "HCI/DSU/BV-03-C": [ hci_dsu_bv_03_c, 'Reset Command received in Peripheral Role' ],
     "HCI/DSU/BV-04-C": [ hci_dsu_bv_04_c, 'Reset Command received in Scanning State' ],
     "HCI/DSU/BV-05-C": [ hci_dsu_bv_05_c, 'Reset Command received in Initiating State' ],
-    "HCI/DSU/BV-06-C": [ hci_dsu_bv_06_c, 'Reset Command received in Master Role' ],
+    "HCI/DSU/BV-06-C": [ hci_dsu_bv_06_c, 'Reset Command received in Central Role' ],
     "HCI/GEV/BV-01-C": [ hci_gev_bv_01_c, 'Status return for Unsupported Commands' ],
     "HCI/HFC/BV-04-C": [ hci_hfc_bv_04_c, 'Events enabled by LE Set Event Mask Command' ]
 };

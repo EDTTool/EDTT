@@ -21,7 +21,7 @@ class ADType(IntEnum):
     PAIR_RANDOM_R           =  15 # «Simple Pairing Randomizer R» Bluetooth Core Specification : Vol. 3, Part C, section 8.1.6 (v2.1 + EDR, 3.0 + HS and 4.0) Vol. 3, Part C, sections 11.1.5 and 18.5 (v4.0)
     SEC_MANAGER_TK          =  16 # «Security Manager TK Value» Bluetooth Core Specification : Vol. 3, Part C, sections 11.1.7 and 18.6 (v4.0) Core Specification Supplement, Part A, section 1.8
     SEC_MANAGER_OBF         =  17 # «Security Manager Out of Band Flags» Bluetooth Core Specification : Vol. 3, Part C, sections 11.1.6 and 18.7 (v4.0) Core Specification Supplement, Part A, section 1.7
-    SLAVE_CONNECT_INT       =  18 # «Slave Connection Interval Range» Bluetooth Core Specification : Vol. 3, Part C, sections 11.1.8 and 18.8 (v4.0) Core Specification Supplement, Part A, section 1.9
+    PERIPHERAL_CONNECT_INT       =  18 # «Peripheral Connection Interval Range» Bluetooth Core Specification : Vol. 3, Part C, sections 11.1.8 and 18.8 (v4.0) Core Specification Supplement, Part A, section 1.9
     SS_UUIDS_16             =  20 # «List of 16 - bit Service Solicitation UUIDs» Bluetooth Core Specification : Vol. 3, Part C, sections 11.1.9 and 18.9 (v4.0) Core Specification Supplement, Part A, section 1.10
     SS_UUIDS_128            =  21 # «List of 128 - bit Service Solicitation UUIDs» Bluetooth Core Specification : Vol. 3, Part C, sections 11.1.9 and 18.9 (v4.0) Core Specification Supplement, Part A, section 1.10
     SERVICE_DATA_16         =  22 # «Service Data» Bluetooth Core Specification : Vol. 3, Part C, sections 11.1.10 and 18.10 (v4.0)
@@ -379,9 +379,9 @@ class ADData:
         elif ( adType == ADType.PAIR_HASH_C or adType == ADType.PAIR_RANDOM_R or adType == ADType.SEC_MANAGER_TK ):
             self.data = [ 17, adType ] + toArray(args[0], 16);
       #
-      # ADType.SLAVE_CONNECT_INT, <min_interval>, <max_interval>
+      # ADType.PERIPHERAL_CONNECT_INT, <min_interval>, <max_interval>
       #
-        elif ( adType == ADType.SLAVE_CONNECT_INT ):
+        elif ( adType == ADType.PERIPHERAL_CONNECT_INT ):
             self.data = [ 5, adType ] + toArray(args[0], 2) + toArray(args[1], 2);
       #
       # ADType.SERVICE_DATA_16, <service_uuid>, [<service_data>...]
@@ -530,9 +530,9 @@ class ADData:
                     elif ( adType == ADType.PAIR_HASH_C or adType == ADType.PAIR_RANDOM_R or adType == ADType.SEC_MANAGER_TK ):
                         result[adType] = toNumber( data[n:n+length] );
                   #
-                  # ADType.SLAVE_CONNECT_INT, <min_interval>, <max_interval>
+                  # ADType.PERIPHERAL_CONNECT_INT, <min_interval>, <max_interval>
                   #
-                    elif ( adType == ADType.SLAVE_CONNECT_INT ):
+                    elif ( adType == ADType.PERIPHERAL_CONNECT_INT ):
                         result[adType] = [];
                         for i in range(n, n+length, 2):
                             result[adType] += [ toNumber( data[i:i+2] ) ];
