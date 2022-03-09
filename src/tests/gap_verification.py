@@ -1376,7 +1376,7 @@ def gap_conn_cpup_bv_06_c(transport, upperTester, lowerTester, trace):
     return success
 
 """
-    GAP/ADV/BV-01-C [Advertising with AD Type – Service UUID]
+    GAP/ADV/BV-01-C [Advertising with AD Type - Service UUID]
 """
 def gap_adv_bv_01_c(transport, upperTester, lowerTester, trace):
 
@@ -1443,7 +1443,7 @@ def gap_adv_bv_02_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    GAP/ADV/BV-03-C [Advertising with AD Type – Flags]
+    GAP/ADV/BV-03-C [Advertising with AD Type - Flags]
 """
 def gap_adv_bv_03_c(transport, upperTester, lowerTester, trace):
 
@@ -1470,7 +1470,7 @@ def gap_adv_bv_03_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    GAP/ADV/BV-04-C [Advertising with AD Type – Manufacturer Specific Packet Data]
+    GAP/ADV/BV-04-C [Advertising with AD Type - Manufacturer Specific Packet Data]
 """
 def gap_adv_bv_04_c(transport, upperTester, lowerTester, trace):
 
@@ -1497,7 +1497,7 @@ def gap_adv_bv_04_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    GAP/ADV/BV-05-C [Advertising with AD Type – TX Power Level]
+    GAP/ADV/BV-05-C [Advertising with AD Type - TX Power Level]
 """
 def gap_adv_bv_05_c(transport, upperTester, lowerTester, trace):
 
@@ -1524,7 +1524,7 @@ def gap_adv_bv_05_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    GAP/ADV/BV-08-C [Advertising with AD Type – Peripheral Connection Interval Range]
+    GAP/ADV/BV-08-C [Advertising with AD Type - Peripheral Connection Interval Range]
 """
 def gap_adv_bv_08_c(transport, upperTester, lowerTester, trace):
 
@@ -1578,7 +1578,7 @@ def gap_adv_bv_09_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    GAP/ADV/BV-10-C [Advertising with AD Type – Service Packet Data]
+    GAP/ADV/BV-10-C [Advertising with AD Type - Service Packet Data]
 """
 def gap_adv_bv_10_c(transport, upperTester, lowerTester, trace):
 
@@ -1605,7 +1605,7 @@ def gap_adv_bv_10_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    GAP/ADV/BV-11-C [Advertising with AD Type – Appearance]
+    GAP/ADV/BV-11-C [Advertising with AD Type - Appearance]
 """
 def gap_adv_bv_11_c(transport, upperTester, lowerTester, trace):
 
@@ -1632,7 +1632,7 @@ def gap_adv_bv_11_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    GAP/ADV/BV-12-C [Advertising with AD Type – Public Target Address]
+    GAP/ADV/BV-12-C [Advertising with AD Type - Public Target Address]
 """
 def gap_adv_bv_12_c(transport, upperTester, lowerTester, trace):
 
@@ -1659,7 +1659,7 @@ def gap_adv_bv_12_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    GAP/ADV/BV-13-C [Advertising with AD Type – Random Target Address]
+    GAP/ADV/BV-13-C [Advertising with AD Type - Random Target Address]
 """
 def gap_adv_bv_13_c(transport, upperTester, lowerTester, trace):
 
@@ -1686,7 +1686,7 @@ def gap_adv_bv_13_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    GAP/ADV/BV-14-C [Advertising with AD Type – Advertising Interval]
+    GAP/ADV/BV-14-C [Advertising with AD Type - Advertising Interval]
 """
 def gap_adv_bv_14_c(transport, upperTester, lowerTester, trace):
 
@@ -1713,7 +1713,7 @@ def gap_adv_bv_14_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    GAP/ADV/BV-15-C [Advertising with AD Type – LE Bluetooth Device Address]
+    GAP/ADV/BV-15-C [Advertising with AD Type - LE Bluetooth Device Address]
 """
 def gap_adv_bv_15_c(transport, upperTester, lowerTester, trace):
 
@@ -1740,7 +1740,7 @@ def gap_adv_bv_15_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    GAP/ADV/BV-16-C [Advertising with AD Type – LE Role]
+    GAP/ADV/BV-16-C [Advertising with AD Type - LE Role]
 """
 def gap_adv_bv_16_c(transport, upperTester, lowerTester, trace):
 
@@ -1767,7 +1767,7 @@ def gap_adv_bv_16_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
-    GAP/ADV/BV-17-C [Advertising with AD Type – URI]
+    GAP/ADV/BV-17-C [Advertising with AD Type - URI]
 """
 def gap_adv_bv_17_c(transport, upperTester, lowerTester, trace):
 
@@ -1833,21 +1833,21 @@ def gap_conn_enc(transport, upperTester, lowerTester, trace):
     return success;
 
 __tests__ = {
-    "GAP/ADV/BV-01-C":       [ gap_adv_bv_01_c,       "Advertising with AD Type – Service UUID" ],
+    "GAP/ADV/BV-01-C":       [ gap_adv_bv_01_c,       "Advertising with AD Type - Service UUID" ],
     "GAP/ADV/BV-02-C":       [ gap_adv_bv_02_c,       "Advertising with AD Type - Local Name" ],
-    "GAP/ADV/BV-03-C":       [ gap_adv_bv_03_c,       "Advertising with AD Type – Flags" ],
-    "GAP/ADV/BV-04-C":       [ gap_adv_bv_04_c,       "Advertising with AD Type – Manufacturer Specific Packet Data" ],
-    "GAP/ADV/BV-05-C":       [ gap_adv_bv_05_c,       "Advertising with AD Type – TX Power Level" ],
-    "GAP/ADV/BV-08-C":       [ gap_adv_bv_08_c,       "Advertising with AD Type – Peripheral Connection Interval Range" ],
+    "GAP/ADV/BV-03-C":       [ gap_adv_bv_03_c,       "Advertising with AD Type - Flags" ],
+    "GAP/ADV/BV-04-C":       [ gap_adv_bv_04_c,       "Advertising with AD Type - Manufacturer Specific Packet Data" ],
+    "GAP/ADV/BV-05-C":       [ gap_adv_bv_05_c,       "Advertising with AD Type - TX Power Level" ],
+    "GAP/ADV/BV-08-C":       [ gap_adv_bv_08_c,       "Advertising with AD Type - Peripheral Connection Interval Range" ],
     "GAP/ADV/BV-09-C":       [ gap_adv_bv_09_c,       "Advertising with AD Type - Service Solicitation" ],
-    "GAP/ADV/BV-10-C":       [ gap_adv_bv_10_c,       "Advertising with AD Type – Service Packet Data" ],
-    "GAP/ADV/BV-11-C":       [ gap_adv_bv_11_c,       "Advertising with AD Type – Appearance" ],
-    "GAP/ADV/BV-12-C":       [ gap_adv_bv_12_c,       "Advertising with AD Type – Public Target Address" ],
-    "GAP/ADV/BV-13-C":       [ gap_adv_bv_13_c,       "Advertising with AD Type – Random Target Address" ],
-    "GAP/ADV/BV-14-C":       [ gap_adv_bv_14_c,       "Advertising with AD Type – Advertising Interval" ],
-    "GAP/ADV/BV-15-C":       [ gap_adv_bv_15_c,       "Advertising with AD Type – LE Bluetooth Device Address" ],
-    "GAP/ADV/BV-16-C":       [ gap_adv_bv_16_c,       "Advertising with AD Type – LE Role" ],
-    "GAP/ADV/BV-17-C":       [ gap_adv_bv_17_c,       "Advertising with AD Type – URI" ],
+    "GAP/ADV/BV-10-C":       [ gap_adv_bv_10_c,       "Advertising with AD Type - Service Packet Data" ],
+    "GAP/ADV/BV-11-C":       [ gap_adv_bv_11_c,       "Advertising with AD Type - Appearance" ],
+    "GAP/ADV/BV-12-C":       [ gap_adv_bv_12_c,       "Advertising with AD Type - Public Target Address" ],
+    "GAP/ADV/BV-13-C":       [ gap_adv_bv_13_c,       "Advertising with AD Type - Random Target Address" ],
+    "GAP/ADV/BV-14-C":       [ gap_adv_bv_14_c,       "Advertising with AD Type - Advertising Interval" ],
+    "GAP/ADV/BV-15-C":       [ gap_adv_bv_15_c,       "Advertising with AD Type - LE Bluetooth Device Address" ],
+    "GAP/ADV/BV-16-C":       [ gap_adv_bv_16_c,       "Advertising with AD Type - LE Role" ],
+    "GAP/ADV/BV-17-C":       [ gap_adv_bv_17_c,       "Advertising with AD Type - URI" ],
     "GAP/CONN/ACEP/BV-01-C": [ gap_conn_acep_bv_01_c, "Auto Connection Establishment with Directed Connectable Mode" ],
     "GAP/CONN/ACEP/BV-03-C": [ gap_conn_acep_bv_03_c, "Auto Connection Establishment with Directed Connectable Mode, Resolvable Private Address, Central Address Resolution" ],
     "GAP/CONN/ACEP/BV-04-C": [ gap_conn_acep_bv_04_c, "Auto Connection Establishment with Undirected Connectable Mode, Resolvable Private Address" ],
@@ -1920,7 +1920,7 @@ def preamble(transport, trace):
 """
     Run a test given its test_spec
 """
-def run_a_test(args, transport, trace, test_spec):
+def run_a_test(args, transport, trace, test_spec, device_dumps):
     try:
         success = preamble(transport, trace);
     except Exception as e:
@@ -1930,7 +1930,9 @@ def run_a_test(args, transport, trace, test_spec):
     trace.trace(2, "%-*s %s test started..." % (_maxNameLength, test_spec.name, test_spec.description[1:]));
     test_f = test_spec.test_private;
     try:
-        if test_f.__code__.co_argcount > 3:
+        if test_f.__code__.co_argcount > 4:
+            success = success and test_f(transport, 0, 1, trace, device_dumps);
+        elif test_f.__code__.co_argcount > 3:
             success = success and test_f(transport, 0, 1, trace);
         else:
             success = success and test_f(transport, 0, trace);
