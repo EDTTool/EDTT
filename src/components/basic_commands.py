@@ -275,6 +275,8 @@ class Commands(IntEnum):
     CMD_HCI_LE_ISO_TEST_END_RSP                                   = 264
     CMD_HCI_LE_REQUEST_PEER_SCA_REQ                               = 265
     CMD_HCI_LE_REQUEST_PEER_SCA_RSP                               = 266
+    CMD_LE_READ_BUFFER_SIZE_V2_REQ                                = 267
+    CMD_LE_READ_BUFFER_SIZE_V2_RSP                                = 268
 
 
 class HCICommands(IntEnum):
@@ -373,6 +375,7 @@ class HCICommands(IntEnum):
     BT_HCI_OP_LE_READ_RF_PATH_COMP          = 0x204C
     BT_HCI_OP_LE_WRITE_RF_PATH_COMP         = 0x204D
     BT_HCI_OP_LE_SET_PRIVACY_MODE           = 0x204E
+    BT_HCI_OP_LE_READ_BUFFER_SIZE_V2        = 0x2060
     BT_HCI_OP_LE_SET_CIG_PARAMETERS         = 0x2062
     BT_HCI_OP_LE_SET_CIG_PARAMETERS_TEST    = 0x2063
     BT_HCI_OP_LE_CREATE_CIS                 = 0x2064
@@ -1074,6 +1077,33 @@ def le_read_buffer_size(transport, idx, to):
         raise Exception("LE Read Buffer Size command failed: Response length field corrupted (%i)" % RespLen);
 
     return status, LeMaxLen, LeMaxNum;
+
+"""
+    The LE_Read_Buffer_Size command is used to read the maximum size of the data portion of HCI LE ACL Data Packets sent from
+    the Host to the Controller. The Host will segment the data transmitted to the Controller according to these values, so
+    that the HCI Data Packets will contain data with up to this size. The LE_Read_Buffer_Size command also returns the total
+    number of HCI LE ACL Data Packets that can be stored in the data buffers of the Controller. The LE_Read_Buffer_Size
+    command must be issued by the Host before it sends any data to an LE Controller (see Section 4.1.1).
+"""
+def le_read_buffer_size_v2(transport, idx, to):
+
+    cmd = struct.pack('<HHH', Commands.CMD_LE_READ_BUFFER_SIZE_V2_REQ, 2, HCICommands.BT_HCI_OP_LE_READ_BUFFER_SIZE_V2);
+    transport.send(idx, cmd);
+
+    packet = transport.recv(idx, 11, to);
+
+    if ( 11 != len(packet) ):
+        raise Exception("LE Read Buffer Size V2 command failed: Response too short (Expected %i bytes got %i bytes)" % (11, len(packet)));
+
+    RespCmd, RespLen, status, LeMaxLen, LeMaxNum, IsoMaxLen, IsoMaxNum = struct.unpack('<HHBHBHB', packet);
+
+    if ( RespCmd != Commands.CMD_LE_READ_BUFFER_SIZE_V2_RSP ):
+        raise Exception("LE Read Buffer Size V2 command failed: Inappropriate command response received");
+
+    if ( RespLen != 7 ):
+        raise Exception("LE Read Buffer Size V2 command failed: Response length field corrupted (%i)" % RespLen);
+
+    return status, LeMaxLen, LeMaxNum, IsoMaxLen, IsoMaxNum;
 
 """
     This command requests the list of the supported LE features for the Controller.
