@@ -5830,6 +5830,11 @@ def test_sending_and_receiving_data_in_multiple_cises(transport, central, periph
 
     cis_handle_pairs = tuple(zip(peripheral_cis_handles, central_cis_handles))
 
+    s, _, _, peripheral_iso_buffer_len, _ = readBufferSizeV2(transport, peripheral, trace)
+    success = s and success
+    s, _, _, central_iso_buffer_len, _ = readBufferSizeV2(transport, central, trace)
+    success = s and success
+
     # Repeat all steps 3 times
     for round_num in range(3):
         packets_sent = {
@@ -5841,7 +5846,7 @@ def test_sending_and_receiving_data_in_multiple_cises(transport, central, periph
             pkt_seq_num = round_num * num_iso_data_packets_per_cis + i
             for j in range(len(peripheral_cis_handles)):
                 s, sdu = le_iso_data_write_nbytes(transport, peripheral, trace, peripheral_cis_handles[j],
-                                                  params.Max_SDU_P_To_C[j], pkt_seq_num, 0)
+                                                  params.Max_SDU_P_To_C[j], pkt_seq_num, peripheral_iso_buffer_len)
                 success = s and success
                 packets_sent[peripheral].append((peripheral_cis_handles[j], sdu))
 
@@ -5851,7 +5856,7 @@ def test_sending_and_receiving_data_in_multiple_cises(transport, central, periph
 
             for j in range(len(central_cis_handles)):
                 s, sdu = le_iso_data_write_nbytes(transport, central, trace, central_cis_handles[j],
-                                                  params.Max_SDU_C_To_P[j], pkt_seq_num, 0)
+                                                  params.Max_SDU_C_To_P[j], pkt_seq_num, central_iso_buffer_len)
                 success = s and success
                 packets_sent[central].append((central_cis_handles[j], sdu))
 
@@ -5892,6 +5897,11 @@ def test_sending_and_receiving_data_in_bidirectional_cis(transport, central, per
 
     cis_handle_pairs = ((peripheral_cis_handle, central_cis_handle),)
 
+    s, _, _, peripheral_iso_buffer_len, _ = readBufferSizeV2(transport, peripheral, trace)
+    success = s and success
+    s, _, _, central_iso_buffer_len, _ = readBufferSizeV2(transport, central, trace)
+    success = s and success
+
     for round_num in range(cis_bn):
         if not success:
             break
@@ -5903,12 +5913,12 @@ def test_sending_and_receiving_data_in_bidirectional_cis(transport, central, per
 
         success = True
         s, sdu = le_iso_data_write_nbytes(transport, central, trace, central_cis_handle, params.Max_SDU_C_To_P[0],
-                                          round_num, 0)
+                                          round_num, central_iso_buffer_len)
         success = s and success
         packets_sent[central].append((central_cis_handle, sdu))
 
         s, sdu = le_iso_data_write_nbytes(transport, peripheral, trace, peripheral_cis_handle, params.Max_SDU_P_To_C[0],
-                                          round_num, 0)
+                                          round_num, peripheral_iso_buffer_len)
         success = s and success
         packets_sent[peripheral].append((peripheral_cis_handle, sdu))
 

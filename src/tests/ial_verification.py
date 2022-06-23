@@ -34,8 +34,15 @@ def peripheral_send_single_sdu_cis(transport, peripheral, central, trace, params
     # 2.The IUT sends a single ISO Data PDU to the Lower Tester with the specified LLID
     #   and Payload Data identical to the data in step 1. Framing shall be 0 if LLID is 0b00
     #   and shall be 1 if LLID is 0b10
+
+    # Maximum data size to fit into a single PDU/SDU
+    if params.Framing == 1:
+        max_data_size = params.Max_SDU_P_To_C[0] - 5
+    else:
+        max_data_size = params.Max_SDU_P_To_C[0]
+
     success = iso_send_payload_pdu(transport, peripheral, central, trace, cis_conn_handle,
-                                   params.Max_SDU_P_To_C[0], params.SDU_Interval_P_To_C, 1) and success
+                                   max_data_size, params.SDU_Interval_P_To_C, 1) and success
 
     ### TERMINATION ###
     success = initiator.disconnect(0x13) and success
@@ -53,8 +60,14 @@ def peripheral_receive_single_sdu_cis(transport, peripheral, central, trace, par
     if not initiator:
         return success
 
+    # Maximum data size to fit into a single PDU/SDU
+    if params.Framing == 1:
+        max_data_size = params.Max_SDU_C_To_P[0] - 5
+    else:
+        max_data_size = params.Max_SDU_C_To_P[0]
+
     success = iso_send_payload_pdu(transport, central, peripheral, trace, cis_conn_handle,
-                                   params.Max_SDU_C_To_P[0], params.SDU_Interval_C_To_P, 1) and success
+                                   max_data_size, params.SDU_Interval_C_To_P, 1) and success
 
     ### TERMINATION ###
     success = initiator.disconnect(0x13) and success
@@ -77,8 +90,15 @@ def peripheral_simultanous_sending_and_receiving_sdus(transport, peripheral, cen
     # 2. The IUT sends ISO Data PDUs to the Lower Tester.
     # 3. At the same time, the Lower Tester sends ISO Data PDUs to the IUT.
     # 4. The IUT sends Isochronous Data SDUs to the Upper Tester.
+
+    # Maximum data size to fit into a single PDU/SDU
+    if params.Framing == 1:
+        max_data_size = params.Max_SDU_C_To_P[0] - 5
+    else:
+        max_data_size = params.Max_SDU_C_To_P[0]
+
     success = iso_send_payload_pdu_parallel(transport, central, peripheral, trace, central_cis_handle,
-                                            peripheral_cis_handle, params.Max_SDU_C_To_P[0],
+                                            peripheral_cis_handle, max_data_size,
                                             params.SDU_Interval_C_To_P, 1) and success
 
     ### TERMINATION ###
@@ -101,21 +121,19 @@ def send_multiple_small_sdu_cis(transport, transmitter, receiver, trace, cis_han
     iso_data_pkt_1 = struct.pack(f'<HH{len(tx_sdu_1)}B', 1, len(tx_sdu_1), *tx_sdu_1)
     iso_data_pkt_2 = struct.pack(f'<HH{len(tx_sdu_2)}B', 2, len(tx_sdu_2), *tx_sdu_2)
 
-    # Peripheral: TX SDU
-    PbFlag = 2
-    TsFlag = 0
-
     # Test procedure
     # 1. The Upper Tester sends to the IUT a small SDU1 with data length of 20 bytes.
     # 2. The Upper Tester sends to the IUT a small SDU2 with data length of 25 bytes.
     # 3. The IUT sends a single PDU with SDU1 followed by SDU2 to the Lower Tester. Each SDU
     #       header has SC = 0 and CMPT = 1.
-    success = le_iso_data_write(transport, transmitter, cis_handle, PbFlag, TsFlag, iso_data_pkt_1, 0) == 0
-    success = le_iso_data_write(transport, transmitter, cis_handle, PbFlag, TsFlag, iso_data_pkt_2, 0) == 0 and success
+    success, _, _, iso_buffer_len, _ = readBufferSizeV2(transport, transmitter, trace)
+    s, fragments_1 = le_iso_data_write_fragments(transport, transmitter, trace, cis_handle, iso_data_pkt_1, iso_buffer_len)
+    success = s and success
+    s, fragments_2 = le_iso_data_write_fragments(transport, transmitter, trace, cis_handle, iso_data_pkt_2, iso_buffer_len)
+    success = s and success
 
     # Wait for data to be sent; fetch EDTT command response and Number of Completed packets event
-    success = le_iso_data_write_rsp(transport, transmitter, 100) == 0 and success
-    success = le_iso_data_write_rsp(transport, transmitter, 100) == 0 and success
+    success = le_iso_data_write_complete(transport, transmitter, trace, fragments_1 + fragments_2, 100) and success
 
     # The ISO interval is significant in those test cases (few seconds) thus we wait here long enough to be sure the
     # packet has been sent. The timeout equal to four ISO Intervals is determined experimentally.

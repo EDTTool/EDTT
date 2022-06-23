@@ -22,6 +22,19 @@ def verifyAndShowEvent(transport, idx, expectedEvent, trace, to=100):
     trace.trace(7, str(event));
     return event.event == expectedEvent;
 
+def verifyNumCompleteEvents(transport, idx, handle, count, trace, to=100):
+
+    success = True
+    while success and count > 0:
+        event = get_event(transport, idx, to)
+        trace.trace(7, str(event))
+        numHandles, handles, packets = event.decode()
+        success = (event.event == Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS and
+                   numHandles == 1 and handles[0] == handle and success)
+        count -= packets[0]
+
+    return success
+
 def verifyAndShowMetaEvent(transport, idx, expectedEvent, trace):
 
     event = get_event(transport, idx, 100);
@@ -88,6 +101,12 @@ def readBufferSize(transport, idx, trace):
     status, maxPacketLength, maxPacketNumbers = le_read_buffer_size(transport, idx, 100);
     trace.trace(6, "LE Read Buffer Size returns status: 0x%02X - Data Packet length %d, Number of Data Packets %d" % (status, maxPacketLength, maxPacketNumbers));
     return getCommandCompleteEvent(transport, idx, trace) and (status == 0), maxPacketLength, maxPacketNumbers;
+
+def readBufferSizeV2(transport, idx, trace):
+
+    status, maxPacketLength, maxPacketNumbers, maxIsoPacketLength, maxIsoPacketNumbers = le_read_buffer_size_v2(transport, idx, 100);
+    trace.trace(6, "LE Read Buffer Size V2 returns status: 0x%02X - Data Packet length %d, Number of Data Packets %d, ISO Data Packet length %d, Number of ISO Data Packets %d" % (status, maxPacketLength, maxPacketNumbers, maxIsoPacketLength, maxIsoPacketNumbers));
+    return getCommandCompleteEvent(transport, idx, trace) and (status == 0), maxPacketLength, maxPacketNumbers, maxIsoPacketLength, maxIsoPacketNumbers;
 
 def readLocalFeatures(transport, idx, trace):
 
@@ -442,14 +461,30 @@ def setPrivateInitiator(transport, initiatorId, trace, advertiseType, advertiser
     return advertiser, initiator;
 
 
-def le_iso_data_write_nbytes(transport, idx, trace, conn_handle, nbytes, pkt_seq_num, to):
-    pb_flag = 2
-    ts_flag = 0
-    iso_data_sdu = tuple([pkt_seq_num] * nbytes)
-    tx_iso_data_load = struct.pack(f'<HH{nbytes}B', pkt_seq_num, nbytes, *iso_data_sdu)
-    success = le_iso_data_write(transport, idx, conn_handle, pb_flag, ts_flag, tx_iso_data_load, to) == 0
+def le_iso_data_write_fragments(transport, idx, trace, conn_handle, data, iso_buffer_len):
+    TsFlag = 0
+    cont = False
+    offset = 0
+    fragments = 0
+    success = True
 
-    return success, iso_data_sdu
+    while success and offset < len(data):
+        fragment_len = min(iso_buffer_len, len(data[offset:]))
+
+        PbFlag = 0
+        if cont:
+            PbFlag |= 1
+        if len(data[offset:]) <= iso_buffer_len:
+            PbFlag |= 2
+        cont = True
+
+        status = le_iso_data_write(transport, idx, conn_handle, PbFlag, TsFlag, data[offset:offset+fragment_len], 0)
+        success = (status == 0) and success
+
+        offset += fragment_len
+        fragments += 1
+
+    return success, fragments
 
 
 def le_iso_data_write_complete(transport, idx, trace, number_of_packets_written, to):
@@ -458,6 +493,15 @@ def le_iso_data_write_complete(transport, idx, trace, number_of_packets_written,
         success = le_iso_data_write_rsp(transport, idx, to) == 0 and success
 
     return success
+
+
+def le_iso_data_write_nbytes(transport, idx, trace, conn_handle, nbytes, pkt_seq_num, iso_buffer_len):
+    iso_data_sdu = tuple([pkt_seq_num] * nbytes)
+    tx_iso_data_load = struct.pack(f'<HH{nbytes}B', pkt_seq_num, nbytes, *iso_data_sdu)
+    success, fragments = le_iso_data_write_fragments(transport, idx, trace, conn_handle, tx_iso_data_load, iso_buffer_len)
+    success = le_iso_data_write_complete(transport, idx, trace, fragments, 0) and success
+
+    return success, iso_data_sdu
 
 
 def fetch_number_of_completed_packets(transport, idx, trace, number_of_packets_written, to):
@@ -531,11 +575,11 @@ def iso_receive_sdu(transport, idx, trace, sdu_interval):
     return success, handle, tuple(iso_sdu)
 
 
-def iso_send_payload_pdu(transport, transmitter, receiver, trace, conn_handle, max_sdu_size, sdu_interval, pkt_seq_num,
+def iso_send_payload_pdu(transport, transmitter, receiver, trace, conn_handle, max_data_size, sdu_interval, pkt_seq_num,
                          tx_iso_sdu=None):
     # Create a ISO_SDU of sdu_size length
     if not tx_iso_sdu:
-        tx_iso_sdu = tuple([(pkt_seq_num + x) % 255 for x in range(max_sdu_size)])
+        tx_iso_sdu = tuple([(pkt_seq_num + x) % 255 for x in range(max_data_size)])
 
     # Pack the ISO_Data_Load (no Time_Stamp) of an HCI ISO Data packet
     # <Packet_Sequence_Number, ISO_SDU_Length, ISO_SDU>
@@ -543,11 +587,11 @@ def iso_send_payload_pdu(transport, transmitter, receiver, trace, conn_handle, m
     tx_iso_data_load = struct.pack(fmt, pkt_seq_num, len(tx_iso_sdu), *tx_iso_sdu)
 
     # Transmitter: TX SDU
-    PbFlag = 2
-    TsFlag = 0
-    le_iso_data_write(transport, transmitter, conn_handle, PbFlag, TsFlag, tx_iso_data_load, 100)
-    success = verifyAndShowEvent(transport, transmitter, Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS, trace,
-                                 sdu_interval * 2)
+    success, _, _, iso_buffer_len, _ = readBufferSizeV2(transport, transmitter, trace)
+    s, fragments = le_iso_data_write_fragments(transport, transmitter, trace, conn_handle, tx_iso_data_load, iso_buffer_len)
+    sucess = s and success
+    success = le_iso_data_write_complete(transport, transmitter, trace, fragments, 100) and success
+    success = verifyNumCompleteEvents(transport, transmitter, conn_handle, fragments, trace, sdu_interval * 2) and success
 
     s, _, rx_iso_sdu = iso_receive_sdu(transport, receiver, trace, sdu_interval)
     success = s and success
@@ -558,34 +602,34 @@ def iso_send_payload_pdu(transport, transmitter, receiver, trace, conn_handle, m
     # Receiver: No more RX data
     success = not le_iso_data_ready(transport, receiver, 100) and success
 
-
     # TX and RX match
     return (tx_iso_sdu == rx_iso_sdu) and success
 
 
-def iso_send_payload_pdu_parallel(transport, idx_1, idx_2, trace, conn_handle_1, conn_handle_2, max_sdu_size,
+def iso_send_payload_pdu_parallel(transport, idx_1, idx_2, trace, conn_handle_1, conn_handle_2, max_data_size,
                                   sdu_interval, pkt_seq_num):
     # Create a ISO_SDU of sdu_size length
-    tx_iso_sdu = tuple([(pkt_seq_num + x) % 255 for x in range(max_sdu_size)])
+    tx_iso_sdu = tuple([(pkt_seq_num + x) % 255 for x in range(max_data_size)])
 
     # Pack the ISO_Data_Load (no Time_Stamp) of an HCI ISO Data packet
     # <Packet_Sequence_Number, ISO_SDU_Length, ISO_SDU>
     fmt = '<HH{ISO_SDU_Length}B'.format(ISO_SDU_Length=len(tx_iso_sdu))
     tx_iso_data_load = struct.pack(fmt, pkt_seq_num, len(tx_iso_sdu), *tx_iso_sdu)
 
-    # Transmitter: TX SDU
-    PbFlag = 2
-    TsFlag = 0
-
     # Feed TX buffers
-    success = le_iso_data_write(transport, idx_1, conn_handle_1, PbFlag, TsFlag, tx_iso_data_load, 0) == 0
-    success = le_iso_data_write(transport, idx_2, conn_handle_2, PbFlag, TsFlag, tx_iso_data_load, 0) == 0 and success
+    success, _, _, iso_buffer_len_1, _ = readBufferSizeV2(transport, idx_1, trace)
+    s, _, _, iso_buffer_len_2, _ = readBufferSizeV2(transport, idx_2, trace)
+    success = s and success
+    s, fragments_1 = le_iso_data_write_fragments(transport, idx_1, trace, conn_handle_1, tx_iso_data_load, iso_buffer_len_1)
+    success = s and success
+    s, fragments_2 = le_iso_data_write_fragments(transport, idx_2, trace, conn_handle_2, tx_iso_data_load, iso_buffer_len_2)
+    success = s and success
 
     # Wait for data to be sent; fetch EDTT command response and Number of Completed packets event
-    success = le_iso_data_write_rsp(transport, idx_1, 100) == 0 and success
-    success = le_iso_data_write_rsp(transport, idx_2, 100) == 0 and success
-    success = verifyAndShowEvent(transport, idx_1, Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS, trace) and success
-    success = verifyAndShowEvent(transport, idx_2, Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS, trace) and success
+    success = le_iso_data_write_complete(transport, idx_1, trace, fragments_1, 100) and success
+    success = le_iso_data_write_complete(transport, idx_2, trace, fragments_2, 100) and success
+    success = verifyNumCompleteEvents(transport, idx_1, conn_handle_1, fragments_1, trace) and success
+    success = verifyNumCompleteEvents(transport, idx_2, conn_handle_2, fragments_2, trace) and success
 
     # Check the data received
     s, _, rx_iso_sdu = iso_receive_sdu(transport, idx_1, trace, sdu_interval)

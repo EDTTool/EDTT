@@ -140,6 +140,7 @@ class CmdOpcodes(IntEnum):
     BT_HCI_OP_LE_READ_RF_PATH_COMP          = 0x204C
     BT_HCI_OP_LE_WRITE_RF_PATH_COMP         = 0x204D
     BT_HCI_OP_LE_SET_PRIVACY_MODE           = 0x204E
+    BT_HCI_OP_LE_READ_BUFFER_SIZE_V2        = 0x2060
     BT_HCI_OP_LE_SET_CIG_PARAMETERS         = 0x2062
     BT_HCI_OP_LE_SET_CIG_PARAMETERS_TEST    = 0x2063
     BT_HCI_OP_LE_CREATE_CIS                 = 0x2064
@@ -233,7 +234,7 @@ class Event:
                        Events.BT_HCI_EVT_CMD_COMPLETE:                     'Command Complete Event for opCode 0x{1:04X} status 0x{2:02X} packets 0x{0:02X}',
                        Events.BT_HCI_EVT_CMD_STATUS:                       'Command Status Event for opCode 0x{1:04X} status 0x{2:02X} packets 0x{0:02X}',
                        Events.BT_HCI_EVT_HARDWARE_ERROR:                   'Hardware Error Event error {0:d}',
-                       Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS:            'Number of Completed Packets Event handles {0:d}',
+                       Events.BT_HCI_EVT_NUM_COMPLETED_PACKETS:            'Number of Completed Packets Event num_handles {0:d} handles {1}, packets {2}',
                        Events.BT_HCI_EVT_DATA_BUF_OVERFLOW:                'Data Buffer Overflow Event link type {0:d}',
                        Events.BT_HCI_EVT_ENCRYPT_KEY_REFRESH_COMPLETE:     'Encryption Key Refresh Complete Event for handle {1:d} status 0x{0:02X}',
                        Events.BT_HCI_EVT_LE_META_EVENT:                    '',
@@ -337,7 +338,9 @@ class Event:
                        CmdOpcodes.BT_HCI_OP_LE_ISO_READ_TEST_COUNTERS:     'Command Complete Event for LE LE ISO Read Test Counters status 0x{2:02X} handle {3:d} received SDU count {4:d} missed SDU count {5:d} failed SDU count {6:d}',
                        CmdOpcodes.BT_HCI_OP_LE_ISO_TEST_END:               'Command Complete Event for LE LE ISO Test End status 0x{2:02X} handle {3:d} received SDU count {4:d} missed SDU count {5:d} failed SDU count {6:d}',
                        CmdOpcodes.BT_HCI_OP_LE_SET_HOST_FEATURE:           'Command Complete Event for LE Set Host Feature status 0x{2:02X}',
-                       CmdOpcodes.BT_HCI_OP_VS_WRITE_BD_ADDR:              'Command Complete Event for Write BD_ADDR status 0x{2:02X}' };
+                       CmdOpcodes.BT_HCI_OP_VS_WRITE_BD_ADDR:              'Command Complete Event for Write BD_ADDR status 0x{2:02X}',
+                       CmdOpcodes.BT_HCI_OP_LE_READ_BUFFER_SIZE_V2:        'Command Complete Event for LE Read Buffer Size V2 status 0x{2:02X} LE data packet length {3:d} LE data packets {4:d} ISO data packet length {5:d} ISO data packets {6:d}',
+ };
 
     __cseFormats__ = { CmdOpcodes.BT_HCI_OP_INQUIRY:                       'Command Status Event for Inquire status 0x{2:02X}',
                        CmdOpcodes.BT_HCI_OP_DISCONNECT:                    'Command Status Event for Disconnect status 0x{2:02X}',
@@ -657,6 +660,13 @@ class Event:
         else:
             dpLength = dpCount = 0;
         return dpLength, dpCount;
+
+    def __leReadBufferSizeV2(self):
+        if self.__checkSize(10):
+            dpLength, dpCount, isoLength, isoCount = struct.unpack('<HBHB', self.data[4:10]);
+        else:
+            dpLength = dpCount = isoLength = isoCount = 0;
+        return dpLength, dpCount, isoLength, isoCount;
 
     def __leReadLocalSupportedFeatures(self):
         if self.__checkSize(12):
@@ -1412,4 +1422,5 @@ class Event:
                        CmdOpcodes.BT_HCI_OP_LE_ISO_RECEIVE_TEST:          __leIsoReceiveTest,
                        CmdOpcodes.BT_HCI_OP_LE_ISO_READ_TEST_COUNTERS:    __leIsoReadTestCounters,
                        CmdOpcodes.BT_HCI_OP_LE_ISO_TEST_END:              __leIsoTestEnd,
+                       CmdOpcodes.BT_HCI_OP_LE_READ_BUFFER_SIZE_V2:       __leReadBufferSizeV2,
                        }
