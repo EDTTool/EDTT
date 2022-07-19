@@ -100,15 +100,21 @@ class Initiator:
 
         handle, reason = -1, -1;
 
-        success = has_event(self.transport, idx, timeout)[0];
-        if success:
+        success, number_of_events = has_event(self.transport, idx, timeout);
+
+        while number_of_events > 0:
             event = get_event(self.transport, idx, 200);
             self.trace.trace(7, str(event));
             if event.event == Events.BT_HCI_EVT_DISCONN_COMPLETE:
                 self.status, handle, reason = event.decode();
                 success = self.status == 0;
+                break
             else:
+                # When waiting for a disconnect event, we usually don't care about 
+                # other events. Discard them.
+                self.trace.trace(3, "Warning: Discarding event before disconnect % s" % str(event));
                 success = False;
+            number_of_events -= 1
         return success, handle, reason;
 
     """
