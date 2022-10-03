@@ -441,6 +441,17 @@ class ProfileId(IntEnum):
     PROFILE_ID_LL                           = 4
     PROFILE_ID_SM                           = 5
 
+class PhysicalChannel(IntEnum):
+    LE_1M    = 1
+    LE_2M    = 2
+    LE_CODED = 3
+
+class FragmentOperation(IntEnum):
+    INTERMEDIATE_FRAGMENT = 0      # Intermediate fragment of fragmented extended advertising data
+    FIRST_FRAGMENT        = 1      # First fragment of fragmented extended advertising data
+    LAST_FRAGMENT         = 2      # Last fragment of fragmented extended advertising data
+    COMPLETE_FRAGMENT     = 3      # Complete extended advertising data
+    UNCHANGED_FRAGMENT    = 4      # Unchanged data (just update the Advertising DID)
 
 class Ixit:
     """
@@ -2328,8 +2339,19 @@ def le_set_extended_advertising_parameters(transport, idx, handle, props, PrimMi
     if ( RespCmd != Commands.CMD_LE_SET_EXTENDED_ADVERTISING_PARAMETERS_RSP ):
         raise Exception("LE Set Extended Advertising Parameters command failed: Inappropriate command response received");
 
-    if ( RespLen != 1 ):
+    if ( status == 0x01 ):
+        # Unsupported command, no Selected_TX_Power in response
+        if ( RespLen != 1 ):
+            raise Exception("LE Set Extended Advertising Parameters command failed: Response length field corrupted (%i)" % RespLen);
+        return status
+
+    if ( RespLen != 2 ):
         raise Exception("LE Set Extended Advertising Parameters command failed: Response length field corrupted (%i)" % RespLen);
+
+    # Read out the last byte of the message
+    packet = transport.recv(idx, 1, to);
+    if ( 1 != len(packet) ):
+        raise Exception("LE Set Extended Advertising Parameters command failed: Response too short (Expected %i bytes got %i bytes)" % (6, 5));
 
     return status;
 
@@ -2339,9 +2361,9 @@ def le_set_extended_advertising_parameters(transport, idx, handle, props, PrimMi
     using the LE Set Extended Advertising Parameters Command (see Section 7.8.53), regardless of whether advertising in that
     set is enabled or disabled.
 """
-def le_set_extended_advertising_data(transport, idx, handle, op, FragPref, dataLen, data, to):
+def le_set_extended_advertising_data(transport, idx, handle, op, FragPref, data, to):
 
-    cmd = struct.pack('<HHHBBBB251B', Commands.CMD_LE_SET_EXTENDED_ADVERTISING_DATA_REQ, 257, HCICommands.BT_HCI_OP_LE_SET_EXT_ADV_DATA, handle, op, FragPref, dataLen, *data);
+    cmd = struct.pack('<HHHBBBB' + str(len(data)) + 'B', Commands.CMD_LE_SET_EXTENDED_ADVERTISING_DATA_REQ, len(data) + 6, HCICommands.BT_HCI_OP_LE_SET_EXT_ADV_DATA, handle, op, FragPref, len(data), *data);
     transport.send(idx, cmd);
 
     packet = transport.recv(idx, 5, to);
@@ -2362,9 +2384,9 @@ def le_set_extended_advertising_data(transport, idx, handle, op, FragPref, dataL
 """
 
 """
-def le_set_extended_scan_response_data(transport, idx, handle, op, FragPref, dataLen, data, to):
+def le_set_extended_scan_response_data(transport, idx, handle, op, FragPref, data, to):
 
-    cmd = struct.pack('<HHHBBBB251B', Commands.CMD_LE_SET_EXTENDED_SCAN_RESPONSE_DATA_REQ, 257, HCICommands.BT_HCI_OP_LE_SET_EXT_SCAN_RSP_DATA, handle, op, FragPref, dataLen, *data);
+    cmd = struct.pack('<HHHBBBB' + str(len(data)) + 'B', Commands.CMD_LE_SET_EXTENDED_SCAN_RESPONSE_DATA_REQ, len(data) + 6, HCICommands.BT_HCI_OP_LE_SET_EXT_SCAN_RSP_DATA, handle, op, FragPref, len(data), *data);
     transport.send(idx, cmd);
 
     packet = transport.recv(idx, 5, to);
@@ -2432,12 +2454,12 @@ def le_read_maximum_advertising_data_length(transport, idx, to):
         # Unsupported command.
         return status
 
-    assert RespLen != 3, f"Response length field corrupted ({RespLen})"
+    assert RespLen == 3, f"Response length field corrupted ({RespLen})"
 
     packet = transport.recv(idx, 2, to)
     assert 2 == len(packet), f"Received invalid length packet {len(packet)}"
 
-    MaxAdvDataLen = struct.unpack('<H', packet)
+    MaxAdvDataLen, = struct.unpack('<H', packet)
     return status, MaxAdvDataLen
 
 """
