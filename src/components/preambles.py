@@ -540,12 +540,11 @@ def preamble_ext_advertising_data_set(transport, idx, Handle, Operation, FragPre
     trace.trace(5, "Extended Advertising Data Set preamble steps...");
 
     try:
-        dataSize = len(advData) if len(advData) <= 251 else 251;
         advertiseData = advData[ : ];
         if len(advData) > 251:
             advertiseData = advertiseData[:251];
 
-        status = le_set_extended_advertising_data(transport, idx, Handle, Operation, FragPreference, dataSize, advertiseData, 100);
+        status = le_set_extended_advertising_data(transport, idx, Handle, Operation, FragPreference, advertiseData, 100);
         trace.trace(6, "LE Set Extended Advertising Data Command returns status: 0x%02X" % status);
         success = __getCommandCompleteEvent(transport, idx, trace) and (status == 0);
     except Exception as e:

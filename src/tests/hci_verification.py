@@ -4,6 +4,7 @@
 
 from numpy import random;
 import os;
+import math;
 from enum import IntEnum;
 from components.utils import *;
 from components.basic_commands import *;
@@ -61,16 +62,16 @@ def hci_gev_bv_01_c(transport, idx, trace):
                                                     SecAdvPhy, sid, ScanReqNotifyEnable, 100);
     success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
-    handle, op, FragPref, dataLength = 0, 0, 0, 0;
-    data = [0 for _ in range(251)];
+    handle, op, FragPref = 0, 0, 0;
+    data = [];
 
-    status = le_set_extended_advertising_data(transport, idx, handle, op, FragPref, dataLength, data, 100);
+    status = le_set_extended_advertising_data(transport, idx, handle, op, FragPref, data, 100);
     success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
-    handle, op, FragPref, dataLength = 0, 0, 0, 0;
-    data = [0 for _ in range(251)];
+    handle, op, FragPref = 0, 0, 0;
+    data = [];
 
-    status = le_set_extended_scan_response_data(transport, idx, handle, op, FragPref, dataLength, data, 100);
+    status = le_set_extended_scan_response_data(transport, idx, handle, op, FragPref, data, 100);
     success = __check_unknown_command_rsp_event(transport, idx, trace, status) and success;
 
     enable, SetNum = 0, 0;
@@ -572,6 +573,126 @@ def hci_ddi_bi_02_c(transport, upperTester, trace):
     return success;
 
 """
+    HCI/DDI/BI-63-C [Reject Set Extended Advertising Data Command, Data Too Long, LE 1M PHY]
+"""
+def hci_ddi_bi_63_c(transport, upperTester, lowerTester, trace):
+
+    Handle          = 0;
+    Properties      = 0;
+    PrimMinInterval = toArray(0x0140, 3); # Minimum Advertise Interval = 320 x 0.625 ms = 200.00 ms
+    PrimMaxInterval = toArray(0x0140, 3); # Maximum Advertise Interval = 320 x 0.625 ms = 200.00 ms
+    PrimChannelMap  = 0x07;  # Advertise on all three channels (#37, #38 and #39)
+    OwnAddrType     = SimpleAddressType.PUBLIC;
+    PeerAddrType    = 0;
+    PeerAddress     = toArray(0, 6);
+    FilterPolicy    = AdvertisingFilterPolicy.FILTER_NONE;
+    TxPower         = 0;
+    PrimAdvPhy      = PhysicalChannel.LE_1M; # Primary advertisement PHY is LE 1M
+    SecAdvMaxSkip   = 0;     # AUX_ADV_IND shall be sent prior to the next advertising event
+    SecAdvPhy       = PhysicalChannel.LE_1M;
+    Sid             = 0;
+    ScanReqNotifyEnable = 0; # Scan request notifications disabled
+
+    success = preamble_ext_advertising_parameters_set(transport, upperTester, Handle, Properties, PrimMinInterval, PrimMaxInterval, \
+                                                      PrimChannelMap, OwnAddrType, PeerAddrType, PeerAddress, FilterPolicy, TxPower, \
+                                                      PrimAdvPhy, SecAdvMaxSkip, SecAdvPhy, Sid, ScanReqNotifyEnable, trace);
+    
+    if not success:
+        return False;
+
+    # Get maximum advertising data size
+    status, maxADSize = le_read_maximum_advertising_data_length(transport, upperTester, 100);
+    if status != 0:
+        return False
+    
+    FragPref = 0; # The Controller may fragment all Host advertising data
+
+    # Set fragments of advertising data until we hit maxADSize - 1
+    fragmentCount = 7;
+    fragmentSize = math.ceil((maxADSize-1)/(fragmentCount));
+    fragmentData = random.randint(0, 256, fragmentSize);
+
+    count = 0;
+    while (count < fragmentCount):
+
+        op = FragmentOperation.FIRST_FRAGMENT
+        if (count > 0):
+            op = FragmentOperation.INTERMEDIATE_FRAGMENT;
+            if count == fragmentCount - 1:
+                # Adjust size of last fragment to hit maxADSize - 1 exactly
+                fragmentData = fragmentData[:(maxADSize - 1 - fragmentSize*6)]
+        
+        status = le_set_extended_advertising_data(transport, upperTester, Handle, op, FragPref, fragmentData, 100);
+        if status != 0:
+            return False;
+
+        count += 1;
+
+    # Now setting another fragment of two bytes should fail
+    status = le_set_extended_advertising_data(transport, upperTester, Handle, FragmentOperation.INTERMEDIATE_FRAGMENT, FragPref, random.randint(0, 256, 2), 100);
+    return status == 0x07; # Memory Capacity Exceeded expected
+
+"""
+    HCI/DDI/BI-65-C [Reject Set Extended Scan Response Data Command, Data Too Long, LE 1M PHY]
+"""
+def hci_ddi_bi_65_c(transport, upperTester, lowerTester, trace):
+
+    Handle          = 0;
+    Properties      = 0x02; # Scannable
+    PrimMinInterval = toArray(0x0140, 3); # Minimum Advertise Interval = 320 x 0.625 ms = 200.00 ms
+    PrimMaxInterval = toArray(0x0140, 3); # Maximum Advertise Interval = 320 x 0.625 ms = 200.00 ms
+    PrimChannelMap  = 0x07;  # Advertise on all three channels (#37, #38 and #39)
+    OwnAddrType     = SimpleAddressType.PUBLIC;
+    PeerAddrType    = 0;
+    PeerAddress     = toArray(0, 6);
+    FilterPolicy    = AdvertisingFilterPolicy.FILTER_NONE;
+    TxPower         = 0;
+    PrimAdvPhy      = PhysicalChannel.LE_1M; # Primary advertisement PHY is LE 1M
+    SecAdvMaxSkip   = 0;     # AUX_ADV_IND shall be sent prior to the next advertising event
+    SecAdvPhy       = PhysicalChannel.LE_1M;
+    Sid             = 0;
+    ScanReqNotifyEnable = 0; # Scan request notifications disabled
+
+    success = preamble_ext_advertising_parameters_set(transport, upperTester, Handle, Properties, PrimMinInterval, PrimMaxInterval, \
+                                                      PrimChannelMap, OwnAddrType, PeerAddrType, PeerAddress, FilterPolicy, TxPower, \
+                                                      PrimAdvPhy, SecAdvMaxSkip, SecAdvPhy, Sid, ScanReqNotifyEnable, trace);
+    
+    if not success:
+        return False;
+
+    # Get maximum advertising data size
+    status, maxADSize = le_read_maximum_advertising_data_length(transport, upperTester, 100);
+    if status != 0:
+        return False;
+    
+    FragPref = 0; # The Controller may fragment all Host advertising data
+
+    # Set fragments of advertising data until we hit maxADSize - 1
+    fragmentCount = 7;
+    fragmentSize = math.ceil((maxADSize-1)/(fragmentCount));
+    fragmentData = random.randint(0, 256, fragmentSize);
+
+    count = 0;
+    while (count < fragmentCount):
+
+        op = FragmentOperation.FIRST_FRAGMENT
+        if (count > 0):
+            op = FragmentOperation.INTERMEDIATE_FRAGMENT;
+            if count == fragmentCount - 1:
+                # Adjust size of last fragment to hit maxADSize - 1 exactly
+                fragmentData = fragmentData[:(maxADSize - 1 - fragmentSize*6)]
+        
+        status = le_set_extended_scan_response_data(transport, upperTester, Handle, op, FragPref, fragmentData, 100);
+        if status != 0:
+            return False;
+
+        count += 1;
+
+    # Now setting another fragment of two bytes should fail
+    status = le_set_extended_scan_response_data(transport, upperTester, Handle, FragmentOperation.INTERMEDIATE_FRAGMENT, FragPref, random.randint(0, 256, 2), 100);
+    return status == 0x07; # Memory Capacity Exceeded expected
+
+"""
     HCI/HFC/BV-04-C [Events enabled by LE Set Event Mask Command]
 """
 def hci_hfc_bv_04_c(transport, upperTester, lowerTester, trace):
@@ -962,6 +1083,8 @@ __tests__ = {
     "HCI/CM/BV-02-C":  [ hci_cm_bv_02_c,  'Handling LE Read Local Resolvable Address Command' ],
     "HCI/CM/BV-03-C":  [ hci_cm_bv_03_c,  'Handling LE Read PHY Command' ],
     "HCI/DDI/BI-02-C": [ hci_ddi_bi_02_c, 'Rejecting invalid Advertising Parameters' ],
+    "HCI/DDI/BI-63-C": [ hci_ddi_bi_63_c, 'Reject Set Extended Advertising Data Command, Data Too Long, LE 1M PHY' ],
+    "HCI/DDI/BI-65-C": [ hci_ddi_bi_65_c, 'Reject Set Extended Scan Response Data Command, Data Too Long, LE 1M PHY' ],
     "HCI/DDI/BV-03-C": [ hci_ddi_bv_03_c, 'Disable Advertising with Set Advertising Enable Command' ],
     "HCI/DDI/BV-04-C": [ hci_ddi_bv_04_c, 'Disable Scanning with Set Scan Enable Command' ],
     "HCI/DSU/BV-02-C": [ hci_dsu_bv_02_c, 'Reset Command received in Advertising State' ],

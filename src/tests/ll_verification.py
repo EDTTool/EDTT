@@ -26,21 +26,9 @@ from tests.test_utils import *
 
 global lowerIRK, upperIRK, ENC_KEYS
 
-class FragmentOperation(IntEnum):
-    INTERMEDIATE_FRAGMENT = 0      # Intermediate fragment of fragmented extended advertising data
-    FIRST_FRAGMENT        = 1      # First fragment of fragmented extended advertising data
-    LAST_FRAGMENT         = 2      # Last fragment of fragmented extended advertising data
-    COMPLETE_FRAGMENT     = 3      # Complete extended advertising data
-    UNCHANGED_FRAGMENT    = 4      # Unchanged data (just update the Advertising DID)
-
 class FragmentPreference(IntEnum):
     FRAGMENT_ALL_DATA = 0          # The Controller may fragment all Host advertising data
     FRAGMENT_MIN_DATA = 1          # The Controller should not fragment or should minimize fragmentation of Host advertising data
-
-class PhysicalChannel(IntEnum):
-    LE_1M    = 1
-    LE_2M    = 2
-    LE_CODED = 3
 
 class PreferredPhysicalChannel(IntEnum):
     LE_1M    = 0                   # 0 ~ The Host prefers to use the LE 1M transmitter PHY (possibly among others)
