@@ -22,6 +22,7 @@ from components.initiator import *;
 from components.addata import *;
 from components.preambles import *;
 from components.test_spec import TestSpec;
+from components.dump import PacketType;
 from tests.test_utils import *
 
 global lowerIRK, upperIRK, ENC_KEYS
@@ -1539,6 +1540,197 @@ def ll_con_adv_bv_10_c(transport, upperTester, lowerTester, trace):
         success = advertiser.disable() and success;
 
     return success;
+
+# Implements LL/CON/ADV/BV-14-C and LL/CON/ADV/BV-15-C test cases (only difference is the PHY)
+def do_ll_con_adv_bv_14_15_c(transport, upperTester, lowerTester, trace, packets, phy):
+    initAddresses = [
+        0xDEAD42E98020, # random static address
+        0x2EAD2C3510BF, # random, non-resolvable private address
+        0x7FD2613EF26C  # random, resolvable private address
+    ]
+    
+    success = True
+
+    for round in range(len(initAddresses)):
+        lowerRandomA = initAddresses[round]
+
+        Handle          = 0
+        Properties      = 0x01 # Connectable advertising
+        PrimMinInterval = toArray(0x0020, 3) # Minimum Advertise Interval = 32 x 0.625 ms = 20.00 ms
+        PrimMaxInterval = toArray(0x0020, 3) # Maximum Advertise Interval = 32 x 0.625 ms = 20.00 ms
+        PrimChannelMap  = 0x07  # Advertise on all three channels (#37, #38 and #39)
+        OwnAddrType     = SimpleAddressType.PUBLIC
+        PeerAddrType    = 0
+        PeerAddress     = toArray(0, 6)
+        FilterPolicy    = AdvertisingFilterPolicy.FILTER_NONE
+        TxPower         = 0
+        PrimAdvPhy      = PhysicalChannel.LE_CODED if phy == PhysicalChannel.LE_CODED else PhysicalChannel.LE_1M # Primary advertisement PHY is LE 1M except for coded PHY
+        SecAdvMaxSkip   = 0     # AUX_ADV_IND shall be sent prior to the next advertising event
+        SecAdvPhy       = phy
+        Sid             = 0
+        ScanReqNotifyEnable = 0; # Scan request notifications disabled
+
+        success = preamble_ext_advertising_parameters_set(transport, upperTester, Handle, Properties, PrimMinInterval, PrimMaxInterval,
+                                                          PrimChannelMap, OwnAddrType, PeerAddrType, PeerAddress, FilterPolicy, TxPower,
+                                                          PrimAdvPhy, SecAdvMaxSkip, SecAdvPhy, Sid, ScanReqNotifyEnable, trace)
+    
+        if not success:
+            return False
+
+        success = success and preamble_ext_advertise_enable(transport, upperTester, Advertise.ENABLE, [Handle], [0], [0], trace)
+
+        if not success:
+            return False
+
+        # Enable LE Channel Selection Algorithm in event mask (it is disabled by default for some reason)
+        events = [0xFF, 0xFF, 0xFF, 0xFF, 0x03, 0x00, 0x00, 0x00]
+        status = le_set_event_mask(transport, upperTester, events, 100)
+        if status != 0:
+            return False
+        get_event(transport, upperTester, 200) # Read out command complete event for le_set_event_mask
+
+        advA = publicIdentityAddress(upperTester)
+    
+        # Set initiator/lower tester random address
+        success = preamble_set_random_address(transport, lowerTester, lowerRandomA, trace)
+
+        if not success:
+            return False
+
+        initiator = Initiator(transport, lowerTester, None, trace, Address(ExtendedAddressType.RANDOM), advA, InitiatorFilterPolicy.FILTER_NONE,
+                              True, 0x01)
+        initiator.checkPrematureDisconnect = False
+        success = initiator.connect()
+
+        if not success:
+            return False
+    
+        # Test: The Lower Tester receives an ADV_EXT_IND packet from the IUT with AdvMode set to 01b with only the AuxPtr Extended Header field (and ADI);
+        #       The time between a PDU containing an AuxPtr field and the PDU to which it refers shall be greater than or equal to T_MAFS
+        for packet in packets.fetch(packet_filter=('ADV_EXT_IND')):
+            success = success and packet.payload['AdvMode'] == 0b01
+            success = success and 'AdvA' not in packet.payload
+            success = success and 'TargetA' not in packet.payload
+            success = success and 'CTEInfo' not in packet.payload
+            success = success and 'ADI' in packet.payload
+            success = success and 'AuxPtr' in packet.payload
+            success = success and 'SyncInfo' not in packet.payload
+            success = success and 'TxPower' not in packet.payload
+            success = success and 'ACAD' not in packet.payload
+            success = success and 'AD' not in packet.payload
+            success = success and packet.phy == '1M'
+
+            offset = packet.payload['AuxPtr'].auxOffset * (30 if packet.payload['AuxPtr'].offsetUnits == 0 else 300)
+            # Packet air length is: pre-amble + AA + header + payload + CRC
+            packetLength = 1 + 4 + 2 + len(packet) + 3
+            packetAirtime = 8*packetLength
+            success = success and offset >= 300 + packetAirtime
+
+        # Test AUX_ADV_IND: AdvMode field set to 01b; The AdvA field shall contain the IUT’s Advertising Address; The IUT sends and receives data on the expected PHY selected in step 1
+        for packet in packets.fetch(packet_filter=('AUX_ADV_IND')):
+            success = success and packet.payload['AdvMode'] == 0b01
+            success = success and packet.header.TxAdd == 0x00 # AdvA is public
+            success = success and Address(SimpleAddressType.PUBLIC, packet.payload['AdvA']) == advA
+            success = success and packet.phy == ('2M' if phy == PhysicalChannel.LE_2M else '1M')
+
+        # Test AUX_CONNECT_RSP: RxAdd = 1 and valid TargetA address; The IUT responds to the AUX_CONNECT_REQ within the 2 μs range around T_IFS
+        auxConnectReqEndTS = 0
+        for packet in packets.fetch(packet_filter=('AUX_CONNECT_RSP', 'AUX_CONNECT_REQ')):
+            if packet.type == PacketType.AUX_CONNECT_REQ:
+                # Packet air length is: pre-amble + AA + header + payload + CRC
+                packetLength = (2 if packet.phy == '2M' else 1) + 4 + 2 + len(packet) + 3
+                auxConnectReqEndTS = packet.ts + 8*packetLength/(2 if packet.phy == '2M' else 1)
+            else:
+                success = success and packet.header.RxAdd == 0x01 # TargetA is random
+                success = success and packet.payload['TargetA'] == lowerRandomA
+                success = success and packet.header.TxAdd == 0x00 # AdvA is public
+                success = success and Address(SimpleAddressType.PUBLIC, packet.payload['AdvA']) == advA
+                airTimeDiff = packet.ts - auxConnectReqEndTS
+                success = success and airTimeDiff >= 150 - 2 and airTimeDiff <= 150 + 2
+                
+
+
+        # Only 20 tries with AUX_CONNECT_REQ allowed, check that we didn't exceed that
+        connectReqCount = 0
+        for packet in packets.fetch(packet_filter=('AUX_CONNECT_REQ')):
+            connectReqCount += 1
+        success = success and connectReqCount <= 20
+    
+        # Expect to receive an HCI_LE_Enhanced_Connection_Complete event followed by a HCI_LE_Channel_Selection_Algorithm
+        # It is also expected to receive an HCI_LE_Advertising_Set_Terminated event, but this is not to be tested
+        connectionHandle = None
+        eventsWaiting = has_event(transport, upperTester, 200)[1]
+        success = success and eventsWaiting >= 2
+
+        if not success:
+            return False
+
+        # Consume all outstanding HCI events
+        for i in range(eventsWaiting):
+            event = get_event(transport, upperTester, 200)
+            if i == 0 and event.subEvent == MetaEvents.BT_HCI_EVT_LE_ENH_CONN_COMPLETE:
+                # Nothing further to check for this event
+                connectionHandle = event.decode()[1]
+            elif i == 1 and event.subEvent == MetaEvents.BT_HCI_EVT_LE_CHAN_SEL_ALGO:
+                handle, algorithm = event.decode()
+                success = success and algorithm == 0x01 # LE Channel Selection Algorithm #2
+            elif i < 2:
+                # Unexpected/wrong event received
+                success = False
+
+        # At least one LL data PDU should have been exchanged between the two devices
+        iutLLData = None
+        lowerTesterLLData = None
+        for packet in packets.fetch(packet_filter=('LL_DATA_PDU')):
+            if not lowerTesterLLData and packet.direction == 'Tx' and packet.idx == lowerTester:
+                # SN and NESN should be 0
+                success = success and packet.header.SN == 0 and packet.header.NESN == 0
+                lowerTesterLLData = packet
+            elif packet.direction == 'Tx' and packet.idx == upperTester:
+                # LLID should be either 1 (for an empty packet) or 2 (for a non-empty packet)
+                if packet.header.Length > 0:
+                    success = success and packet.header.LLID == 0b10
+                else:
+                    success = success and packet.header.LLID == 0b01
+                # Channel should match the lowerTesters packet
+                success = success and packet.channel_num == lowerTesterLLData.channel_num
+                # SN should be 0 and NESN 1
+                success = success and packet.header.SN == 0 and packet.header.NESN == 1
+                iutLLData = packet
+            if iutLLData != None and lowerTesterLLData != None:
+                break
+
+        success = success and not (iutLLData == None or lowerTesterLLData == None)
+        
+        # Disconnect with "Remote User Terminated Connection"
+        status = disconnect(transport, upperTester, connectionHandle, 0x13, 200)
+        success = success and (status == 0)
+
+        # Make sure the disconnect gets handled before starting next round
+        transport.wait(500)
+
+        # Flush any outstanding HCI events
+        get_event(transport, upperTester, 200, True)
+        get_event(transport, lowerTester, 200, True)
+
+        # Flush packets
+        packets.flush()
+
+    return success
+
+"""
+    LL/CON/ADV/BV-14-C [Extended Advertising, Accepting Connections with Random address]; LE 1M PHY
+"""
+def ll_con_adv_bv_14_c(transport, upperTester, lowerTester, trace, packets):
+
+    return do_ll_con_adv_bv_14_15_c(transport, upperTester, lowerTester, trace, packets, PhysicalChannel.LE_1M)
+
+"""
+    LL/CON/ADV/BV-15-C [Extended Advertising, Accepting Connections with Random address]; LE 2M PHY
+"""
+def ll_con_adv_bv_15_c(transport, upperTester, lowerTester, trace, packets):
+
+    return do_ll_con_adv_bv_14_15_c(transport, upperTester, lowerTester, trace, packets, PhysicalChannel.LE_2M)
 
 """
     LL/CON/INI/BV-01-C [Connection Initiation rejects Address change]
@@ -7623,6 +7815,8 @@ __tests__ = {
     "LL/CON/ADV/BV-04-C": [ ll_con_adv_bv_04_c, "Accepting Connection Request after Directed Advertising" ],
     "LL/CON/ADV/BV-09-C": [ ll_con_adv_bv_09_c, "Accepting Connection Request using Channel Selection Algorithm #2" ],
     "LL/CON/ADV/BV-10-C": [ ll_con_adv_bv_10_c, "Accepting Connection Request after Directed Advertising using Channel Selection Algorithm #2" ],
+    "LL/CON/ADV/BV-14-C": [ ll_con_adv_bv_14_c, "Extended Advertising, Accepting Connections with Random address; LE 1M PHY" ],
+    "LL/CON/ADV/BV-15-C": [ ll_con_adv_bv_15_c, "Extended Advertising, Accepting Connections with Random address; LE 2M PHY" ],
     "LL/CON/INI/BV-01-C": [ ll_con_ini_bv_01_c, "Connection Initiation rejects Address change" ],
     "LL/CON/INI/BV-02-C": [ ll_con_ini_bv_02_c, "Connecting to Advertiser using Directed Advertising Packets" ],
     "LL/CON/INI/BV-06-C": [ ll_con_ini_bv_06_c, "Filtered Connection to Advertiser using Undirected Advertising Packets" ],

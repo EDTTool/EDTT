@@ -28,8 +28,10 @@ class Initiator:
             initiatorAddress  - ExtendedAddressType enum holding the address of the initiator (only the address type is used)
             peerAddress       - IdentityAddressType enum holding the address of the peer (both type and address are used)
             filterPolicy      - InitiatorFilterPolicy enum holding the type of scanning filter to apply
+            useExtended       - Use the extended advertising commands instead of legacy commands
+            initiatingPHYs    - PHYs to initiate connection on; Only used if useExtended is set
     """
-    def __init__(self, transport, initiator, peer, trace, initiatorAddress, peerAddress, filterPolicy=InitiatorFilterPolicy.FILTER_NONE):
+    def __init__(self, transport, initiator, peer, trace, initiatorAddress, peerAddress, filterPolicy=InitiatorFilterPolicy.FILTER_NONE, useExtended=False, initiatingPHYs=0x00):
         self.transport = transport;
         self.initiator = initiator;
         self.peer = peer;
@@ -37,7 +39,9 @@ class Initiator:
         self.initiatorAddress = initiatorAddress;
         self.peerAddress = peerAddress;
         self.filterPolicy = filterPolicy;
-    
+        self.useExtended = useExtended;
+        self.initiatingPHYs = initiatingPHYs;
+
         self.RPAs = [ [ 0 for _ in range(6) ], [ 0 for _ in range(6) ] ];    
         self.handles = [-1, -1];
         self.reasons = [-1, -1];
@@ -188,9 +192,29 @@ class Initiator:
     def __initiating(self):
 
         try:
-            le_create_connection(self.transport, self.initiator, self.scanInterval, self.scanWindow, self.filterPolicy, self.peerAddress.type, \
-                                 self.peerAddress.address, self.initiatorAddress.type, self.intervalMin, self.intervalMax, self.latency, \
-                                 self.supervisionTimeout, self.minCeLen, self.maxCeLen, 200);
+            if self.useExtended:
+                # Count number of PHYs (via number of bits set) and create appropriate array arguments
+                PHYCount = bin(self.initiatingPHYs).count("1")
+                if PHYCount < 1 or PHYCount > 3:
+                    self.trace.trace(3, "Initiating connection failed: Invalid initiatingPHYs value")
+                    return False
+
+                scanInterval = [self.scanInterval for _ in range(PHYCount)]
+                scanWindow = [self.scanWindow for _ in range(PHYCount)]
+                connIntervalMin = [self.intervalMin for _ in range(PHYCount)]
+                connIntervalMax = [self.intervalMax for _ in range(PHYCount)]
+                maxLatency = [self.latency for _ in range(PHYCount)]
+                supervisionTimeout = [self.supervisionTimeout for _ in range(PHYCount)]
+                minCeLen =  [self.minCeLen for _ in range(PHYCount)]
+                maxCeLen =  [self.maxCeLen for _ in range(PHYCount)]
+
+                le_extended_create_connection(self.transport, self.initiator, self.filterPolicy, self.initiatorAddress.type, self.peerAddress.type,
+                                              self.peerAddress.address, self.initiatingPHYs, scanInterval, scanWindow, connIntervalMin, connIntervalMax,
+                                              maxLatency, supervisionTimeout, minCeLen, maxCeLen, 200)
+            else:
+                le_create_connection(self.transport, self.initiator, self.scanInterval, self.scanWindow, self.filterPolicy, self.peerAddress.type, \
+                                     self.peerAddress.address, self.initiatorAddress.type, self.intervalMin, self.intervalMax, self.latency, \
+                                     self.supervisionTimeout, self.minCeLen, self.maxCeLen, 200);
 
             event = get_event(self.transport, self.initiator, 200);
             self.trace.trace(7, str(event));
@@ -199,7 +223,7 @@ class Initiator:
                 self.status = event.decode()[-1];
                 success = self.status == 0;
         except Exception as e:
-            self.trace.trace(3, "LE Create Connection Command failed: %s" % str(e));
+            self.trace.trace(3, "LE (Extended) Create Connection Command failed: %s" % str(e));
             success = False;
 
         return success;

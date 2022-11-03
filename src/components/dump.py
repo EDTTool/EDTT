@@ -2,6 +2,7 @@
 # Copyright 2021 Oticon A/S
 # SPDX-License-Identifier: Apache-2.0
 import io
+import math
 import sys
 from collections import namedtuple
 from enum import IntEnum
@@ -124,12 +125,23 @@ def unpack_bitfield(fmt, value):
         value = value >> length
     return tuple(result)
 
+# Convert RF Channel number to Physical Channel Index (see Bluetooth Core Specification v5.3, vol 6, part B, section 1.4.1)
+def channel_num_to_index(channel_num):
+    ch_num_ch_idx = [
+        37,
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+        38,
+        11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36,
+        39
+    ]
+    return ch_num_ch_idx[channel_num]
 
-AdvPdu = ('ADV_UNKNOWN_PDU', 'ADV_IND', 'ADV_DIRECT_IND', 'CONNECT_IND')
+AdvPdu = ('ADV_UNKNOWN_PDU', 'ADV_IND', 'ADV_DIRECT_IND', 'CONNECT_IND', 'ADV_EXT_UNKNOWN_PDU', 'ADV_EXT_IND', 'AUX_ADV_IND', 'AUX_SCAN_RSP', 'AUX_SYNC_IND', 'AUX_CHAIN_IND', 'AUX_CONNECT_REQ', 'AUX_CONNECT_RSP')
 LlControlPdu = ('LL_CONTROL_UNKNOWN_PDU', 'LL_TERMINATE_IND', 'LL_CIS_REQ', 'LL_CIS_RSP', 'LL_CIS_IND',
                 'LL_CIS_TERMINATE_IND')
+LlDataPdu = ('LL_DATA_PDU',)
 IsoPdu = ('ISOC_UNKNOWN_PDU', 'ISOC_UNFRAMED_PDU', 'ISOC_FRAMED_PDU')
-PacketType = IntEnum('PacketType', ','.join(AdvPdu + LlControlPdu + IsoPdu))
+PacketType = IntEnum('PacketType', ','.join(AdvPdu + LlControlPdu + LlDataPdu + IsoPdu))
 
 
 class Packet:
@@ -193,22 +205,123 @@ adv_legacy_pdu_dict = {
 }
 
 
-def parse_adv_pdu(direction, idx, ts, aa, channel_num, phy, data):
+def parse_adv_pdu(direction, idx, ts, aa, channel_num, phy, data, aux_ptr_packets):
     Header = namedtuple('Header', 'PDU_Type, ChSel, TxAdd, RxAdd, Length')
     pdu_type, _, ch_sel, tx_add, rx_add, payload_len = \
         unpack_bitfield('4,1,1,1,1,8', int.from_bytes(data[:2], 'little', signed=False))
     header = Header(pdu_type, ch_sel, tx_add, rx_add, payload_len)
     data = data[2:2 + payload_len]
-    if channel_num in [0, 12, 39]:
-        if pdu_type in adv_legacy_pdu_dict:
-            payload_type, func = adv_legacy_pdu_dict[pdu_type]
-            payload = func(data)
-        else:
-            payload_type, payload = PacketType.ADV_UNKNOWN_PDU, data
+    if pdu_type in adv_legacy_pdu_dict and channel_num in [0, 12, 39]:
+        payload_type, func = adv_legacy_pdu_dict[pdu_type]
+        payload = func(data)
     else:
-        return None
+        return parse_ext_adv_pdu(direction, idx, ts, aa, channel_num, phy, header, data, aux_ptr_packets);
     return Packet(direction, idx, ts, aa, channel_num, phy, data, payload_type, header, payload)
 
+
+def parse_common_ext_adv_payload(data):
+    payload = dict()
+    extHeaderLength, AdvMode = unpack_bitfield('6,2', int.from_bytes(data[:1], 'little', signed=False))
+    data = data[1:]
+    payload['AdvMode'] = AdvMode
+    dataPtr = 0
+    extHeaderFlags = bytes(data[dataPtr:dataPtr+1])[0]
+    dataPtr += 1
+    if extHeaderFlags & 0x01: # AdvA present
+        payload['AdvA'] = int.from_bytes(data[dataPtr:dataPtr+6], 'little', signed=False)
+        dataPtr += 6
+    if extHeaderFlags & 0x02: # TargetA present
+        payload['TargetA'] = int.from_bytes(data[dataPtr:dataPtr+6], 'little', signed=False)
+        dataPtr += 6
+    if extHeaderFlags & 0x04: # CTEInfo present
+        # TODO - decode further
+        payload['CTEInfo'] = bytes(data[dataPtr:dataPtr+1])[0]
+        dataPtr += 1
+    if extHeaderFlags & 0x08: # AdvDataInfo present
+        ADI = namedtuple('ADI', 'DID, SID')
+        did, sid = unpack_bitfield('12,4', int.from_bytes(data[dataPtr:dataPtr+2], 'little', signed=False))
+        dataPtr += 2
+        payload['ADI'] = ADI(did, sid)
+    if extHeaderFlags & 0x10: # AuxPtr present
+        chIdx, clockAcc, offsetUnits, auxOffset, auxPHY = unpack_bitfield('6,1,1,13,3', int.from_bytes(data[dataPtr:dataPtr+3], 'little', signed=False))
+        dataPtr += 3
+        AuxPtr = namedtuple('AuxPtr', 'chIdx, CA, offsetUnits, auxOffset, auxPHY')
+        payload['AuxPtr'] = AuxPtr(chIdx, clockAcc, offsetUnits, auxOffset, auxPHY)
+    if extHeaderFlags & 0x20: # SyncInfo present
+        # TODO - decode further
+        payload['SyncInfo'] = bytes(data[dataPtr:dataPtr+18])
+        dataPtr += 18
+    if extHeaderFlags & 0x40:
+        payload['TxPower'] = bytes(data[dataPtr:dataPtr+1])[0]
+        dataPtr += 1
+    if dataPtr < extHeaderLength:
+        payload['ACAD'] = bytes(data[dataPtr:])
+
+    data = data[extHeaderLength:]
+    if len(data):
+        payload['AD'] = bytes(data)
+
+    return payload
+
+def parse_ext_adv_pdu(direction, idx, ts, aa, channel_num, phy, header, data, aux_ptr_packets):
+    if channel_num in [0, 12, 39]:
+        if header.PDU_Type == 0b0111:
+            payload_type = PacketType.ADV_EXT_IND
+            payload = parse_common_ext_adv_payload(data)
+        else:
+            payload_type = PacketType.ADV_UNKNOWN_PDU
+            payload = data
+    else:
+        if header.PDU_Type == 0b0011:
+            payload_type = PacketType.AUX_SCAN_REQ
+            Payload = namedtuple('Payload', 'AdvA, TargetA')
+            advA = int.from_bytes(data[:6], 'little', signed=False)
+            targetA = int.from_bytes(data[6:], 'little', signed=False)
+            payload = Payload(advA, targetA)
+        elif header.PDU_Type == 0b0101:
+            payload_type = PacketType.AUX_CONNECT_REQ
+            # Payload is the same as CONNECT_IND
+            payload = connect_ind(data)
+        elif header.PDU_Type == 0b0111:
+            payload = parse_common_ext_adv_payload(data)
+            payload_type = determine_ext_adv_pdu_type(ts, channel_num, phy, payload, aux_ptr_packets)
+        elif header.PDU_Type == 0b1000:
+            payload_type = PacketType.AUX_CONNECT_RSP
+            payload = parse_common_ext_adv_payload(data)
+        else:
+            payload_type = PacketType.ADV_UNKNOWN_PDU
+            payload = data
+
+    return Packet(direction, idx, ts, aa, channel_num, phy, data, payload_type, header, payload)
+
+def determine_ext_adv_pdu_type(ts, channel_num, phy, payload, aux_ptr_packets):
+    for packet in aux_ptr_packets:
+        if aux_ptr_matches(packet.payload['AuxPtr'], packet.ts, ts, channel_num, phy):
+            if packet.type == PacketType.ADV_EXT_IND:
+                return PacketType.AUX_ADV_IND
+            else:
+                return PacketType.AUX_CHAIN_IND
+    
+    # No matches - we could have missed the packet with an aux_ptr, but assume a AUX_SCAN_RSP provided it matches the known limitations
+    if payload['AdvMode'] == 0 and 'AdvA' in payload and 'TargetA' not in payload and 'CTEInfo' not in payload and 'SyncInfo' not in payload and 'AD' in payload:
+        return PacketType.AUX_SCAN_RSP
+    
+    # No matches and does not look like a AUX_SCAN_RSP
+    return PacketType.ADV_EXT_UNKNOWN_PDU
+
+def aux_ptr_matches(aux_ptr, superior_packet_ts, ts, channel_num, phy):
+    ch = channel_num_to_index(channel_num)
+    if ch == aux_ptr.chIdx and ((phy == '1M' and (aux_ptr.auxPHY == 0x00 or aux_ptr.auxPHY == 0x02)) or (phy == '2M' and aux_ptr.auxPHY == 0x01)):
+        if (aux_ptr.auxOffset > 0): # AuxOffset == 0 means no auxillary packet will be transmitted
+            t_start_offset = (300 if aux_ptr.offsetUnits == 1 else 30) * aux_ptr.auxOffset
+            t_end_offset = (300 if aux_ptr.offsetUnits == 1 else 30) * (aux_ptr.auxOffset + 1)
+            # Adjust according to clock accuracy value
+            ca_adjustment = math.ceil(t_end_offset * ((50 if aux_ptr.CA == 1 else 500)/1000000))
+            t_start = superior_packet_ts + (t_start_offset - ca_adjustment)
+            t_end = superior_packet_ts + (t_end_offset + ca_adjustment)
+            if ts >= t_start and ts <= t_end:
+                return True
+    return False
 
 def ll_terminate_ind(data):
     CtrData = namedtuple('CtrData', 'ErrorCode')
@@ -288,6 +401,9 @@ def parse_data_pdu(direction, idx, ts, aa, channel_num, phy, data):
             payload = Payload(opcode, func(data[1:]))
         else:
             payload_type, payload = PacketType.LL_CONTROL_UNKNOWN_PDU, Payload(opcode, data[1:])
+    elif llid == 0b10 or llid == 0b01:
+        payload_type = PacketType.LL_DATA_PDU
+        payload = data
     else:
         return None
     return Packet(direction, idx, ts, aa, channel_num, phy, data, payload_type, header, payload)
@@ -326,9 +442,12 @@ class PacketParser:
         self.__func_by_aa = {
             0x8E89BED6: parse_adv_pdu,
         }
+        self.__aux_ptr_packets = [];
 
     def __get_packet(self, direction, idx, ts, aa, channel_num, phy, packet):
         if aa in self.__func_by_aa:
+            if self.__func_by_aa[aa] == parse_adv_pdu:
+                return self.__func_by_aa[aa](direction, idx, ts, aa, channel_num, phy, packet, self.__aux_ptr_packets)
             return self.__func_by_aa[aa](direction, idx, ts, aa, channel_num, phy, packet)
         return None
 
@@ -352,9 +471,14 @@ class PacketParser:
     def __get_phy(modulation):
         if modulation == 16:
             return '1M'
-        if modulation == 32:
+        if modulation == 32 or modulation == 33:
             return '2M'
         return 'unknown'
+
+    def __on_ext_adv_packet(self, packet, _):
+        # TODO - handle SyncInfo packets as well
+        if 'AuxPtr' in packet.payload:
+            self.__aux_ptr_packets.append(packet)
 
     def __on_connect_ind(self, packet, _):
         self.__func_by_aa[packet.payload.LLData.AA] = parse_data_pdu
@@ -383,7 +507,12 @@ class PacketParser:
             del self.__func_by_aa[cis_aa]
 
     __hooks__ = {
+        PacketType.ADV_EXT_IND: __on_ext_adv_packet,
+        PacketType.AUX_ADV_IND: __on_ext_adv_packet,
+        PacketType.AUX_SYNC_IND: __on_ext_adv_packet,
+        PacketType.AUX_CHAIN_IND: __on_ext_adv_packet,
         PacketType.CONNECT_IND: __on_connect_ind,
+        PacketType.AUX_CONNECT_REQ: __on_connect_ind,
         PacketType.LL_TERMINATE_IND: __on_terminate_ind,
         PacketType.LL_CIS_REQ: __on_cis_req,
         PacketType.LL_CIS_IND: __on_cis_ind,
@@ -468,7 +597,7 @@ class Packets:
                 self.__packets.append(self.__parser.parse(dump))
 
             if i < len(self.__packets):
-                if self.__packets[i] and (not packet_filter or self.__packets[i].type.name in packet_filter):
+                if self.__packets[i] != None and (not packet_filter or self.__packets[i].type.name in packet_filter):
                     yield self.__packets[i]
                 i += 1
             else:
@@ -479,3 +608,7 @@ class Packets:
             return next(self.fetch(packet_type))
         except StopIteration:
             return None
+    
+    def flush(self):
+        self.__parser = PacketParser()
+        self.__packets = []
