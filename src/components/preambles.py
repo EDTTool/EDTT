@@ -557,7 +557,7 @@ def preamble_ext_advertise_enable(transport, idx, enable, SHandle, SDuration, SM
     trace.trace(5, "Extended Advertising " + ("Enable" if enable else "Disable") + " preamble steps...");
 
     try:
-        NumberOfSets = max(len(sHandle), len(SDuration), len(SMaxExtAdvEvts));
+        NumberOfSets = max(len(SHandle), len(SDuration), len(SMaxExtAdvEvts));
         if len(SHandle) < NumberOfSets:
             SHandle += [ 0 for _ in range(len(SHandle), NumberOfSets) ];
         if len(SDuration) < NumberOfSets:
