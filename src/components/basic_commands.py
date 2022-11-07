@@ -2669,7 +2669,9 @@ def le_set_extended_scan_enable(transport, idx, enable, FilterDup, duration, per
 """
 def le_extended_create_connection(transport, idx, FilterPolicy, OwnAddrType, PeerAddrType, AVal, phys, PInterval, PWindow, PConnIntervalMin, PConnIntervalMax, PConnLatency, PSupervisionTimeout, PMinCeLen, PMaxCeLen, to):
 
-    cmd = struct.pack('<HHHBBB6BB' + 'HHHHHHHH' * phys, Commands.CMD_LE_EXTENDED_CREATE_CONNECTION_REQ, 12 + 16 * phys,
+    PHYCount = bin(phys).count("1")
+
+    cmd = struct.pack('<HHHBBB6BB' + 'HHHHHHHH' * PHYCount, Commands.CMD_LE_EXTENDED_CREATE_CONNECTION_REQ, 12 + 16 * PHYCount,
                       HCICommands.BT_HCI_OP_LE_EXT_CREATE_CONN, FilterPolicy, OwnAddrType, PeerAddrType, *AVal, phys,
                       *list(chain(*list(zip(PInterval, PWindow, PConnIntervalMin, PConnIntervalMax, PConnLatency, PSupervisionTimeout, PMinCeLen, PMaxCeLen)))))
 
