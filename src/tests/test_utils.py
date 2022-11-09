@@ -499,7 +499,6 @@ def le_iso_data_write_nbytes(transport, idx, trace, conn_handle, nbytes, pkt_seq
     iso_data_sdu = tuple([pkt_seq_num] * nbytes)
     tx_iso_data_load = struct.pack(f'<HH{nbytes}B', pkt_seq_num, nbytes, *iso_data_sdu)
     success, fragments = le_iso_data_write_fragments(transport, idx, trace, conn_handle, tx_iso_data_load, iso_buffer_len)
-    success = le_iso_data_write_complete(transport, idx, trace, fragments, 0) and success
 
     return success, iso_data_sdu
 
