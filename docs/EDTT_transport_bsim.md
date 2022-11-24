@@ -61,6 +61,9 @@ This is done by having the EDTT command the brdige to either:
           `<recv_wait_us>` in simulated time, that is, it will let the
           simulation time to advance by `<recv_wait_us>`, and try again.
           (`<recv_wait_us>` is a bridge command line option, by default 10ms)
+    * If the bridge is commanded to wait, it will wait for the simulation time to
+      advance to the requested time and reply with a dummy byte (with a value of 0)
+      to indicate that the wait is done
 
 3. The embedded device transport
 
@@ -125,7 +128,7 @@ The protocol with the EDTTool is as follows:
      1 byte : reception done (0) or timeout (1)
      8 bytes: timestamp when the reception or timeout actually happened
      0/N bytes: (0 bytes if timeout, N bytes as requested otherwise)
-   to a WAIT: nothing
+   to a WAIT:  1 byte (0) when wait is done
    to a DISCONNECT: nothing
 ```
 
