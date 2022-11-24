@@ -209,6 +209,8 @@ class EDTTT:
         # pack a message : delay 4 bytes
         end_of_wait = delay_in_ms*1000 + self.last_t;
         self.ll_send(struct.pack('<BQ', self.COM_WAIT, end_of_wait));
+        # Read dummy byte reply from bridge, signalling wait completion
+        self.read(1);
         self.last_t = end_of_wait;
 
     def get_time(self):
