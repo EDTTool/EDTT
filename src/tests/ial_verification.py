@@ -4,6 +4,7 @@
 
 import numpy
 import random
+import math
 from components.addata import *
 from components.address import *
 from components.advertiser import *
@@ -538,19 +539,46 @@ def peripheral_sending_and_receiving_unframed_empty_pdu_llid_0b01_cis(transport,
     if not initiator:
         return success
 
+    # Packet sequence numbers require an offset so that the first SDU doesn't get flushed.
+    # The original implementation reused the SDU length ranging from 4 to 128 as the packet
+    # sequence number. The same starting offset is reused below.
+    start_pkt_seq_num_P_To_C = 4
+    start_pkt_seq_num_C_To_P = 4
+
+    # Although the packet sequence number is intialized to 0 it will be reset in the loop below by the outcome of max()
+    pkt_seq_num_P_To_C = 0
+    pkt_seq_num_C_To_P = 0
+
+    SDU_Interval_C_To_P_ms = params.SDU_Interval_C_To_P / 1000
+    SDU_Interval_P_To_C_ms = params.SDU_Interval_P_To_C / 1000
+
+    # Log start time
+    start_time = transport.get_time()
+
     for sdu_len in range(4, 128 + 1):
+        # Update packet sequence number according to the number of SDU intervals being delayed
+        now = transport.get_time()
+        pkt_seq_num_P_To_C = max(pkt_seq_num_P_To_C + 1,
+                                start_pkt_seq_num_P_To_C + math.ceil((now - start_time) / SDU_Interval_P_To_C_ms))
+
         # Test procedure
         # 1.The Upper Tester submits an SDU at its SDU interval of variable length, ranging from 4 to 128 octets.
         # 2.The Lower Tester receives PDUs from the IUT. When the required number of PDUs to transmit
         #       the SDU is less than BN PDUs, the remainder of BN PDUs are empty PDUs with LLID=0b01
         success = iso_send_payload_pdu(transport, peripheral, central, trace, peripheral_cis_handle,
-                                       sdu_len, params.SDU_Interval_P_To_C, sdu_len) and success
+                                       sdu_len, params.SDU_Interval_P_To_C, pkt_seq_num_P_To_C) and success
+
+        # Update packet sequence number according to the number of SDU intervals being delayed
+        now = transport.get_time()
+        pkt_seq_num_C_To_P = max(pkt_seq_num_C_To_P + 1,
+                                start_pkt_seq_num_C_To_P + math.ceil((now - start_time) / SDU_Interval_C_To_P_ms))
+
         # 3.The Lower Tester sends PDUs based on an SDU of variable length, ranging from 4 to 128
         #       octets. When the required number of PDUs to transmit the SDU is less than BN PDUs, the
         #       remainder of BN PDUs are empty PDUs with LLID=0b01.
         # 4. The IUT sends the variable length SDUs from the Lower Tester to the Upper Tester.
         success = iso_send_payload_pdu(transport, central, peripheral, trace, central_cis_handle,
-                                       sdu_len, params.SDU_Interval_C_To_P, sdu_len) and success
+                                       sdu_len, params.SDU_Interval_C_To_P, pkt_seq_num_C_To_P) and success
 
     ### TERMINATION ###
     success = initiator.disconnect(0x13) and success
