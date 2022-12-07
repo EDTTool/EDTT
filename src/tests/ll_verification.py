@@ -23,7 +23,7 @@ from components.initiator import *;
 from components.addata import *;
 from components.preambles import *;
 from components.test_spec import TestSpec;
-from components.dump import PacketType;
+from components.dump import PacketType, channel_num_to_index;
 from tests.test_utils import *
 
 global lowerIRK, upperIRK, ENC_KEYS
@@ -1539,15 +1539,23 @@ def ll_con_adv_bv_04_c(transport, upperTester, lowerTester, trace):
     return success;
 
 # Implements LL/CON/ADV/BV-05-C and LL/CON/ADV/BV-12-C test cases (only difference is the PHY)
+# Note: These tests requires a low level device to be available
 def do_ll_con_adv_bv_05_12_c(transport, upperTester, lowerTester, trace, packets, phy):
-    
-    # Note: Rounds 2 and 4 from the test spec is skipped, since the current lower testers are limited to what can be done with the standard HCI commands
-    # (ie. getting the lower tester to send AUX_CONNECT_REQ with an AdvA that is different to the IUTs is not currently possible)
+
     advEventProperties = [
         0x0001, # Connectable advertising
+        0x0001, # Connectable advertising
+        0x0005, # Connectable and directed advertising
         0x0005, # Connectable and directed advertising
     ]
-    
+
+    connectReqAdvA = [
+        0x123456789ABC, # IUT
+        0xCBA987654321, # not IUT
+        0x123456789ABC, # IUT
+        0xCBA987654321, # not IUT
+    ]
+
     success = True
 
     for round in range(len(advEventProperties)):
@@ -1589,147 +1597,241 @@ def do_ll_con_adv_bv_05_12_c(transport, upperTester, lowerTester, trace, packets
         get_event(transport, upperTester, 200) # Read out command complete event for le_set_event_mask
 
         advA = publicIdentityAddress(upperTester)
-    
-        if not success:
-            return False
-
-        initiator = Initiator(transport, lowerTester, None, trace, Address(ExtendedAddressType.PUBLIC), advA, InitiatorFilterPolicy.FILTER_NONE,
-                              True, 0x01 if phy == PhysicalChannel.LE_1M else 0x03)
-        initiator.checkPrematureDisconnect = False
-        success = initiator.connect()
 
         if not success:
             return False
 
-        # Test: The Lower Tester receives an ADV_EXT_IND packet from the IUT with AdvMode set to 01b with only the AuxPtr Extended Header field (and ADI);
-        #       The time between a PDU containing an AuxPtr field and the PDU to which it refers shall be greater than or equal to T_MAFS
-        for packet in packets.fetch(packet_filter=('ADV_EXT_IND')):
-            success = success and packet.payload['AdvMode'] == 0b01
-            success = success and 'AdvA' not in packet.payload
-            success = success and 'TargetA' not in packet.payload
-            success = success and 'CTEInfo' not in packet.payload
-            success = success and 'ADI' in packet.payload
-            success = success and 'AuxPtr' in packet.payload
-            success = success and 'SyncInfo' not in packet.payload
-            success = success and 'TxPower' not in packet.payload
-            success = success and 'ACAD' not in packet.payload
-            success = success and 'AD' not in packet.payload
-            success = success and packet.phy == '1M'
+        def checkAdvPackets():
+            success = True
 
-            offset = packet.payload['AuxPtr'].auxOffset * (30 if packet.payload['AuxPtr'].offsetUnits == 0 else 300)
-            # Packet air length is: pre-amble + AA + header + payload + CRC
-            packetLength = 1 + 4 + 2 + len(packet) + 3
-            packetAirtime = 8*packetLength
-            success = success and offset >= 300 + packetAirtime
-
-        # Test AUX_ADV_IND:
-        # - AdvMode field set to 01b
-        # - The AdvA field shall contain the IUT’s Advertising Address
-        # - If this round used directed advertising, AUX_ADV_IND PDU shall also include the TargetA Extended Header field set to the Lower Tester’s Public Device Address
-        # - The IUT sends and receives data on the expected PHY selected in step 1
-        for packet in packets.fetch(packet_filter=('AUX_ADV_IND')):
-            success = success and packet.payload['AdvMode'] == 0b01
-            success = success and packet.header.TxAdd == 0x00 # AdvA is public
-            success = success and Address(SimpleAddressType.PUBLIC, packet.payload['AdvA']) == advA
-            if advEventProperties[round] & 0x04:
-                success = success and 'TargetA' in packet.payload and packet.payload['TargetA'] == 0x456789ABCDEF
-            else:
+            # Test: The Lower Tester receives an ADV_EXT_IND packet from the IUT with AdvMode set to 01b with only the AuxPtr Extended Header field (and ADI);
+            #       The time between a PDU containing an AuxPtr field and the PDU to which it refers shall be greater than or equal to T_MAFS
+            for packet in packets.fetch(packet_filter=('ADV_EXT_IND')):
+                success = success and packet.payload['AdvMode'] == 0b01
+                success = success and 'AdvA' not in packet.payload
                 success = success and 'TargetA' not in packet.payload
-            success = success and packet.phy == ('2M' if phy == PhysicalChannel.LE_2M else '1M')
+                success = success and 'CTEInfo' not in packet.payload
+                success = success and 'ADI' in packet.payload
+                success = success and 'AuxPtr' in packet.payload
+                success = success and 'SyncInfo' not in packet.payload
+                success = success and 'TxPower' not in packet.payload
+                success = success and 'ACAD' not in packet.payload
+                success = success and 'AD' not in packet.payload
+                success = success and packet.phy == '1M'
 
-        # Test AUX_CONNECT_RSP: The IUT responds to the AUX_CONNECT_REQ within the 2 μs range around T_IFS
-        auxConnectReqEndTS = 0
-        for packet in packets.fetch(packet_filter=('AUX_CONNECT_RSP', 'AUX_CONNECT_REQ')):
-            if packet.type == PacketType.AUX_CONNECT_REQ:
+                offset = packet.payload['AuxPtr'].auxOffset * (30 if packet.payload['AuxPtr'].offsetUnits == 0 else 300)
                 # Packet air length is: pre-amble + AA + header + payload + CRC
-                packetLength = (2 if packet.phy == '2M' else 1) + 4 + 2 + len(packet) + 3
-                auxConnectReqEndTS = packet.ts + 8*packetLength/(2 if packet.phy == '2M' else 1)
-            else:
+                packetLength = 1 + 4 + 2 + len(packet) + 3
+                packetAirtime = 8*packetLength
+                success = success and offset >= 300 + packetAirtime
+
+            # Test AUX_ADV_IND:
+            # - AdvMode field set to 01b
+            # - The AdvA field shall contain the IUT’s Advertising Address
+            # - If this round used directed advertising, AUX_ADV_IND PDU shall also include the TargetA Extended Header field set to the Lower Tester’s Public Device Address
+            # - The IUT sends and receives data on the expected PHY selected in step 1
+            for packet in packets.fetch(packet_filter=('AUX_ADV_IND')):
+                success = success and packet.payload['AdvMode'] == 0b01
                 success = success and packet.header.TxAdd == 0x00 # AdvA is public
                 success = success and Address(SimpleAddressType.PUBLIC, packet.payload['AdvA']) == advA
-                airTimeDiff = packet.ts - auxConnectReqEndTS
-                success = success and airTimeDiff >= 150 - 2 and airTimeDiff <= 150 + 2
-
-        # Only 20 tries with AUX_CONNECT_REQ allowed, check that we didn't exceed that
-        connectReqCount = 0
-        for packet in packets.fetch(packet_filter=('AUX_CONNECT_REQ')):
-            connectReqCount += 1
-        success = success and connectReqCount <= 20
-
-        # Expect to receive an HCI_LE_Enhanced_Connection_Complete event followed by a HCI_LE_Channel_Selection_Algorithm and a HCI_LE_Advertising_Set_Terminated event
-        connectionHandle = None
-        eventsWaiting = has_event(transport, upperTester, 200)[1]
-        success = success and eventsWaiting >= 2
-
-        if not success:
-            return False
-
-        # Consume all outstanding HCI events
-        for i in range(eventsWaiting):
-            event = get_event(transport, upperTester, 200)
-            if i == 0 and event.subEvent == MetaEvents.BT_HCI_EVT_LE_ENH_CONN_COMPLETE:
-                status, handle, role, peerAddress, localResolvableAddress, peerResolvableAddress, interval, latency, timeout, accuracy = event.decode()
-                success = success and status == 0x00
-                success = success and role == 0x01 # Peripheral
-                connectionHandle = handle
-            elif i == 1 and event.subEvent == MetaEvents.BT_HCI_EVT_LE_CHAN_SEL_ALGO:
-                handle, algorithm = event.decode()
-                success = success and algorithm == 0x01 # LE Channel Selection Algorithm #2
-            elif i == 2 and event.subEvent == MetaEvents.BT_HCI_EVT_LE_ADV_SET_TERMINATED:
-                # The Upper Tester receives an HCI_LE_Advertising_Set_Terminated event from the IUT with the 
-                # Status set to 0x00, the Advertising_Handle from step 1, and the Connection_Handle from step 8.
-                status, advertiseHandle, advConnectionHandle, completedEvents = event.decode()
-                success = success and status == 0x00
-                success = success and advertiseHandle == Handle
-                success = success and advConnectionHandle == connectionHandle
-            elif i < 3:
-                # Unexpected/wrong event received
-                success = False
-
-        # Keep connection open until we have (at least) 100 LL data PDUs
-        while True:
-            LLDataCount = 0
-            for packet in packets.fetch('LL_DATA_PDU'):
-                if packet.idx == upperTester:
-                    LLDataCount += 1
-
-            if LLDataCount >= 100:
-                break
-
-            # Wait for the expected time to get the remaining packets based on the connection interval
-            transport.wait(math.ceil((100 - LLDataCount)*(initiator.intervalMax*1.25)))
-
-        # Test: The Lower Tester receives no further ADV_EXT_IND PDUs after the advertising interval from the IUT
-        cutOffTime = packets.find('AUX_CONNECT_RSP').ts + (advInterval * 0.625) * 1000
-        for packet in packets.fetch(packet_filter=('ADV_EXT_IND')):
-            success = success and packet.ts <= cutOffTime
-
-        # Test: The Lower Tester receives a correctly formatted LL Data Channel PDU using the acknowledgement scheme, from the IUT on the same data channel and on the expected PHY
-        lowerTesterLLData = None
-        for packet in packets.fetch(packet_filter=('LL_DATA_PDU')):
-            if packet.direction == 'Tx' and packet.idx == lowerTester:
-                lowerTesterLLData = packet
-            elif packet.direction == 'Tx' and packet.idx == upperTester:
-                # LLID should be either 1 (for an empty packet) or 2 (for a non-empty packet)
-                if packet.header.Length > 0:
-                    success = success and packet.header.LLID == 0b10
+                if advEventProperties[round] & 0x04:
+                    success = success and 'TargetA' in packet.payload and packet.payload['TargetA'] == 0x456789ABCDEF
                 else:
-                    success = success and packet.header.LLID == 0b01
-                # Channel should match the lowerTesters packet
-                success = success and packet.channel_num == lowerTesterLLData.channel_num
-                # SN and NESN should be correct (note: we should never see re-transmissions in this case, since there is no other traffic to collide with)
-                success = success and packet.header.SN == lowerTesterLLData.header.SN and packet.header.NESN == (1 if lowerTesterLLData.header.SN == 0 else 0)
+                    success = success and 'TargetA' not in packet.payload
                 success = success and packet.phy == ('2M' if phy == PhysicalChannel.LE_2M else '1M')
 
-        # Disconnect with "Remote User Terminated Connection"
-        status = disconnect(transport, upperTester, connectionHandle, 0x13, 200)
-        success = success and (status == 0)
+            return success
 
-        if not success:
-            return False
+        if connectReqAdvA[round] == 0x123456789ABC:
+            # Round is using AUX_CONNECT_REQ with a matching AdvA
 
-        # Make sure the disconnect gets handled before starting next round
-        transport.wait(500)
+            initiator = Initiator(transport, lowerTester, None, trace, Address(ExtendedAddressType.PUBLIC), advA, InitiatorFilterPolicy.FILTER_NONE,
+                              True, 0x01 if phy == PhysicalChannel.LE_1M else 0x03)
+            initiator.checkPrematureDisconnect = False
+            success = initiator.connect()
+
+            if not success:
+                return False
+
+            success = success and checkAdvPackets()
+
+            if not success:
+                return False
+
+            # Test AUX_CONNECT_RSP: The IUT responds to the AUX_CONNECT_REQ within the 2 μs range around T_IFS
+            auxConnectReqEndTS = 0
+            for packet in packets.fetch(packet_filter=('AUX_CONNECT_RSP', 'AUX_CONNECT_REQ')):
+                if packet.type == PacketType.AUX_CONNECT_REQ:
+                    # Packet air length is: pre-amble + AA + header + payload + CRC
+                    packetLength = (2 if packet.phy == '2M' else 1) + 4 + 2 + len(packet) + 3
+                    auxConnectReqEndTS = packet.ts + 8*packetLength/(2 if packet.phy == '2M' else 1)
+                else:
+                    success = success and packet.header.TxAdd == 0x00 # AdvA is public
+                    success = success and Address(SimpleAddressType.PUBLIC, packet.payload['AdvA']) == advA
+                    airTimeDiff = packet.ts - auxConnectReqEndTS
+                    success = success and airTimeDiff >= 150 - 2 and airTimeDiff <= 150 + 2
+
+            # Only 20 tries with AUX_CONNECT_REQ allowed, check that we didn't exceed that
+            connectReqCount = 0
+            for packet in packets.fetch(packet_filter=('AUX_CONNECT_REQ')):
+                connectReqCount += 1
+            success = success and connectReqCount <= 20
+
+            # Expect to receive an HCI_LE_Enhanced_Connection_Complete event followed by a HCI_LE_Channel_Selection_Algorithm and a HCI_LE_Advertising_Set_Terminated event
+            connectionHandle = None
+            eventsWaiting = has_event(transport, upperTester, 200)[1]
+            success = success and eventsWaiting >= 2
+
+            if not success:
+                return False
+
+            # Consume all outstanding HCI events
+            for i in range(eventsWaiting):
+                event = get_event(transport, upperTester, 200)
+                if i == 0 and event.subEvent == MetaEvents.BT_HCI_EVT_LE_ENH_CONN_COMPLETE:
+                    status, handle, role, peerAddress, localResolvableAddress, peerResolvableAddress, interval, latency, timeout, accuracy = event.decode()
+                    success = success and status == 0x00
+                    success = success and role == 0x01 # Peripheral
+                    connectionHandle = handle
+                elif i == 1 and event.subEvent == MetaEvents.BT_HCI_EVT_LE_CHAN_SEL_ALGO:
+                    handle, algorithm = event.decode()
+                    success = success and algorithm == 0x01 # LE Channel Selection Algorithm #2
+                elif i == 2 and event.subEvent == MetaEvents.BT_HCI_EVT_LE_ADV_SET_TERMINATED:
+                    # The Upper Tester receives an HCI_LE_Advertising_Set_Terminated event from the IUT with the 
+                    # Status set to 0x00, the Advertising_Handle from step 1, and the Connection_Handle from step 8.
+                    status, advertiseHandle, advConnectionHandle, completedEvents = event.decode()
+                    success = success and status == 0x00
+                    success = success and advertiseHandle == Handle
+                    success = success and advConnectionHandle == connectionHandle
+                elif i < 3:
+                    # Unexpected/wrong event received
+                    success = False
+
+            # Keep connection open until we have (at least) 100 LL data PDUs
+            while True:
+                LLDataCount = 0
+                for packet in packets.fetch('LL_DATA_PDU'):
+                    if packet.idx == upperTester:
+                        LLDataCount += 1
+
+                if LLDataCount >= 100:
+                    break
+
+                # Wait for the expected time to get the remaining packets based on the connection interval
+                transport.wait(math.ceil((100 - LLDataCount)*(initiator.intervalMax*1.25)))
+
+            # Test: The Lower Tester receives no further ADV_EXT_IND PDUs after the advertising interval from the IUT
+            cutOffTime = packets.find('AUX_CONNECT_RSP').ts + (advInterval * 0.625) * 1000
+            for packet in packets.fetch(packet_filter=('ADV_EXT_IND')):
+                success = success and packet.ts <= cutOffTime
+
+            # Test: The Lower Tester receives a correctly formatted LL Data Channel PDU using the acknowledgement scheme, from the IUT on the same data channel and on the expected PHY
+            lowerTesterLLData = None
+            for packet in packets.fetch(packet_filter=('LL_DATA_PDU')):
+                if packet.direction == 'Tx' and packet.idx == lowerTester:
+                    lowerTesterLLData = packet
+                elif packet.direction == 'Tx' and packet.idx == upperTester:
+                    # LLID should be either 1 (for an empty packet) or 2 (for a non-empty packet)
+                    if packet.header.Length > 0:
+                        success = success and packet.header.LLID == 0b10
+                    else:
+                        success = success and packet.header.LLID == 0b01
+                    # Channel should match the lowerTesters packet
+                    success = success and packet.channel_num == lowerTesterLLData.channel_num
+                    # SN and NESN should be correct (note: we should never see re-transmissions in this case, since there is no other traffic to collide with)
+                    success = success and packet.header.SN == lowerTesterLLData.header.SN and packet.header.NESN == (1 if lowerTesterLLData.header.SN == 0 else 0)
+                    success = success and packet.phy == ('2M' if phy == PhysicalChannel.LE_2M else '1M')
+
+            # Disconnect with "Remote User Terminated Connection"
+            status = disconnect(transport, upperTester, connectionHandle, 0x13, 200)
+            success = success and (status == 0)
+
+            if not success:
+                return False
+
+            # Make sure the disconnect gets handled before starting next round
+            transport.wait(500)
+
+        else:
+            # Round is using AUX_CONNECT_REQ with a non-matching AdvA - cannot use standard HCI commands for this, use low_level_device instead
+
+            def wait_for_AUX_ADV_IND_end():
+                # Get an ADV_EXT_IND with an aux ptr pointing to an AUX_ADV_IND packet that hasn't been sent yet
+                auxAdvIndPacket = None
+                auxAdvIndEndTs = 0
+                while True:
+                    lastPacket = None
+
+                    for packet in packets.fetch(packet_filter=('ADV_EXT_IND', 'AUX_ADV_IND')):
+                        lastPacket = packet
+                        if packet.type == PacketType.AUX_ADV_IND:
+                            auxAdvIndPacket = packet
+
+                    if lastPacket.type == PacketType.ADV_EXT_IND and auxAdvIndPacket:
+                        # Calculate end of offset window
+                        offsetEnd = (lastPacket.payload['AuxPtr'].auxOffset + 1) * (30 if lastPacket.payload['AuxPtr'].offsetUnits == 0 else 300)
+                        # Expected air time of the AUX_ADV_IND packet (assuming no changes from the last one)
+                        # Note: Packet air length is: pre-amble + AA + header + payload + CRC
+                        airTime = ((2 if auxAdvIndPacket.phy == '2M' else 1) + 4 + 2 + len(auxAdvIndPacket) + 3)*8/(2 if auxAdvIndPacket.phy == '2M' else 1)
+                        # Calculate expected (last possible) end time of the coming AUX_ADV_IND packet
+                        auxAdvIndEndTs = int(lastPacket.ts + offsetEnd + airTime)
+                        break
+                    # Don't have the needed packets yet or the last packet was not an ADV_EXT_IND; Wait a little and try again
+                    transport.wait(1)
+
+                # Wait until the calculated end time
+                transport.wait_until_t(auxAdvIndEndTs+1)
+
+            auxAdvIndPacket = None
+            while not auxAdvIndPacket:
+                wait_for_AUX_ADV_IND_end()
+
+                # Check that simulation time is just after a AUX_ADV_IND has ended (so we can transmit a response)
+                simulation_time = transport.get_last_t()
+                lastPacket = None
+                for packet in packets.fetch(packet_filter=('AUX_ADV_IND')):
+                    lastPacket = packet
+                if lastPacket.type == PacketType.AUX_ADV_IND:
+                    airTime = ((2 if lastPacket.phy == '2M' else 1) + 4 + 2 + len(lastPacket) + 3)*8/(2 if lastPacket.phy == '2M' else 1)
+                    if simulation_time < lastPacket.ts + airTime + 150:
+                        # Success, we can continue
+                        auxAdvIndPacket = lastPacket
+                        break
+
+            # Transmit a AUX_CONNECT_REQ
+            packetData = (0b0101 + (34 << 8)).to_bytes(2, 'little', signed=False) # header - PDU Type 0b0101, ChSel, TxAdd and RxAdd all 0, length 34
+            packetData = b''.join([packetData, 0x456789ABCDEF.to_bytes(6, 'little', signed=False)]) # InitA
+            packetData = b''.join([packetData, connectReqAdvA[round].to_bytes(6, 'little', signed=False)]) # AdvA
+            packetData = b''.join([packetData, 0xEF11D7A8.to_bytes(4, 'little', signed=False)]) # LLData: AA
+            packetData = b''.join([packetData, 0xE4C5A3.to_bytes(3, 'little', signed=False)]) # LLData: CRCInit
+            packetData = b''.join([packetData, 0x01.to_bytes(1, 'little', signed=False)]) # LLData: WinSize
+            packetData = b''.join([packetData, 0x0000.to_bytes(2, 'little', signed=False)]) # LLData: WinOffset
+            packetData = b''.join([packetData, 0x0018.to_bytes(2, 'little', signed=False)]) # LLData: Interval
+            packetData = b''.join([packetData, 0x0000.to_bytes(2, 'little', signed=False)]) # LLData: Latency
+            packetData = b''.join([packetData, 0x0019.to_bytes(2, 'little', signed=False)]) # LLData: Timeout
+            packetData = b''.join([packetData, 0x1FFFFFFFFF.to_bytes(5, 'little', signed=False)]) # LLData: ChM
+            packetData = b''.join([packetData, (0x07 + (0x05 << 5)).to_bytes(1, 'little', signed=False)]) # LLData: Hop and SCA (Hop: 7 and SCA: 5)
+            CRC = calcBLECRC(0x555555, packetData)
+            packetData = b''.join([packetData, CRC.to_bytes(3, 'little', signed=False)])
+
+            # Calculate transmit timestamp (T_IFS from end of AUX_ADV_IND)
+            airTime = math.ceil(((2 if lastPacket.phy == '2M' else 1) + 4 + 2 + len(lastPacket) + 3)*8/(2 if lastPacket.phy == '2M' else 1))
+            transmitTime = auxAdvIndPacket.ts + airTime + 150
+
+            transport.low_level_device.tx(channel_num_to_index(auxAdvIndPacket.channel_num), auxAdvIndPacket.phy, auxAdvIndPacket.aa, transmitTime, packetData)
+
+            # Wait and check that no AUX_CONNECT_RSP is sent in response
+            transport.wait(10)
+
+            success = success and not packets.find('AUX_CONNECT_RSP')
+
+            success = success and checkAdvPackets()
+
+            # Stop advertising
+            success = success and preamble_ext_advertise_enable(transport, upperTester, Advertise.DISABLE, [Handle], [0], [0], trace)
+
+            if not success:
+                return False
 
         # Flush any outstanding HCI events
         get_event(transport, upperTester, 200, True)
@@ -1742,8 +1844,6 @@ def do_ll_con_adv_bv_05_12_c(transport, upperTester, lowerTester, trace, packets
 
 """
     LL/CON/ADV/BV-05-C [Extended Advertising, Accepting Connections; LE 1M PHY]
-
-    Note: Only partial implementation, rounds 2 and 4 (requiring a non-IUT AdvA in the AUX_CONNECT_REQ) are not supported
 """
 def ll_con_adv_bv_05_c(transport, upperTester, lowerTester, trace, packets):
     return do_ll_con_adv_bv_05_12_c(transport, upperTester, lowerTester, trace, packets, PhysicalChannel.LE_1M)
@@ -1820,8 +1920,6 @@ def ll_con_adv_bv_10_c(transport, upperTester, lowerTester, trace):
 
 """
     LL/CON/ADV/BV-12-C [Extended Advertising, Accepting Connections; LE 2M PHY]
-
-    Note: Only partial implementation, rounds 2 and 4 (requiring a non-IUT AdvA in the AUX_CONNECT_REQ) are not supported
 """
 def ll_con_adv_bv_12_c(transport, upperTester, lowerTester, trace, packets):
     return do_ll_con_adv_bv_05_12_c(transport, upperTester, lowerTester, trace, packets, PhysicalChannel.LE_2M)
@@ -8094,14 +8192,14 @@ def ll_ist_cen_bv_03_c(transport, upper_tester, lower_tester, trace):
     """LL/IST/CEN/BV-03-C [ISO Receive Test Mode, CIS]"""
     return iso_receive_test_mode_cis(transport, upper_tester, lower_tester, trace, True)
 
-
+LowLevelDeviceRequired = "LowLevelDeviceRequired"
 __tests__ = {
     "LL/CON/ADV/BV-01-C": [ ll_con_adv_bv_01_c, "Accepting Connection Request" ],
     "LL/CON/ADV/BV-04-C": [ ll_con_adv_bv_04_c, "Accepting Connection Request after Directed Advertising" ],
-    "LL/CON/ADV/BV-05-C": [ ll_con_adv_bv_05_c, "Extended Advertising, Accepting Connections; LE 1M PHY" ],
+    "LL/CON/ADV/BV-05-C": [ ll_con_adv_bv_05_c, "Extended Advertising, Accepting Connections; LE 1M PHY", LowLevelDeviceRequired ],
     "LL/CON/ADV/BV-09-C": [ ll_con_adv_bv_09_c, "Accepting Connection Request using Channel Selection Algorithm #2" ],
     "LL/CON/ADV/BV-10-C": [ ll_con_adv_bv_10_c, "Accepting Connection Request after Directed Advertising using Channel Selection Algorithm #2" ],
-    "LL/CON/ADV/BV-12-C": [ ll_con_adv_bv_12_c, "Extended Advertising, Accepting Connections; LE 2M PHY" ],
+    "LL/CON/ADV/BV-12-C": [ ll_con_adv_bv_12_c, "Extended Advertising, Accepting Connections; LE 2M PHY", LowLevelDeviceRequired ],
     "LL/CON/ADV/BV-14-C": [ ll_con_adv_bv_14_c, "Extended Advertising, Accepting Connections with Random address; LE 1M PHY" ],
     "LL/CON/ADV/BV-15-C": [ ll_con_adv_bv_15_c, "Extended Advertising, Accepting Connections with Random address; LE 2M PHY" ],
     "LL/CON/INI/BV-01-C": [ ll_con_ini_bv_01_c, "Connection Initiation rejects Address change" ],
@@ -8288,7 +8386,8 @@ __tests__ = {
 _maxNameLength = max([ len(key) for key in __tests__ ]);
 
 _spec = {key: TestSpec(name=key, number_devices=2, description="#[" + __tests__[key][1] + "]",
-                       test_private=__tests__[key][0]) for key in __tests__}
+                       test_private=__tests__[key][0],
+                       require_low_level_device=len(__tests__[key]) >= 3 and __tests__[key][2] == LowLevelDeviceRequired) for key in __tests__}
 
 """
     Return the test spec which contains info about all the tests
