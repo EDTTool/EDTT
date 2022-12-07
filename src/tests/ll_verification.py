@@ -8328,7 +8328,10 @@ def run_a_test(args, transport, trace, test_spec, device_dumps):
     trace.trace(2, "%-*s %s test started..." % (_maxNameLength, test_spec.name, test_spec.description[1:]));
     test_f = test_spec.test_private;
     try:
-        if test_f.__code__.co_argcount > 4:
+        if test_spec.require_low_level_device and not transport.low_level_device:
+            trace.trace(1, "Error: Test case requires a low level device, but transport does not have one!")
+            success = False
+        elif test_f.__code__.co_argcount > 4:
             success = success and test_f(transport, 0, 1, trace, device_dumps);
         elif test_f.__code__.co_argcount > 3:
             success = success and test_f(transport, 0, 1, trace);

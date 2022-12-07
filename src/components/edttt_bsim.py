@@ -14,44 +14,17 @@
 
 import struct;
 import os;
-import signal;
-import stat;
 
-def create_dir(folderpath):
-    if not os.path.exists(folderpath):
-        if ( os.mkdir( folderpath , stat.S_IRWXG | stat.S_IRWXU ) != 0 ) \
-            and ( os.access( folderpath, os.F_OK ) == False ):
-          raise Exception("Cannot create folder %s"% folderpath);
-
-def create_com_folder(sim_id):
-    import getpass
-    Com_path = "/tmp/bs_" + getpass.getuser();
-    create_dir(Com_path);
-    Com_path = Com_path + "/" + sim_id;
-    create_dir(Com_path);
-    return Com_path;
-
-def Create_FIFO_if_not_there(FIFOName):
-    #we try to create a fifo which may already exist, and/or that some other
-    #program may be racing to create at the same time
-    if ( os.access( FIFOName, os.F_OK ) == False ):
-        try:
-            err = os.mkfifo(FIFOName,  stat.S_IRWXG | stat.S_IRWXU);
-        except OSError as e:
-            if (e.errno == 17): #File already exists => we are done
-                return;
-            else:
-                raise Exception("Could not create FIFO %s", FIFOName);
-
-        if (err != 0) and ( os.access( FIFOName, os.F_OK ) == False ):
-            raise Exception("Could not create FIFO %s", FIFOName);
-
+from components.bsim_device import BSimDevice
+from components.bsim_lib import create_com_folder, create_fifo_if_not_there;
 
 class EDTTT:
     COM_DISCONNECT = 0;
     COM_WAIT       = 1;
     COM_SEND       = 2;
     COM_RCV        = 3;
+    COM_RCV_WAIT_NOTIFY = 4
+    COM_WAIT_NOTIFICATION = 0xF0
 
     TO_EDTT  = 0;
     TO_BRIDGE =1;
@@ -61,6 +34,7 @@ class EDTTT:
     last_t =  0; #last timestamp received from the bridge
     Connected = False;
     n_devices = 0;
+    low_level_device = None
 
     def __init__(self, pending_args, TraceClass):
         self.Trace = TraceClass;
@@ -68,10 +42,17 @@ class EDTTT:
         parser = argparse.ArgumentParser(prog="BabbleSim transport options:", add_help=False)
         parser.add_argument("-s", "--sim_id", required=True, help="Simulation id");
         parser.add_argument("-d", "--bridge-device-nbr", required=True, help="Device number of the EDTT bridge");
+        parser.add_argument("-l", "--low-level-device", required=False, help="Enable BSim low level device; Note that this requires --low-level-device-nbr to be supplied", action='store_true');
+        parser.add_argument("--low-level-device-nbr", required=False, help="Device number of the BSim low level device");
         (args, discard) = parser.parse_known_args(pending_args)
 
         self.device_nbr = args.bridge_device_nbr;
         self.sim_id = args.sim_id;
+
+        if args.low_level_device:
+            if not args.low_level_device_nbr:
+                raise Exception("--low-level-device-nbr is required when the BSim low level device is enabled")
+            self.low_level_device = BSimDevice(int(args.low_level_device_nbr), self.sim_id, TraceClass)
 
     def connect(self):
         Com_path = create_com_folder(self.sim_id);
@@ -85,8 +66,8 @@ class EDTTT:
         self.FIFOnames[self.TO_BRIDGE] = \
             Com_path + "/Device" + str(self.device_nbr) + ".ToBridge";
 
-        Create_FIFO_if_not_there(self.FIFOnames[self.TO_EDTT]);
-        Create_FIFO_if_not_there(self.FIFOnames[self.TO_BRIDGE]);
+        create_fifo_if_not_there(self.FIFOnames[self.TO_EDTT]);
+        create_fifo_if_not_there(self.FIFOnames[self.TO_BRIDGE]);
 
         self.FIFOs[self.TO_BRIDGE] = os.open(self.FIFOnames[self.TO_BRIDGE], os.O_WRONLY);
         self.FIFOs[self.TO_EDTT] = os.open(self.FIFOnames[self.TO_EDTT], os.O_RDONLY);
@@ -100,16 +81,27 @@ class EDTTT:
         self.Connected = True;
         self.Trace.trace(4,"Connected to EDTT bridge");
 
+        if self.low_level_device:
+            self.low_level_device.connect()
+
         packet = self.read(2);
         self.n_devices = struct.unpack('<H',packet[0:2])[0];
 
     def cleanup(self):
+        if self.low_level_device:
+            self.Trace.trace(4,"Cleaning up low-level device");
+            self.low_level_device.cleanup()
+
         self.Trace.trace(4,"Cleaning up transport");
         try:
-            os.close(self.FIFOs[self.TO_BRIDGE]);
-            self.Trace.trace(9,"Closed FIFO to Bridge");
-            os.close(self.FIFOs[self.TO_EDTT]);
-            self.Trace.trace(9,"Closed FIFO to EDTT");
+            if self.FIFOs[self.TO_BRIDGE]:
+                os.close(self.FIFOs[self.TO_BRIDGE]);
+                self.FIFOs[self.TO_BRIDGE] = 0
+                self.Trace.trace(9,"Closed FIFO to Bridge");
+            if self.FIFOs[self.TO_EDTT]:
+                os.close(self.FIFOs[self.TO_EDTT]);
+                self.FIFOs[self.TO_EDTT] = 0
+                self.Trace.trace(9,"Closed FIFO to EDTT");
             os.remove(self.FIFOnames[self.TO_BRIDGE]);
             os.remove(self.FIFOnames[self.TO_EDTT]);
         except OSError:
@@ -121,6 +113,8 @@ class EDTTT:
             self.Trace.trace(4,"Disconnecting bridge")
             self.ll_send(struct.pack('<B', self.COM_DISCONNECT));
             self.Connected = False;
+        if self.low_level_device:
+            self.low_level_device.disconnect()
 
     def close(self):
         self.disconnect();
@@ -163,14 +157,15 @@ class EDTTT:
         self.Trace.btsnoop.send(idx, message)
 
     def read(self, nbytes):
-      received_nbytes = 0;
-      packet = bytearray();
-      #print "Will try to pick " + str(nbytes) + " bytes"
-      while ( len(packet) < nbytes):
-        packet += self.ll_read(nbytes - received_nbytes);
-        #print "Got so far " + str(len(packet)) + " bytes"
-        #print 'packet: "' + repr(packet) + '"'
-      return packet;
+        received_nbytes = 0;
+        packet = bytearray();
+
+        #print "Will try to pick " + str(nbytes) + " bytes"
+        while ( len(packet) < nbytes):
+            packet += self.ll_read(nbytes - received_nbytes);
+            #print "Got so far " + str(len(packet)) + " bytes"
+            #print 'packet: "' + repr(packet) + '"'
+        return packet;
 
     def recv(self, idx, number_bytes, to=None):
         if (idx > self.n_devices -1):
@@ -186,9 +181,23 @@ class EDTTT:
         # Poll the bridge for a response
         #print ("EDTT: ("+str(idx)+") request rcv of "+ str(number_bytes) + " bytes; timeout = " + str(timeout));
 
-        self.ll_send(struct.pack('<BBQH', self.COM_RCV, idx, timeout, number_bytes));
+        if self.low_level_device:
+            self.ll_send(struct.pack('<BBQH', self.COM_RCV_WAIT_NOTIFY, idx, timeout, number_bytes));
+        else:
+            self.ll_send(struct.pack('<BBQH', self.COM_RCV, idx, timeout, number_bytes));
 
-        header = self.read(9);
+        header = bytearray()
+        if self.low_level_device:
+            header = self.read(1)
+            while (header[0] == self.COM_WAIT_NOTIFICATION):
+                rawTime = self.read(8)
+                timestamp, = struct.unpack("<Q", rawTime)
+                self.Trace.trace(6, "Advancing time to " + str(timestamp))
+                self.low_level_device.wait(timestamp)
+                header = self.read(1)
+            header += self.read(8)
+        else:
+            header = self.read(9)
 
         #print '"' + repr(header[1:])+ '"'
         #print "length = " + str(len(header[1:]))
@@ -206,12 +215,21 @@ class EDTTT:
         return packet
 
     def wait(self, delay_in_ms):
-        # pack a message : delay 4 bytes
         end_of_wait = delay_in_ms*1000 + self.last_t;
-        self.ll_send(struct.pack('<BQ', self.COM_WAIT, end_of_wait));
+        return self.wait_until_t(end_of_wait)
+
+    def wait_until_t(self, end_of_wait):
+        if self.last_t >= end_of_wait:
+            self.Trace.trace(3, "Ignoring end_of_wait with a time not in the future: simulation time: %s; Requested end of wait: %s" % (self.last_t, end_of_wait))
+            return
+
+        if self.low_level_device:
+            self.low_level_device.wait(end_of_wait)
+        # pack a message : delay 4 bytes
+        self.ll_send(struct.pack('<BQ', self.COM_WAIT, end_of_wait))
         # Read dummy byte reply from bridge, signalling wait completion
         self.read(1);
-        self.last_t = end_of_wait;
+        self.last_t = end_of_wait
 
     def get_time(self):
         return self.get_last_t()/1000;

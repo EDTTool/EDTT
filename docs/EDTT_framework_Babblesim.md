@@ -23,6 +23,8 @@ In principle any number of DUTs can be supported, but in reality only two DUTs a
 
 ![Figure 2 EDTT bridge](Figure2_EDTT_bridge.svg "Figure 2 EDTT bridge")
 
+In addition to the DUTs, the EDTT BabbleSim transport also has a low level device that connects directly to BabbleSim. This device can be used to send raw BLE packets without going through a Zephyr device (with the limitations that brings).
+
 ---
 *** The transport ***
 
@@ -67,6 +69,20 @@ The radio simulation is configured with the simulation name “Test” (-s=Test)
 The three applications are started. Beginning with the EDTT bridge. The EDTT bridge is handed the name of the simulation “Test” (-s=Test), its own device identifier (-d=0), the number of DUTs to service (-D=2) and the device identifiers for the two DUTs (-dev0=1 and –dev1=2).
 
 Last the EDTT Test APP is started twice to simulate the two DUTs. The EDTT Test APP is handed the name of the simulation “Test” (-s=Test) and its own device identifier (-d=1 or –d=2).
+
+To run with the low level device enabled, EDTT itself also needs to be assigned a BabbleSim device number. This is done via the --low-level-device-nbr argument. For example, expanding on the above:
+
+```
+./bs_2G4_phy_v1 –s=Test –D=4 –sim_length=5e6 &
+
+./bs_device_edtt_bridge –s=Test –d=0 –D=2 –dev0=1 –dev1=2 –v=3 –RxWait=2.5e3 –AutoTerminate &
+
+./bs_nrf52_bsim_hci_test_app_bsim –s=Test –d=1 –v=3 &
+
+./bs_nrf52_bsim_hci_test_app_bsim –s=Test –d=2 –v=3
+
+./bs_edttool –s=Test –d=0 –t bsim -T hci_verification –C HCI/CIN/BV-04-C -l --low-level-device-nbr=3
+```
 
 Now the simulation environment is started and ready to receive HCI Command requests from a test. See Tests to see how the test execution is started.
 
@@ -159,7 +175,7 @@ The `<test>` argument is the name of the Python file (without .py) holding the c
 When the bsim transport is selected: The `<sim_id>` is a string that must match the `<sim_id>` used for the execution of the EDTT APP in the simulator. The `<bridge_dev_nbr>` is the device identifier assigned to the EDTT bridge.
 
 ```
-edttool.py [-h] [-v trace-level] -t TRANSPORT -T TEST [-C CASE] [--shuffle] [-S] [--seed SEED] [-s sim_id] [-d bridge_dev_nbr]
+edttool.py [-h] [-v trace-level] -t TRANSPORT -T TEST [-C CASE] [--shuffle] [-S] [--seed SEED] [-s sim_id] [-d bridge_dev_nbr] [-l] [--low-level-device-nbr low_level_dev_nbr]
 
 
 Example:

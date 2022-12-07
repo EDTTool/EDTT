@@ -9,14 +9,22 @@ In simulation the picture of how the communication between the EDTT and the
 devices looks as follows:
 
 ```
-              _____________       __________
-             |             | --> |          |
- ______      |             |     | Device 0 |
-|      | --> |             | <-- |__________|
-| EDTT |     | EDTT Bridge |      __________
-|______| <-- |             | --> |          |
-             |             |     | Device 1 |
-             |_____________| <-- |__________|
+ ___________       _____________       __________       _________________
+|           |     |             | --> |          | --> |                 |
+|           |     |             |     | Device 0 |     |                 |
+| EDTT      | --> |             | <-- |__________| <-- |                 |
+| BSim      |     | EDTT Bridge |      __________      |                 |
+| transport | <-- |             | --> |          | --> |                 |
+|           |     |             |     | Device 1 |     |                 |
+|___________|     |_____________| <-- |__________| <-- |                 |
+  |                                                    |    BabbleSim    |
+  |                                                    |                 |
+ ________                                              |                 |
+|        |                                             |                 |
+| low    | ------------------------------------------> |                 |
+| level  |                                             |                 |
+| device | <------------------------------------------ |                 |
+|________|                                             |_________________|
 
 ```
 
@@ -24,13 +32,16 @@ devices looks as follows:
 Each of the “-->” is a POSIX named pipe (FIFO) (which by default can buffer up to
 64KB in each direction).
 
+The low level device (if enabled) is a BSim device in itself; It can be used to inject raw
+BLE packets without going through a BLE controller first.
+
 The bridge has 2 main purposes:
 
 * It routes the EDTT data to the appropriate device
 * It pauses the simulation while the EDTT is processing, so there is no asynchronous
   behaviour
 
-This is done by having the EDTT command the brdige to either:
+This is done by having the EDTT command the bridge to either:
 
  * read to a device
  * write to a devices
@@ -107,12 +118,16 @@ Any action performed by the bridge is initiated by the EDTT transport side.
 The protocol with the EDTTool is as follows:
 ```
   1 byte commands are sent from the EDTTool
-  The commands are: SEND, RCV, WAIT, DISCONNECT
+  The commands are: SEND, RCV, RCV_WAIT_NOTIFY, WAIT, DISCONNECT
   SEND is followed by:
     1 byte : device idx
     2 bytes: (uint16_t) number of bytes
     N bytes: payload to forward
   RCV is followed by:
+    1 byte : device idx
+    8 bytes: timeout time (simulated absolute time)
+    2 bytes: (uint16_t) number of bytes
+  RCV_WAIT_NOTIFY is followed by:
     1 byte : device idx
     8 bytes: timeout time (simulated absolute time)
     2 bytes: (uint16_t) number of bytes
@@ -128,6 +143,13 @@ The protocol with the EDTTool is as follows:
      1 byte : reception done (0) or timeout (1)
      8 bytes: timestamp when the reception or timeout actually happened
      0/N bytes: (0 bytes if timeout, N bytes as requested otherwise)
+   to a RCV_WAIT_NOTIFY:
+     0 or more WAIT_NOTIFICATION followed by:
+       8 bytes: (uint64_t) absolute time stamp until which the wait will run (not the wait duration, but the end of the wait)
+     After the receive is complete (or timed out):
+       1 byte : reception done (0) or timeout (1)
+       8 bytes: timestamp when the reception or timeout actually happened
+       0/N bytes: (0 bytes if timeout, N bytes as requested otherwise)
    to a WAIT:  1 byte (0) when wait is done
    to a DISCONNECT: nothing
 ```
@@ -180,3 +202,12 @@ the FIFO is large enough to queue the request. In the very unlikely case in whic
 it would not be, an error would be printed.
 
 When the transport layer is closed, the EDTT Bridge FIFOs are closed and deleted.
+
+### Note about the low level device
+
+The low level device attached to the EDTT BSim transport is optional (though some test
+cases may require it to be present). By default, the EDTT BSim transport will run without
+it; To enable it use the --low-level-device (or -l for short) command line argument.
+
+Since the low level device is a BSim device in itself, it requires a BSim device number
+to be assigned to it when enabled; Specify this using the --low-level-device-nbr command line argument.

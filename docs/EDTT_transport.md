@@ -37,7 +37,7 @@ following API:
 * close(): Disconnect from the devices under test
 * get_time(): Return the current time (simulated time for simulated devices)
 * n_devices : Number of devices it is connected to
-
+* low_level_device: Reference to the low_level_device, if available. See [EDTT_transport_bsim.md](EDTT_transport_bsim.md)
 
 ## EDTTT DUT IF:
 
