@@ -553,6 +553,23 @@ def preamble_ext_advertising_data_set(transport, idx, Handle, Operation, FragPre
 
     return success;
 
+def preamble_ext_scan_response_data_set(transport, idx, Handle, Operation, FragPreference, advData, trace):
+    trace.trace(5, "Extended Scan Response Data Set preamble steps...");
+
+    try:
+        advertiseData = advData[ : ];
+        if len(advData) > 251:
+            advertiseData = advertiseData[:251];
+
+        status = le_set_extended_scan_response_data(transport, idx, Handle, Operation, FragPreference, advertiseData, 100);
+        trace.trace(6, "LE Set Extended Scan Response Data Command returns status: 0x%02X" % status);
+        success = __getCommandCompleteEvent(transport, idx, trace) and (status == 0);
+    except Exception as e:
+        trace.trace(3, "Extended Scan Response Data Set preamble failed: %s" % str(e));
+        success = False;
+
+    return success;
+
 def preamble_ext_advertise_enable(transport, idx, enable, SHandle, SDuration, SMaxExtAdvEvts, trace):
     trace.trace(5, "Extended Advertising " + ("Enable" if enable else "Disable") + " preamble steps...");
 

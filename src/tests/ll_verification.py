@@ -723,6 +723,72 @@ def ll_ddi_adv_bv_21_c(transport, upperTester, lowerTester, trace):
 
     return success;
 
+# Implements LL/DDI/ADV/BI-05-C and LL/DDI/ADV/BI-06-C test cases (only difference is the event properties)
+def do_ll_ddi_adv_bi_05_06_c(transport, upperTester, lowerTester, trace, eventProperties):
+
+    advInterval = 0x20 # 32 x 0.625 ms = 20.00 ms
+    Handle          = 0
+    Properties      = eventProperties
+    PrimMinInterval = toArray(advInterval, 3)
+    PrimMaxInterval = toArray(advInterval, 3)
+    PrimChannelMap  = 0x07  # Advertise on all three channels (#37, #38 and #39)
+    OwnAddrType     = SimpleAddressType.PUBLIC
+    PeerAddrType    = SimpleAddressType.PUBLIC
+    PeerAddress     = toArray(0, 6)
+    FilterPolicy    = AdvertisingFilterPolicy.FILTER_NONE
+    TxPower         = 0
+    PrimAdvPhy      = PhysicalChannel.LE_1M
+    SecAdvMaxSkip   = 0
+    SecAdvPhy       = 0x01
+    Sid             = 0
+    ScanReqNotifyEnable = 0
+
+    success = preamble_ext_advertising_parameters_set(transport, upperTester, Handle, Properties, PrimMinInterval, PrimMaxInterval,
+                                                      PrimChannelMap, OwnAddrType, PeerAddrType, PeerAddress, FilterPolicy, TxPower,
+                                                      PrimAdvPhy, SecAdvMaxSkip, SecAdvPhy, Sid, ScanReqNotifyEnable, trace)
+
+    advData = random.randint(0, 256, 31)
+    if eventProperties & 0x02:
+        success = success and preamble_ext_scan_response_data_set(transport, upperTester, Handle, FragmentOperation.COMPLETE_FRAGMENT, 0, advData, trace)
+    else:
+        success = success and preamble_ext_advertising_data_set(transport, upperTester, Handle, FragmentOperation.COMPLETE_FRAGMENT, 0, advData, trace)
+
+    success = success and preamble_ext_advertise_enable(transport, upperTester, Advertise.ENABLE, [Handle], [0], [0], trace)
+
+    if not success:
+        return False
+
+    advData = random.randint(0, 256, 32)
+    if eventProperties & 0x02:
+        status = le_set_extended_scan_response_data(transport, upperTester, Handle, FragmentOperation.COMPLETE_FRAGMENT, 0, advData, 200)
+    else:
+        status = le_set_extended_advertising_data(transport, upperTester, Handle, FragmentOperation.COMPLETE_FRAGMENT, 0, advData, 200)
+
+    # Command should fail with error 0x12 (Invalid HCI Command Parameters)
+    success = success and status == 0x12
+    event = get_event(transport, upperTester, 200)
+    success = success and event.event == Events.BT_HCI_EVT_CMD_COMPLETE
+    if success:
+        expectedOpCode = CmdOpcodes.BT_HCI_OP_LE_SET_EXT_SCAN_RSP_DATA if (eventProperties & 0x02) else CmdOpcodes.BT_HCI_OP_LE_SET_EXT_ADV_DATA
+        numPackets, opCode, status = event.decode()
+        success = success and opCode == expectedOpCode and status == 0x12
+
+    return success
+
+"""
+    LL/DDI/ADV/BI-05-C [ Disallow Extended Advertising PDU sizes for Legacy Advertising when advertising enabled ]
+"""
+def ll_ddi_adv_bi_05_c(transport, upperTester, lowerTester, trace):
+    # Advertising_Event_Properties set to “Use legacy advertising PDUs” -> bit 4 set
+    return do_ll_ddi_adv_bi_05_06_c(transport, upperTester, lowerTester, trace, 0b00010000)
+
+"""
+    LL/DDI/ADV/BI-06-C [ Disallow Extended Advertising PDU sizes for Scannable Legacy Advertising when advertising enabled ]
+"""
+def ll_ddi_adv_bi_06_c(transport, upperTester, lowerTester, trace):
+    # Advertising_Event_Properties set to “Scannable Legacy advertising” and “Use legacy advertising PDUs” -> bits 1 and 4 set
+    return do_ll_ddi_adv_bi_05_06_c(transport, upperTester, lowerTester, trace, 0b00010010)
+
 """
     LL/DDI/SCN/BV-01-C [Passive Scanning of Non-Connectable Advertising Packets]
 
@@ -8105,6 +8171,8 @@ __tests__ = {
     "LL/CON/PER/BV-78-C": [ ll_con_per_bv_78_c, "Peripheral requests Packet Data Length Update procedure; LE 1M PHY" ],
     "LL/CON/PER/BV-80-C": [ ll_con_per_bv_80_c, "Peripheral Packet Data Length Update - Responding to Packet Data Length Update Procedure; LE 2M PHY" ],
     "LL/CON/PER/BV-81-C": [ ll_con_per_bv_81_c, "Peripheral requests Packet Data Length Update procedure; LE 2M PHY" ],
+    "LL/DDI/ADV/BI-05-C": [ ll_ddi_adv_bi_05_c, "Disallow Extended Advertising PDU sizes for Legacy Advertising when advertising enabled" ],
+    "LL/DDI/ADV/BI-06-C": [ ll_ddi_adv_bi_06_c, "Disallow Extended Advertising PDU sizes for Scannable Legacy Advertising when advertising enabled" ],
     "LL/DDI/ADV/BV-01-C": [ ll_ddi_adv_bv_01_c, "Non-Connectable Advertising Packets on one channel" ],
     "LL/DDI/ADV/BV-02-C": [ ll_ddi_adv_bv_02_c, "Undirected Advertising Packets on one channel" ],
     "LL/DDI/ADV/BV-03-C": [ ll_ddi_adv_bv_03_c, "Non-Connectable Advertising Packets on all channels" ],
