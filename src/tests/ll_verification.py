@@ -684,7 +684,7 @@ def ll_ddi_adv_bv_21_c(transport, upperTester, lowerTester, trace):
         Operation      = FragmentOperation.COMPLETE_FRAGMENT;
         FragPreference = FragmentPreference.FRAGMENT_ALL_DATA;
 
-        success = success and preamble_ext_advertising_data_set(transport, upperTester, Handle, Operation, FragPreference, advData, trace);
+        success = success and preamble_ext_advertising_data_set(transport, upperTester, Handle, Operation, FragPreference, AdvData, trace);
 
         scanInterval = 32; # Scan Interval = 32 x 0.625 ms = 20.0 ms
         scanWindow   = 32; # Scan Window   = 32 x 0.625 ms = 20.0 ms
@@ -8287,7 +8287,7 @@ __tests__ = {
     "LL/DDI/ADV/BV-18-C": [ ll_ddi_adv_bv_18_c, "Discoverable Undirected Advertiser Filtering Scan requests " ],
     "LL/DDI/ADV/BV-19-C": [ ll_ddi_adv_bv_19_c, "Low Duty Cycle Directed Advertising on all channels" ],
     "LL/DDI/ADV/BV-20-C": [ ll_ddi_adv_bv_20_c, "Advertising on the LE 1M PHY on all channels" ],
-#   "LL/DDI/ADV/BV-21-C": [ ll_ddi_adv_bv_21_c, "Non-Connectable Extended Legacy Advertising with Data on all channels" ],
+    "LL/DDI/ADV/BV-21-C": [ ll_ddi_adv_bv_21_c, "Non-Connectable Extended Legacy Advertising with Data on all channels" ],
     "LL/DDI/SCN/BV-01-C": [ ll_ddi_scn_bv_01_c, "Passive Scanning of Non-Connectable Advertising Packets" ],
     "LL/DDI/SCN/BV-02-C": [ ll_ddi_scn_bv_02_c, "Filtered Passive Scanning of Non-Connectable Advertising Packets" ],
     "LL/DDI/SCN/BV-03-C": [ ll_ddi_scn_bv_03_c, "Active Scanning of Connectable Undirected Advertising Packets" ],
