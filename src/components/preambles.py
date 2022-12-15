@@ -7,6 +7,7 @@ from components.utils import *;
 from components.basic_commands import *;
 from components.address import *;
 from components.events import *;
+from components.scanner import *;
 
 # class LE_Events(IntFlag):
 #     LE_Connection_Complete_Event                   = 1<<0
