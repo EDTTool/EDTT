@@ -723,6 +723,279 @@ def ll_ddi_adv_bv_21_c(transport, upperTester, lowerTester, trace):
 
     return success;
 
+# Implements LL/DDI/ADV/BV-47-C and LL/DDI/ADV/BV-49-C (only difference is the PHY)
+def do_ll_ddi_adv_bv_47_49_c(transport, upperTester, lowerTester, trace, packets, phy):
+
+    status, MaxAdvDataLen = le_read_maximum_advertising_data_length(transport, upperTester, 200)
+
+    if status != 0:
+        return False
+
+    # Input data for each round
+    RoundData = namedtuple('RoundData', ['EventProperties', 'DataLength', 'FragmentPref', 'Duration', 'MaxEvents'])
+    rounds = [
+        RoundData(0x0000, 0, 0x00, 0x0000, 0x00),
+        RoundData(0x0000, 31, 0x00, 0x0000, 0x00),
+        RoundData(0x0000, 474, 0x00, 0x0000, 0x00),
+        RoundData(0x0000, 711, 0x00, 0x0000, 0x00),
+        RoundData(0x0000, 948, 0x00, 0x0000, 0x00),
+        RoundData(0x0000, MaxAdvDataLen, 0x00, 0x0000, 0x00),
+        RoundData(0x0000, MaxAdvDataLen, 0x01, 0x0000, 0x00),
+        RoundData(0x0004, 0, 0x00, 0x0000, 0x00),
+        RoundData(0x0004, 251, 0x00, 0x0000, 0x00),
+        RoundData(0x0004, MaxAdvDataLen, 0x00, 0x0000, 0x00),
+        RoundData(0x0000, 0, 0x00, 0x01F4, 0x00),
+        RoundData(0x0004, 0, 0x00, 0x01F4, 0x00),
+        RoundData(0x0000, 0, 0x00, 0x0000, 0x32),
+        RoundData(0x0004, 0, 0x00, 0x0000, 0x32),
+    ]
+
+    success = True
+
+    for round in rounds:
+
+        if round.DataLength > MaxAdvDataLen:
+            # Skip unsupported advertising data length
+            continue
+
+        advInterval = 0xA0 # 160 x 0.625 ms = 100.00 ms
+        Handle          = 0
+        Properties      = round.EventProperties
+        PrimMinInterval = toArray(advInterval, 3)
+        PrimMaxInterval = toArray(advInterval, 3)
+        PrimChannelMap  = 0x07  # Advertise on all three channels (#37, #38 and #39)
+        OwnAddrType     = SimpleAddressType.PUBLIC
+        PeerAddrType    = SimpleAddressType.PUBLIC
+        PeerAddress     = toArray(0x456789ABCDEF, 6)
+        FilterPolicy    = AdvertisingFilterPolicy.FILTER_NONE
+        TxPower         = 0
+        PrimAdvPhy      = PhysicalChannel.LE_1M
+        SecAdvMaxSkip   = 0
+        SecAdvPhy       = phy
+        Sid             = 0
+        ScanReqNotifyEnable = 0
+
+        success = success and preamble_ext_advertising_parameters_set(transport, upperTester, Handle, Properties, PrimMinInterval, PrimMaxInterval,
+                                                      PrimChannelMap, OwnAddrType, PeerAddrType, PeerAddress, FilterPolicy, TxPower,
+                                                      PrimAdvPhy, SecAdvMaxSkip, SecAdvPhy, Sid, ScanReqNotifyEnable, trace)
+        if not success:
+            return success
+
+        if round.DataLength > 0:
+            # Set adv data
+            maxFragmentSize = 251
+            advData = random.randint(1, 255, round.DataLength)
+            remainingAdvData = advData[:]
+            firstFragment = True
+            while (len(remainingAdvData) > 0):
+                if firstFragment:
+                    if len(remainingAdvData) <= maxFragmentSize:
+                        op = FragmentOperation.COMPLETE_FRAGMENT
+                    else:
+                        op = FragmentOperation.FIRST_FRAGMENT
+                else:
+                    if len(remainingAdvData) <= maxFragmentSize:
+                        op = FragmentOperation.LAST_FRAGMENT
+                    else:
+                        op = FragmentOperation.INTERMEDIATE_FRAGMENT
+                endIndex = maxFragmentSize if len(remainingAdvData) >= maxFragmentSize else len(remainingAdvData)
+                status = le_set_extended_advertising_data(transport, upperTester, Handle, op, round.FragmentPref, remainingAdvData[:endIndex], 100)
+                if status != 0:
+                    return False
+                remainingAdvData = remainingAdvData[endIndex:]
+                firstFragment = False
+        else:
+            advData = []
+            status = le_set_extended_advertising_data(transport, upperTester, Handle, FragmentOperation.COMPLETE_FRAGMENT, round.FragmentPref, advData, 100)
+            if status != 0:
+                return False
+
+        flush_events(transport, upperTester, 100)
+        success = success and preamble_ext_advertise_enable(transport, upperTester, Advertise.ENABLE, [Handle], [round.Duration], [round.MaxEvents], trace)
+
+        if not success:
+            return success
+
+        if round.Duration != 0:
+            # Wait until end of duration + 500ms (to make sure advertising has stopped)
+            transport.wait(round.Duration*10 + 500)
+        elif round.MaxEvents != 0:
+            # Wait for max_events*adv_interval + 500 ms (to make sure advertising has stopped)
+            transport.wait(math.ceil(round.MaxEvents*advInterval*0.625 + 500))
+        else:
+            # Wait until ~10 events have been received
+            transport.wait(math.ceil(10.5*advInterval*0.625))
+
+        if round.Duration == 0 and round.MaxEvents == 0:
+            # Disable advertising now
+            success = success and preamble_ext_advertise_enable(transport, upperTester, Advertise.DISABLE, [Handle], [round.Duration], [round.MaxEvents], trace)
+        else:
+            # LE Advertising Set Terminated event shall be received with correct error code
+            event = get_event(transport, upperTester, 200)
+            success = success and event
+            if event:
+                status, advertiseHandle, connectionHandle, completedEvents = event.decode()
+                success = success and advertiseHandle == Handle
+                if round.Duration != 0:
+                    success = success and status == 0x3C # Advertising Timeout
+                else:
+                    success = success and status == 0x43 # Limit Reached
+
+        # Check ADV_EXT_INDs
+        # AdvMode set to 00b; The ADV_EXT_IND PDU shall not include the SyncInfo, TxPower, ACAD, or AdvData
+        # fields. If advertising data was set, the ADV_EXT_IND PDU shall include the AuxPtr field;
+        # otherwise, the ADV_EXT_IND PDU *may* include the AuxPtr field. If the AuxPtr field is included,
+        # the ADV_EXT_IND PDU shall also include the ADI field with the SID set to the value used; otherwise that field shall not be included
+        for packet in packets.fetch(packet_filter=('ADV_EXT_IND')):
+            success = success and packet.payload['AdvMode'] == 0b00
+            success = success and 'SyncInfo' not in packet.payload
+            success = success and 'TxPower' not in packet.payload
+            success = success and 'ACAD' not in packet.payload
+            success = success and 'AD' not in packet.payload
+            if round.DataLength > 0:
+                success = success and 'AuxPtr' in packet.payload
+            if 'AuxPtr' in packet.payload:
+                success = success and 'ADI' in packet.payload
+                if 'ADI' in packet.payload:
+                    success = success and packet.payload['ADI'].SID == Sid
+
+        completeAdvDataFound = 0
+        # Check AUX_ADV_INDs
+        # AdvMode set to 00b; The AUX_ADV_IND PDU shall not include
+        # the SyncInfo, or TxPower fields. The AUX_ADV_IND PDU shall include the ADI field
+        # matching the ADI field from the ADV_EXT_IND. If the AUX_ADV_IND PDU does not contain all advertising data
+        # it shall include an AuxPtr field.
+        # The time between a PDU containing an AuxPtr field and the PDU to which it refers shall be greater than or equal to T_MAFS
+        for packet in packets.fetch(packet_filter=('AUX_ADV_IND')):
+            success = success and packet.payload['AdvMode'] == 0b00
+            success = success and 'SyncInfo' not in packet.payload
+            success = success and 'TxPower' not in packet.payload
+            success = success and 'ADI' in packet.payload
+            success = success and packet.payload['ADI'].SID == Sid
+            for superiorPacket in packet.payload['SuperiorPackets']:
+                success = success and packet.payload['ADI'].DID == superiorPacket.payload['ADI'].DID
+                success = success and packet.ts >= superiorPacket.ts + 300
+            if round.DataLength > 0:
+                if round.DataLength > len(packet.payload['AD']):
+                    success = success and 'AuxPtr' in packet.payload
+                else:
+                    # Check advertising data against input
+                    completeAdvDataFound += 1
+                    success = success and len(packet.payload['AD']) == round.DataLength
+                    for i in range(round.DataLength):
+                        success = success and packet.payload['AD'][i] == advData[i]
+            else:
+                success = 'AD' not in packet.payload
+
+        def collectChainedAdvData(packet):
+            advData = bytes([])
+            if packet.payload['SuperiorPackets'][0].type.name != 'ADV_EXT_IND':
+                advData = collectChainedAdvData(packet.payload['SuperiorPackets'][0])
+            advData += packet.payload['AD']
+            return advData
+
+        # Check AUX_CHAIN_INDs
+        # AdvMode set to 00b; The AUX_CHAIN_IND PDU shall include the ADI field matching the ADI field from AUX_ADV_IND
+        # and the AdvData field containing additional data. The AUX_CHAIN_IND PDU shall not include the AdvA,
+        # TargetA, TxPower, or SyncInfo fields
+        # The time between a PDU containing an AuxPtr field and the PDU to which it refers shall be greater than or equal to T_MAFS
+        for packet in packets.fetch(packet_filter=('AUX_CHAIN_IND')):
+            success = success and packet.payload['AdvMode'] == 0b00
+            success = success and 'AdvA' not in packet.payload
+            success = success and 'TargetA' not in packet.payload
+            success = success and 'TxPower' not in packet.payload
+            success = success and 'SyncInfo' not in packet.payload
+            success = success and 'ADI' in packet.payload
+            success = success and packet.payload['ADI'].SID == Sid
+            for superiorPacket in packet.payload['SuperiorPackets']:
+                success = success and packet.payload['ADI'].DID == superiorPacket.payload['ADI'].DID
+                success = success and packet.ts >= superiorPacket.ts + 300
+            if 'AuxPtr' not in packet.payload:
+                # Collect complete advertising data and check advertising data against input
+                completeAdvDataFound += 1
+                collectedAdvData = collectChainedAdvData(packet)
+                success = success and len(collectedAdvData) == round.DataLength
+                for i in range(round.DataLength):
+                    success = success and collectedAdvData[i] == advData[i]
+
+        if round.DataLength > 0:
+            # Check that we actually got the complete data (ie. that some AUX_CHAIN_INDs/AUX_ADV_INDs do not have an aux ptr)
+            success = success and completeAdvDataFound > 0
+
+        if round.MaxEvents != 0:
+            # Calculate number of advertising events by grouping ADV_EXT_INDs (a delay of more than 10 ms, 3 packets already in the group or a duplicate channel number means a new group)
+            numEvents = 0
+            group = []
+            lastTs = -10000
+            for packet in packets.fetch(packet_filter=('ADV_EXT_IND')):
+                if lastTs < packet.ts - 10000 or len(group) >= 3:
+                    group = [packet]
+                    numEvents += 1
+                else:
+                    # Check if this packets channel is already part of the current group
+                    duplicateChannel = False
+                    for groupPacket in group:
+                        if groupPacket.channel_num == packet.channel_num:
+                            duplicateChannel = True
+                            break
+                    if duplicateChannel:
+                        group = [packet]
+                        numEvents += 1
+                    else:
+                        group += [packet]
+                lastTs = packet.ts
+            # Verify that the IUT did not send more than Max_Extended_Advertising_Events advertising events
+            success = success and numEvents <= round.MaxEvents
+        elif round.Duration != 0:
+            # Check that advertising is stopped after duration has elapsed
+            maxDurationMs = (10 * round.Duration + 10.000) * (1 + 500.0/1000000.0) + 0.016
+
+            firstAdv = None
+            lastAdv = None
+            for packet in packets.fetch(packet_filter=('ADV_EXT_IND')):
+                if not firstAdv:
+                    firstAdv = packet
+                lastAdv = packet
+
+            actualDurationMs = (lastAdv.ts - firstAdv.ts) / 1000
+            success = success and actualDurationMs <= maxDurationMs
+
+        if round.EventProperties == 0x0004:
+            # TargetA field containing the Lower Tester’s address specified in the HCI_LE_Set_Extended_Advertising_Parameters command
+            # is included in either the ADV_EXT_IND PDU or the AUX_ADV_IND PDU, but not both
+            advExtIndHasTargetA = False
+            auxAdvIndHasTargetA = False
+            for packet in packets.fetch(packet_filter=('ADV_EXT_IND')):
+                advExtIndHasTargetA = 'TargetA' in packet.payload
+                if 'TargetA' in packet.payload:
+                    success = success and packet.payload['TargetA'] == 0x456789ABCDEF
+            for packet in packets.fetch(packet_filter=('AUX_ADV_IND')):
+                auxAdvIndHasTargetA = 'TargetA' in packet.payload
+                if 'TargetA' in packet.payload:
+                    success = success and packet.payload['TargetA'] == 0x456789ABCDEF
+            success = success and advExtIndHasTargetA != auxAdvIndHasTargetA
+
+        if not success:
+            return success
+
+        # Flush events and packets for next round
+        flush_events(transport, upperTester, 100)
+        packets.flush()
+
+    return success
+
+"""
+    LL/DDI/ADV/BV-47-C [Extended Advertising, Non-Connectable - LE 1M PHY]
+"""
+def ll_ddi_adv_bv_47_c(transport, upperTester, lowerTester, trace, packets):
+    return do_ll_ddi_adv_bv_47_49_c(transport, upperTester, lowerTester, trace, packets, PhysicalChannel.LE_1M)
+
+"""
+    LL/DDI/ADV/BV-49-C [Extended Advertising, Non-Connectable - LE 2M PHY]
+"""
+def ll_ddi_adv_bv_49_c(transport, upperTester, lowerTester, trace, packets):
+    return do_ll_ddi_adv_bv_47_49_c(transport, upperTester, lowerTester, trace, packets, PhysicalChannel.LE_2M)
+
 # Implements LL/DDI/ADV/BI-05-C and LL/DDI/ADV/BI-06-C test cases (only difference is the event properties)
 def do_ll_ddi_adv_bi_05_06_c(transport, upperTester, lowerTester, trace, eventProperties):
 
@@ -8288,6 +8561,8 @@ __tests__ = {
     "LL/DDI/ADV/BV-19-C": [ ll_ddi_adv_bv_19_c, "Low Duty Cycle Directed Advertising on all channels" ],
     "LL/DDI/ADV/BV-20-C": [ ll_ddi_adv_bv_20_c, "Advertising on the LE 1M PHY on all channels" ],
     "LL/DDI/ADV/BV-21-C": [ ll_ddi_adv_bv_21_c, "Non-Connectable Extended Legacy Advertising with Data on all channels" ],
+    "LL/DDI/ADV/BV-47-C": [ ll_ddi_adv_bv_47_c, "Extended Advertising, Non-Connectable - LE 1M PHY" ],
+    "LL/DDI/ADV/BV-49-C": [ ll_ddi_adv_bv_49_c, "Extended Advertising, Non-Connectable - LE 2M PHY" ],
     "LL/DDI/SCN/BV-01-C": [ ll_ddi_scn_bv_01_c, "Passive Scanning of Non-Connectable Advertising Packets" ],
     "LL/DDI/SCN/BV-02-C": [ ll_ddi_scn_bv_02_c, "Filtered Passive Scanning of Non-Connectable Advertising Packets" ],
     "LL/DDI/SCN/BV-03-C": [ ll_ddi_scn_bv_03_c, "Active Scanning of Connectable Undirected Advertising Packets" ],

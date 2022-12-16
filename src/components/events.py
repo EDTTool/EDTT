@@ -1223,7 +1223,8 @@ class Event:
         if self.__checkSize(6):
             status, advertiseHandle, connectionHandle, completedEvents = struct.unpack('<BBHB', self.data[1:6]);
             self.__checkAdvertisingHandle(advertiseHandle);
-            self.__checkConnectionHandle(connectionHandle);
+            if status == 0:
+                self.__checkConnectionHandle(connectionHandle)
         else:
             status = advertiseHandle = connectionHandle = completedEvents = 0;
         return status, advertiseHandle, connectionHandle, completedEvents;

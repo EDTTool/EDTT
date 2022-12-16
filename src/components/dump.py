@@ -284,7 +284,8 @@ def parse_ext_adv_pdu(direction, idx, ts, aa, channel_num, phy, header, data, au
             payload = connect_ind(data)
         elif header.PDU_Type == 0b0111:
             payload = parse_common_ext_adv_payload(data)
-            payload_type = determine_ext_adv_pdu_type(ts, channel_num, phy, payload, aux_ptr_packets)
+            payload['SuperiorPackets'] = find_superior_packets(ts, channel_num, phy, aux_ptr_packets)
+            payload_type = determine_ext_adv_pdu_type(payload)
         elif header.PDU_Type == 0b1000:
             payload_type = PacketType.AUX_CONNECT_RSP
             payload = parse_common_ext_adv_payload(data)
@@ -294,14 +295,20 @@ def parse_ext_adv_pdu(direction, idx, ts, aa, channel_num, phy, header, data, au
 
     return Packet(direction, idx, ts, aa, channel_num, phy, data, payload_type, header, payload)
 
-def determine_ext_adv_pdu_type(ts, channel_num, phy, payload, aux_ptr_packets):
+def find_superior_packets(ts, channel_num, phy, aux_ptr_packets):
+    superiorPackets = []
     for packet in aux_ptr_packets:
         if aux_ptr_matches(packet.payload['AuxPtr'], packet.ts, ts, channel_num, phy):
-            if packet.type == PacketType.ADV_EXT_IND:
-                return PacketType.AUX_ADV_IND
-            else:
-                return PacketType.AUX_CHAIN_IND
-    
+            superiorPackets += [packet]
+    return superiorPackets
+
+def determine_ext_adv_pdu_type(payload):
+    if payload['SuperiorPackets']:
+        if payload['SuperiorPackets'][0].type == PacketType.ADV_EXT_IND:
+            return PacketType.AUX_ADV_IND
+        else:
+            return PacketType.AUX_CHAIN_IND
+
     # No matches - we could have missed the packet with an aux_ptr, but assume a AUX_SCAN_RSP provided it matches the known limitations
     if payload['AdvMode'] == 0 and 'AdvA' in payload and 'TargetA' not in payload and 'CTEInfo' not in payload and 'SyncInfo' not in payload and 'AD' in payload:
         return PacketType.AUX_SCAN_RSP
