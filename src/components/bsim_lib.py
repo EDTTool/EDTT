@@ -102,7 +102,7 @@ def test_and_create_lock_file(com_path, device_nbr, trace):
     if not os.access(lock_path, os.F_OK):
         # The file does not exist. So unless somebody is racing us, we are safe to go
         lock_file_fill(lock_path, my_pid)
-        return
+        return lock_path
 
     corrupt_file = False
     other_dead = False
