@@ -796,6 +796,32 @@ def state_connected_isochronous_stream(transport, peripheral, central, trace, pa
 
     return s and success, initiator, peripheral_cis_handles, central_cis_handles
 
+"""
+   Sets extended advertising data handling fragmentation as needed. The number of fragments used is kept as low as possible.
+   Returns true if succeeded, false otherwise
+"""
+def set_complete_ext_adv_data(transport, idx, handle, fragmentPref, advData):
+    maxFragmentSize = 251
+    remainingAdvData = advData[:]
+    firstFragment = True
+    while (len(remainingAdvData) > 0):
+        if firstFragment:
+            if len(remainingAdvData) <= maxFragmentSize:
+                op = FragmentOperation.COMPLETE_FRAGMENT
+            else:
+                op = FragmentOperation.FIRST_FRAGMENT
+        else:
+            if len(remainingAdvData) <= maxFragmentSize:
+                op = FragmentOperation.LAST_FRAGMENT
+            else:
+                op = FragmentOperation.INTERMEDIATE_FRAGMENT
+        endIndex = maxFragmentSize if len(remainingAdvData) >= maxFragmentSize else len(remainingAdvData)
+        status = le_set_extended_advertising_data(transport, idx, handle, op, fragmentPref, remainingAdvData[:endIndex], 100)
+        if status != 0:
+            return False
+        remainingAdvData = remainingAdvData[endIndex:]
+        firstFragment = False
+    return True
 
 """
 LL.TS.p17
