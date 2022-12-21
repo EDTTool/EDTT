@@ -617,5 +617,7 @@ class Packets:
             return None
     
     def flush(self):
+        for dump in self.__dumps.fetch():
+            pass
         self.__parser = PacketParser()
         self.__packets = []

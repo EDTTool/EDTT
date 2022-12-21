@@ -723,6 +723,146 @@ def ll_ddi_adv_bv_21_c(transport, upperTester, lowerTester, trace):
 
     return success;
 
+"""
+    LL/DDI/ADV/BV-28-C [Extended Advertising, Overlapping Extended Advertising Events]
+"""
+def ll_ddi_adv_bv_28_c(transport, upperTester, lowerTester, trace, packets):
+    RoundData = namedtuple('RoundData', ['EventProperties', 'SecondaryAdvertisingMaxSkip', 'RepeatCount'])
+    rounds = [
+        RoundData(0x0000, 0x01, 100),
+        RoundData(0x0000, 0x0F, 50),
+        RoundData(0x0000, 0xFF, 10),
+        RoundData(0x0001, 0x08, 50),
+        RoundData(0x0004, 0x08, 50),
+        RoundData(0x0005, 0x08, 50),
+    ]
+
+    success = True
+
+    for round in rounds:
+
+        advInterval = 0x20 # 32 x 0.625 ms = 20.00 ms
+        Handle          = 0
+        Properties      = round.EventProperties
+        PrimMinInterval = toArray(advInterval, 3)
+        PrimMaxInterval = toArray(advInterval, 3)
+        PrimChannelMap  = 0x07  # Advertise on all three channels (#37, #38 and #39)
+        OwnAddrType     = SimpleAddressType.PUBLIC
+        PeerAddrType    = SimpleAddressType.PUBLIC
+        PeerAddress     = toArray(0x456789ABCDEF, 6)
+        FilterPolicy    = AdvertisingFilterPolicy.FILTER_NONE
+        TxPower         = 0
+        PrimAdvPhy      = PhysicalChannel.LE_1M
+        SecAdvMaxSkip   = round.SecondaryAdvertisingMaxSkip
+        SecAdvPhy       = PhysicalChannel.LE_1M
+        Sid             = 0
+        ScanReqNotifyEnable = 0
+
+        success = success and preamble_ext_advertising_parameters_set(transport, upperTester, Handle, Properties, PrimMinInterval, PrimMaxInterval,
+                                                      PrimChannelMap, OwnAddrType, PeerAddrType, PeerAddress, FilterPolicy, TxPower,
+                                                      PrimAdvPhy, SecAdvMaxSkip, SecAdvPhy, Sid, ScanReqNotifyEnable, trace)
+        if not success:
+            return success
+
+        advData = random.randint(1, 255, 1)
+        status = le_set_extended_advertising_data(transport, upperTester, Handle, FragmentOperation.COMPLETE_FRAGMENT, 0x00, advData, 100)
+        if status != 0:
+            return False
+
+        flush_events(transport, upperTester, 100)
+        success = success and preamble_ext_advertise_enable(transport, upperTester, Advertise.ENABLE, [Handle], [0x00], [0x00], trace)
+        if not success:
+            return success
+
+        # Wait until we have RepeatCount AUX_ADV_INDs
+        auxAdvIndCount = 0
+        while auxAdvIndCount < round.RepeatCount:
+            waitForMs = math.ceil(advInterval * 0.625 * (round.RepeatCount - auxAdvIndCount))
+            transport.wait(waitForMs)
+            auxAdvIndCount = 0
+            for packet in packets.fetch(packet_filter=('AUX_ADV_IND')):
+                auxAdvIndCount += 1
+
+        def getAuxPtrTime(packet):
+            units = 30 if packet.payload['AuxPtr'].offsetUnits == 0 else 300
+            return packet.ts + packet.payload['AuxPtr'].auxOffset * units
+
+        # Check ADV_EXT_INDs:
+        # - AuxPtr Extended Header field present and the AdvMode set according to expected properties
+        # - The AuxPtrs in each ADV_EXT_IND PDU sent in overlapping extended advertising events have 
+        #   Aux Offset and Offset Units values that refer to the same time within one Offset Unit
+        # Last part requires grouping ADV_EXT_INDs that refer to the same AUX_ADV_IND together
+        groups = []
+        currentGroup = []
+        for packet in packets.fetch(packet_filter=('ADV_EXT_IND')):
+            success = success and packet.payload['AdvMode'] == round.EventProperties & 0x03
+            success = success and 'AuxPtr' in packet.payload
+            # Put into current group if channel idx and offset matches (offset is matched if within 1 ms)
+            if len(currentGroup) == 0 or (currentGroup[0].payload['AuxPtr'].chIdx == packet.payload['AuxPtr'].chIdx and
+               abs(getAuxPtrTime(packet) - getAuxPtrTime(currentGroup[0])) < 1000):
+                currentGroup += [packet]
+            else:
+                groups += [currentGroup]
+                currentGroup = [packet]
+        if len(currentGroup) > 0:
+            groups += [currentGroup]
+
+        for group in groups:
+            auxPtrMax = None
+            auxPtrMin = None
+            offsetUnit = 30
+            for packet in group:
+                auxPtrTime = getAuxPtrTime(packet)
+                if auxPtrMax == None or auxPtrTime > auxPtrMax:
+                    auxPtrMax = auxPtrTime
+                if auxPtrMin == None or auxPtrTime < auxPtrMin:
+                    auxPtrMin = auxPtrTime
+                if packet.payload['AuxPtr'].offsetUnits == 1:
+                    offsetUnit = 300
+            success = success and (auxPtrMin - auxPtrMax) <= offsetUnit
+
+        # Check AUX_ADV_INDs
+        # Uses the LE 1M PHY with the AdvMode field set according to expected properties
+        # The time between a PDU containing an AuxPtr field and the PDU to which it refers shall be greater than or equal to T_MAFS
+        # Check that no more than Secondary_Advertising_Max_Skip+1 extended advertising events overlap
+        for packet in packets.fetch(packet_filter=('AUX_ADV_IND')):
+            success = success and packet.payload['AdvMode'] == round.EventProperties & 0x03
+            success = success and packet.phy == '1M'
+
+            lastSuperiorPacket = None
+            currentEventPacketCount = 0
+            eventCount = 0
+            for superiorPacket in packet.payload['SuperiorPackets']:
+                # Packet air length is: pre-amble + AA + header + payload + CRC
+                packetLength = 1 + 4 + 2 + len(superiorPacket) + 3
+                packetAirtime = 8*packetLength
+                success = success and packet.ts >= superiorPacket.ts + packetAirtime + 300
+
+                if lastSuperiorPacket == None:
+                    eventCount = 1
+                    currentEventPacketCount = 1
+                else:
+                    # Assume new advertising event starting if a) there already is 3 ADV_EXT_INDs for the current event or b) there is a gap of more than 5 ms
+                    if currentEventPacketCount == 3 or lastSuperiorPacket.ts > superiorPacket.ts + 5000:
+                        currentEventPacketCount = 1
+                        eventCount += 1
+                    else:
+                        currentEventPacketCount += 1
+                lastSuperiorPacket = superiorPacket
+
+            success = success and eventCount <= round.SecondaryAdvertisingMaxSkip + 1
+
+        # Disable advertising
+        success = success and preamble_ext_advertise_enable(transport, upperTester, Advertise.DISABLE, [Handle], [0x00], [0x00], trace)
+        if not success:
+            return success
+
+        # Flush events and packets for next round
+        flush_events(transport, upperTester, 100)
+        packets.flush()
+
+    return success
+
 # Implements LL/DDI/ADV/BV-47-C and LL/DDI/ADV/BV-49-C (only difference is the PHY)
 def do_ll_ddi_adv_bv_47_49_c(transport, upperTester, lowerTester, trace, packets, phy):
 
@@ -8561,6 +8701,7 @@ __tests__ = {
     "LL/DDI/ADV/BV-19-C": [ ll_ddi_adv_bv_19_c, "Low Duty Cycle Directed Advertising on all channels" ],
     "LL/DDI/ADV/BV-20-C": [ ll_ddi_adv_bv_20_c, "Advertising on the LE 1M PHY on all channels" ],
     "LL/DDI/ADV/BV-21-C": [ ll_ddi_adv_bv_21_c, "Non-Connectable Extended Legacy Advertising with Data on all channels" ],
+    "LL/DDI/ADV/BV-28-C": [ ll_ddi_adv_bv_28_c, "Extended Advertising, Overlapping Extended Advertising Events" ],
     "LL/DDI/ADV/BV-47-C": [ ll_ddi_adv_bv_47_c, "Extended Advertising, Non-Connectable - LE 1M PHY" ],
     "LL/DDI/ADV/BV-49-C": [ ll_ddi_adv_bv_49_c, "Extended Advertising, Non-Connectable - LE 2M PHY" ],
     "LL/DDI/SCN/BV-01-C": [ ll_ddi_scn_bv_01_c, "Passive Scanning of Non-Connectable Advertising Packets" ],
