@@ -615,7 +615,24 @@ class Packets:
             return next(self.fetch(packet_type))
         except StopIteration:
             return None
-    
+
+    def findLast(self, packet_filter=()):
+        try:
+            iter(packet_filter)
+        except TypeError:
+            packet_filter = (packet_filter,)
+        else:
+            packet_filter = packet_filter
+
+        # Append new packets
+        for dump in self.__dumps.fetch():
+            self.__packets.append(self.__parser.parse(dump))
+
+        for i in reversed(range(len(self.__packets))):
+            if self.__packets[i] != None and (not packet_filter or self.__packets[i].type.name in packet_filter):
+                return self.__packets[i]
+        return None
+
     def flush(self):
         for dump in self.__dumps.fetch():
             pass
