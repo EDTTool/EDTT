@@ -8465,6 +8465,150 @@ def ll_ist_cen_bv_03_c(transport, upper_tester, lower_tester, trace):
     """LL/IST/CEN/BV-03-C [ISO Receive Test Mode, CIS]"""
     return iso_receive_test_mode_cis(transport, upper_tester, lower_tester, trace, True)
 
+# Implements LL/TIM/ADV/BV-03-C, LL/TIM/ADV/BV-04-C, LL/TIM/ADV/BV-05-C and LL/TIM/ADV/BV-07-C
+# (only difference is PHY and the timing of the AUX_SCAN_REQ)
+def do_ll_tim_adv_bv_03_04_05_07_c(transport, upperTester, lowerTester, trace, packets, phy, timing_offset):
+
+    advInterval = 0x20 # 32 x 0.625 ms = 20.00 ms
+    Handle          = 0
+    Properties      = 0x0002
+    PrimMinInterval = toArray(advInterval, 3)
+    PrimMaxInterval = toArray(advInterval, 3)
+    PrimChannelMap  = 0x07  # Advertise on all three channels (#37, #38 and #39)
+    OwnAddrType     = SimpleAddressType.PUBLIC
+    PeerAddrType    = SimpleAddressType.PUBLIC
+    PeerAddress     = toArray(0x456789ABCDEF, 6)
+    FilterPolicy    = AdvertisingFilterPolicy.FILTER_NONE
+    TxPower         = 0
+    PrimAdvPhy      = PhysicalChannel.LE_1M
+    SecAdvMaxSkip   = 0
+    SecAdvPhy       = phy
+    Sid             = 0
+    ScanReqNotifyEnable = 0
+
+    success = preamble_ext_advertising_parameters_set(transport, upperTester, Handle, Properties, PrimMinInterval, PrimMaxInterval,
+                                                      PrimChannelMap, OwnAddrType, PeerAddrType, PeerAddress, FilterPolicy, TxPower,
+                                                      PrimAdvPhy, SecAdvMaxSkip, SecAdvPhy, Sid, ScanReqNotifyEnable, trace)
+    if not success:
+        return success
+
+    advData = [ 0xAA ]
+    success = success and preamble_ext_scan_response_data_set(transport, upperTester, Handle, FragmentOperation.COMPLETE_FRAGMENT, 0, advData, trace)
+    if not success:
+        return False
+
+    success = success and preamble_ext_advertise_enable(transport, upperTester, Advertise.ENABLE, [Handle], [0], [0], trace)
+    if not success:
+        return False
+
+    responses = 0
+
+    for i in range(100):
+        def wait_for_AUX_ADV_IND_end():
+            # Get an ADV_EXT_IND with an aux ptr pointing to an AUX_ADV_IND packet that hasn't been sent yet
+            auxAdvIndPacket = None
+            auxAdvIndEndTs = 0
+            while True:
+                lastPacket = packets.findLast(packet_filter=('ADV_EXT_IND', 'AUX_ADV_IND'))
+                if not auxAdvIndPacket:
+                    auxAdvIndPacket = packets.findLast(packet_filter='AUX_ADV_IND')
+                if lastPacket.type == PacketType.ADV_EXT_IND and auxAdvIndPacket:
+                    # Calculate end of offset window
+                    offsetEnd = (lastPacket.payload['AuxPtr'].auxOffset + 1) * (30 if lastPacket.payload['AuxPtr'].offsetUnits == 0 else 300)
+                    # Expected air time of the AUX_ADV_IND packet (assuming no changes from the last one)
+                    # Note: Packet air length is: pre-amble + AA + header + payload + CRC
+                    airTime = ((2 if auxAdvIndPacket.phy == '2M' else 1) + 4 + 2 + len(auxAdvIndPacket) + 3)*8/(2 if auxAdvIndPacket.phy == '2M' else 1)
+                    # Calculate expected (last possible) end time of the coming AUX_ADV_IND packet
+                    auxAdvIndEndTs = int(lastPacket.ts + offsetEnd + airTime)
+                    break
+                # Don't have the needed packets yet or the last packet was not an ADV_EXT_IND; Wait a little and try again
+                transport.wait(1)
+            # Wait until the calculated end time (but make sure to always wait at least 1 us to avoid deadlocks)
+            transport.wait_until_t(max(auxAdvIndEndTs + 1, transport.get_last_t() + 1))
+
+        auxAdvIndPacket = None
+        while not auxAdvIndPacket:
+            wait_for_AUX_ADV_IND_end()
+            # Check that simulation time is just after a AUX_ADV_IND has ended (so we can transmit a response)
+            simulation_time = transport.get_last_t()
+            lastPacket = packets.findLast()
+            if lastPacket.type == PacketType.AUX_ADV_IND:
+                airTime = ((2 if lastPacket.phy == '2M' else 1) + 4 + 2 + len(lastPacket) + 3)*8/(2 if lastPacket.phy == '2M' else 1)
+                if simulation_time < lastPacket.ts + airTime + 150 + timing_offset:
+                    # Success, we can continue
+                    auxAdvIndPacket = lastPacket
+                    break
+
+        # Transmit a AUX_SCAN_REQ
+        packetData = (0b0011 + (12 << 8)).to_bytes(2, 'little', signed=False) # header - PDU Type 0b0101, ChSel, TxAdd and RxAdd all 0, length 12
+        packetData = b''.join([packetData, 0x456789ABCDEF.to_bytes(6, 'little', signed=False)]) # ScanA
+        packetData = b''.join([packetData, 0x123456789ABC.to_bytes(6, 'little', signed=False)]) # AdvA
+        CRC = calcBLECRC(0x555555, packetData)
+        packetData = b''.join([packetData, CRC.to_bytes(3, 'little', signed=False)])
+
+        # Calculate transmit timestamp (T_IFS + timing_offset from end of AUX_ADV_IND)
+        airTime = math.ceil(((2 if lastPacket.phy == '2M' else 1) + 4 + 2 + len(lastPacket) + 3)*8/(2 if lastPacket.phy == '2M' else 1))
+        transmitTime = auxAdvIndPacket.ts + airTime + 150 + timing_offset
+
+        transport.low_level_device.tx(channel_num_to_index(auxAdvIndPacket.channel_num), auxAdvIndPacket.phy, auxAdvIndPacket.aa, transmitTime, packetData)
+
+        # Wait a ms for a response
+        transport.wait(1)
+
+        lastAuxScanResp = packets.findLast(packet_filter=('AUX_SCAN_RSP'))
+
+        if lastAuxScanResp:
+            # Check timing - should be T_IFS (plus or minus 2 μsecs) after the AUX_SCAN_REQ
+            reqAirTime = math.ceil(((2 if lastAuxScanResp.phy == '2M' else 1) + 4 + 2 + 12 + 3)*8/(2 if lastAuxScanResp.phy == '2M' else 1))
+            targetTime = transmitTime + reqAirTime + 150
+            if lastAuxScanResp.ts <= targetTime + 2 and lastAuxScanResp.ts >= targetTime - 2:
+                responses += 1
+
+    # Check: The time between a PDU containing an AuxPtr field and the PDU to which it refers shall be greater than or equal to T_MAFS
+    for packet in packets.fetch(packet_filter=('AUX_ADV_IND')):
+        for superiorPacket in packet.payload['SuperiorPackets']:
+            # Packet air length is: pre-amble + AA + header + payload + CRC
+            packetLength = (2 if superiorPacket.phy == '2M' else 1) + 4 + 2 + len(superiorPacket) + 3
+            packetAirtime = math.ceil(8*packetLength/(2 if superiorPacket.phy == '2M' else 1))
+            success = success and packet.ts >= superiorPacket.ts + packetAirtime + 300
+
+    # The IUT responds to at least 95 percent of the AUX_SCAN_REQ packets sent by the Lower Tester
+    success = success and responses >= 95
+
+    return success
+
+"""
+    LL/TIM/ADV/BV-03-C [Extended Advertising, Secondary Channel, Earliest Transmission to Advertiser - LE 1M PHY]
+"""
+def ll_tim_adv_bv_03_c(transport, upperTester, lowerTester, trace, packets):
+    # Note: BabbleSim only supports whole microsecond timings, so using -2 instead of -1.5
+    # It should not affect the test, since 1.5 us is only used to account for lower tester timing inaccuracies anyway
+    return do_ll_tim_adv_bv_03_04_05_07_c(transport, upperTester, lowerTester, trace, packets, PhysicalChannel.LE_1M, -2)
+
+"""
+    LL/TIM/ADV/BV-04-C [Extended Advertising, Secondary Channel, Latest Transmission to Advertiser - LE 1M PHY]
+"""
+def ll_tim_adv_bv_04_c(transport, upperTester, lowerTester, trace, packets):
+    # Note: BabbleSim only supports whole microsecond timings, so using 2 instead of 1.5
+    # It should not affect the test, since 1.5 us is only used to account for lower tester timing inaccuracies anyway
+    return do_ll_tim_adv_bv_03_04_05_07_c(transport, upperTester, lowerTester, trace, packets, PhysicalChannel.LE_1M, 2)
+
+"""
+    LL/TIM/ADV/BV-05-C [Extended Advertising, Secondary Channel, Earliest Transmission to Advertiser - LE 2M PHY]
+"""
+def ll_tim_adv_bv_05_c(transport, upperTester, lowerTester, trace, packets):
+    # Note: BabbleSim only supports whole microsecond timings, so using -2 instead of -1.5
+    # It should not affect the test, since 1.5 us is only used to account for lower tester timing inaccuracies anyway
+    return do_ll_tim_adv_bv_03_04_05_07_c(transport, upperTester, lowerTester, trace, packets, PhysicalChannel.LE_2M, -2)
+
+"""
+    LL/TIM/ADV/BV-07-C [Extended Advertising, Secondary Channel, Latest Transmission to Advertiser - LE 2M PHY]
+"""
+def ll_tim_adv_bv_07_c(transport, upperTester, lowerTester, trace, packets):
+    # Note: BabbleSim only supports whole microsecond timings, so using 2 instead of 1.5
+    # It should not affect the test, since 1.5 us is only used to account for lower tester timing inaccuracies anyway
+    return do_ll_tim_adv_bv_03_04_05_07_c(transport, upperTester, lowerTester, trace, packets, PhysicalChannel.LE_2M, 2)
+
 LowLevelDeviceRequired = "LowLevelDeviceRequired"
 __tests__ = {
     "LL/CON/ADV/BV-01-C": [ ll_con_adv_bv_01_c, "Accepting Connection Request" ],
@@ -8656,6 +8800,10 @@ __tests__ = {
 #   "LL/IST/PER/BV-01-C": [ ll_ist_per_bv_01_c, "ISO Transmit Test Mode, CIS" ],  # https://github.com/EDTTool/EDTT-le-audio/issues/86
 #   "LL/IST/CEN/BV-03-C": [ ll_ist_cen_bv_03_c, "ISO Receive Test Mode, CIS" ],  # https://github.com/EDTTool/packetcraft/issues/10
 #   "LL/IST/PER/BV-03-C": [ ll_ist_per_bv_03_c, "ISO Receive Test Mode, CIS" ],  # https://github.com/EDTTool/packetcraft/issues/10
+    "LL/TIM/ADV/BV-03-C": [ ll_tim_adv_bv_03_c, "Extended Advertising, Secondary Channel, Earliest Transmission to Advertiser - LE 1M PHY", LowLevelDeviceRequired],
+    "LL/TIM/ADV/BV-04-C": [ ll_tim_adv_bv_04_c, "Extended Advertising, Secondary Channel, Latest Transmission to Advertiser - LE 1M PHY", LowLevelDeviceRequired],
+    "LL/TIM/ADV/BV-05-C": [ ll_tim_adv_bv_05_c, "Extended Advertising, Secondary Channel, Earliest Transmission to Advertiser - LE 2M PHY", LowLevelDeviceRequired],
+    "LL/TIM/ADV/BV-07-C": [ ll_tim_adv_bv_07_c, "Extended Advertising, Secondary Channel, Latest Transmission to Advertiser - LE 2M PHY", LowLevelDeviceRequired],
 };
 
 _maxNameLength = max([ len(key) for key in __tests__ ]);
