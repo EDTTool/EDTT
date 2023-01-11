@@ -1100,8 +1100,25 @@ def do_ll_ddi_adv_bv_47_49_c(transport, upperTester, lowerTester, trace, packets
             # Wait until end of duration + 500ms (to make sure advertising has stopped)
             transport.wait(round.Duration*10 + 500)
         elif round.MaxEvents != 0:
-            # Wait for max_events*adv_interval + 500 ms (to make sure advertising has stopped)
-            transport.wait(math.ceil(round.MaxEvents*advInterval*0.625 + 500))
+            # Initially wait for max_events*adv_interval
+            transport.wait(math.ceil(round.MaxEvents*advInterval*0.625))
+            # Now keep waiting until the advertising events stop or we exceed 5 minutes
+            maxWait = 5*60000
+            timeFromLastAdvMs = 0
+            lastAdvOffsetMs = 0
+            # Stop if the last primary advertising packet was sent one interval + 500 ms ago *and* we have passed the time specified in AuxPtr
+            while (timeFromLastAdvMs > advInterval*0.625 + 500 and timeFromLastAdvMs > lastAdvOffsetMs and maxWait > 0):
+                # Wait an interval + 500 ms per iteration
+                transport.wait(math.ceil(advInterval*0.625 + 500))
+                maxWait -= math.ceil(advInterval*0.625 + 500)
+                packet = packets.findLast(packet_filter=('ADV_EXT_IND'))
+                timeFromLastAdvMs = packet.ts
+                if 'AuxPtr' in packet.payload:
+                    aux_ptr = packet.payload['AuxPtr']
+                    # Note: Adding 3 ms to offset to leave room for the airtime of the AUX_ADV_IND
+                    lastAdvOffsetMs = math.ceil(((300 if aux_ptr.offsetUnits == 1 else 30) * (aux_ptr.auxOffset + 1))/1000) + 3
+                else:
+                    lastAdvOffsetMs = 0
         else:
             # Wait until ~10 events have been received
             transport.wait(math.ceil(10.5*advInterval*0.625))
@@ -1203,28 +1220,11 @@ def do_ll_ddi_adv_bv_47_49_c(transport, upperTester, lowerTester, trace, packets
             success = success and completeAdvDataFound > 0
 
         if round.MaxEvents != 0:
-            # Calculate number of advertising events by grouping ADV_EXT_INDs (a delay of more than 10 ms, 3 packets already in the group or a duplicate channel number means a new group)
+            # Count number of extended advertising events by counting the number of AUX_ADV_IND packets
             numEvents = 0
-            group = []
-            lastTs = -10000
-            for packet in packets.fetch(packet_filter=('ADV_EXT_IND')):
-                if lastTs < packet.ts - 10000 or len(group) >= 3:
-                    group = [packet]
-                    numEvents += 1
-                else:
-                    # Check if this packets channel is already part of the current group
-                    duplicateChannel = False
-                    for groupPacket in group:
-                        if groupPacket.channel_num == packet.channel_num:
-                            duplicateChannel = True
-                            break
-                    if duplicateChannel:
-                        group = [packet]
-                        numEvents += 1
-                    else:
-                        group += [packet]
-                lastTs = packet.ts
-            # Verify that the IUT did not send more than Max_Extended_Advertising_Events advertising events
+            for packet in packets.fetch(packet_filter=('AUX_ADV_IND')):
+                numEvents += 1
+            # Verify that the IUT did not send more than Max_Extended_Advertising_Events extended advertising events
             success = success and numEvents <= round.MaxEvents
         elif round.Duration != 0:
             # Check that advertising is stopped after duration has elapsed
