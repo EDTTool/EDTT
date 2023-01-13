@@ -87,6 +87,11 @@ class EDTTT:
         packet = self.read(2);
         self.n_devices = struct.unpack('<H',packet[0:2])[0];
 
+        # Wait for dump files to have been opened by the 2G4 phy
+        # Since there isn't a method implemented for synchronizing that, use the fact that any commands to the 2G4 phy will not
+        # run until after it has opened the files for writing; So use a minimal wait as a blocking mechanism
+        self.wait_until_t(1)
+
     def cleanup(self):
         if self.low_level_device:
             self.Trace.trace(4,"Cleaning up low-level device");
