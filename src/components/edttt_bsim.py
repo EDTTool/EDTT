@@ -21,10 +21,12 @@ from components.bsim_lib import create_com_folder, create_fifo_if_not_there;
 class EDTTT:
     COM_DISCONNECT = 0;
     COM_WAIT       = 1;
+    COM_WAIT_WRESP = 5;
     COM_SEND       = 2;
     COM_RCV        = 3;
     COM_RCV_WAIT_NOTIFY = 4
     COM_WAIT_NOTIFICATION = 0xF0
+    COM_UNKNOWN_COMMAND = 0xFF
 
     TO_EDTT  = 0;
     TO_BRIDGE =1;
@@ -231,9 +233,13 @@ class EDTTT:
         if self.low_level_device:
             self.low_level_device.wait(end_of_wait)
         # pack a message : delay 4 bytes
-        self.ll_send(struct.pack('<BQ', self.COM_WAIT, end_of_wait))
+        self.ll_send(struct.pack('<BQ', self.COM_WAIT_WRESP, end_of_wait))
         # Read dummy byte reply from bridge, signalling wait completion
-        self.read(1);
+        resp = self.read(1);
+        if (resp[0] != 0x00 or resp[0] == self.COM_UNKNOWN_COMMAND):
+            raise Exception("You are using a too old EDTT bridge, please update it "
+                            "(Most likely you can find the EDTT bridge in the bsim components folder,"
+                            "%{BSIM_COMPONENTS_PATH} )\nLow level resp = " + str(resp[0]))
         self.last_t = end_of_wait
 
     def get_time(self):
