@@ -1095,6 +1095,242 @@ def ll_ddi_adv_bv_28_c(transport, upperTester, lowerTester, trace, packets):
 
     return success
 
+# Implemements LL/DDI/ADV/BV-45-C and LL/DDI/ADV/BV-52-C (only difference is the PHY)
+def do_ll_ddi_adv_bv_45_52_c(transport, upperTester, lowerTester, trace, packets, phy):
+
+    status, MaxAdvDataLen = le_read_maximum_advertising_data_length(transport, upperTester, 200)
+
+    if status != 0:
+        return False
+
+    if MaxAdvDataLen < 0x001F or MaxAdvDataLen > 0x0672:
+        return False
+
+    AdvA_IUT = 0x123456789ABC
+    AdvA_NonIUT = 0xCBA987654321
+
+    # Input data for each round
+    RoundData = namedtuple('RoundData', ['EventProperties', 'ScanRequestNotification', 'AdvDataLen', 'FragmentPref', 'AdvA'])
+    rounds = [
+        RoundData(0x0002, 0x00, 1, 0x00, AdvA_IUT),
+        RoundData(0x0002, 0x00, 31, 0x00, AdvA_IUT),
+        RoundData(0x0002, 0x00, 474, 0x00, AdvA_IUT),
+        RoundData(0x0002, 0x00, 711, 0x00, AdvA_IUT),
+        RoundData(0x0002, 0x00, 948, 0x00, AdvA_IUT),
+        RoundData(0x0002, 0x00, MaxAdvDataLen, 0x00, AdvA_IUT),
+        RoundData(0x0002, 0x01, MaxAdvDataLen, 0x01, AdvA_IUT),
+        RoundData(0x0002, 0x00, 31, 0x00, AdvA_NonIUT),
+        RoundData(0x0006, 0x00, 1, 0x00, AdvA_IUT),
+        RoundData(0x0006, 0x00, 251, 0x00, AdvA_IUT),
+        RoundData(0x0006, 0x00, MaxAdvDataLen, 0x00, AdvA_IUT),
+        RoundData(0x0006, 0x00, 31, 0x00, AdvA_NonIUT),
+    ]
+
+    success = True
+
+    for round in rounds:
+
+        if round.AdvDataLen > MaxAdvDataLen:
+            # Skip unsupported advertising data length
+            continue
+
+        advInterval = 0xA0 # 160 x 0.625 ms = 100.00 ms
+        Handle          = 0
+        Properties      = round.EventProperties
+        PrimMinInterval = toArray(advInterval, 3)
+        PrimMaxInterval = toArray(advInterval, 3)
+        PrimChannelMap  = 0x07  # Advertise on all three channels (#37, #38 and #39)
+        OwnAddrType     = SimpleAddressType.PUBLIC
+        PeerAddrType    = SimpleAddressType.PUBLIC
+        PeerAddress     = toArray(0x456789ABCDEF, 6)
+        FilterPolicy    = AdvertisingFilterPolicy.FILTER_NONE
+        TxPower         = 0
+        PrimAdvPhy      = PhysicalChannel.LE_1M
+        SecAdvMaxSkip   = 0
+        SecAdvPhy       = phy
+        Sid             = 0
+        ScanReqNotifyEnable = round.ScanRequestNotification
+
+        success = success and preamble_ext_advertising_parameters_set(transport, upperTester, Handle, Properties, PrimMinInterval, PrimMaxInterval,
+                                                      PrimChannelMap, OwnAddrType, PeerAddrType, PeerAddress, FilterPolicy, TxPower,
+                                                      PrimAdvPhy, SecAdvMaxSkip, SecAdvPhy, Sid, ScanReqNotifyEnable, trace)
+        if not success:
+            return success
+
+        # Set scan response data
+        advData = random.randint(1, 255, round.AdvDataLen)
+        if not set_complete_ext_scan_response_data(transport, upperTester, Handle, round.FragmentPref, advData):
+            return False
+
+        flush_events(transport, upperTester, 100)
+        success = success and preamble_ext_advertise_enable(transport, upperTester, Advertise.ENABLE, [Handle], [0], [0], trace)
+
+        if not success:
+            return success
+
+        auxAdvIndPacket = wait_for_AUX_ADV_IND_end(transport, packets)
+
+        # Transmit an AUX_SCAN_REQ
+        packetData = (0b0011 + (12 << 8)).to_bytes(2, 'little', signed=False) # header - PDU Type 0b0011, ChSel, TxAdd and RxAdd all 0, length 12
+        packetData = b''.join([packetData, 0x456789ABCDEF.to_bytes(6, 'little', signed=False)]) # ScanA
+        packetData = b''.join([packetData, round.AdvA.to_bytes(6, 'little', signed=False)]) # AdvA
+        CRC = calcBLECRC(0x555555, packetData)
+        packetData = b''.join([packetData, CRC.to_bytes(3, 'little', signed=False)])
+
+        # Calculate transmit timestamp (T_IFS from end of AUX_ADV_IND)
+        reqTransmitTime = auxAdvIndPacket.ts + get_packet_air_time(auxAdvIndPacket) + 150
+        # Note: Packet air length is: pre-amble + AA + packetData (which includes header and CRC)
+        reqAirTime = math.ceil(((2 if auxAdvIndPacket.phy == '2M' else 1) + 4 + len(packetData))*8/(2 if auxAdvIndPacket.phy == '2M' else 1))
+
+        transport.low_level_device.tx(channel_num_to_index(auxAdvIndPacket.channel_num), auxAdvIndPacket.phy, auxAdvIndPacket.aa, reqTransmitTime, packetData)
+
+        def check_ADV_EXT_INDs():
+            # Check ADV_EXT_INDs
+            # AdvMode set to 10b with the AuxPtr Extended Header field present. The ADV_EXT_IND PDU shall include the ADI field
+            # with the SID set to the value used in step 3. The ADV_EXT_IND PDU shall not include the CTEInfo, SyncInfo, ACAD, or TxPower fields
+            success = True
+            for packet in packets.fetch(packet_filter=('ADV_EXT_IND')):
+                success = success and packet.payload['AdvMode'] == 0b10
+                success = success and 'AuxPtr' in packet.payload
+                success = success and 'ADI' in packet.payload
+                success = success and packet.payload['ADI'].SID == Sid
+                success = success and 'CTEInfo' not in packet.payload
+                success = success and 'SyncInfo' not in packet.payload
+                success = success and 'ACAD' not in packet.payload
+                success = success and 'TxPower' not in packet.payload
+            return success
+
+        def check_AUX_ADV_INDs():
+            # Check AUX_ADV_IND(s)
+            # AdvMode field set to 10b. The AUX_ADV_IND PDU shall include the ADI field matching the ADI field from earlier. The AUX_ADV_IND PDU shall not include the
+            # CTEInfo, AuxPtr, SyncInfo, TxPower, or AdvData fields
+            # The time between a PDU containing an AuxPtr field and the PDU to which it refers shall be greater than or equal to T_MAFS
+            success = True
+            for packet in packets.fetch(packet_filter=('AUX_ADV_IND')):
+                success = success and packet.payload['AdvMode'] == 0b10
+                success = success and 'ADI' in packet.payload
+                success = success and packet.payload['ADI'].SID == Sid
+                success = success and 'CTEInfo' not in packet.payload
+                success = success and 'AuxPtr' not in packet.payload
+                success = success and 'SyncInfo' not in packet.payload
+                success = success and 'TxPower' not in packet.payload
+                success = success and 'AD' not in packet.payload
+                for superiorPacket in packet.payload['SuperiorPackets']:
+                    success = success and packet.payload['ADI'].DID == superiorPacket.payload['ADI'].DID
+                    success = success and packet.ts >= superiorPacket.ts + get_packet_air_time(superiorPacket) + 300
+            return success
+
+        if round.AdvA != AdvA_IUT:
+            # Wait for 10 ms and check that there was no reply
+            transport.wait(10)
+            success = success and check_ADV_EXT_INDs()
+            success = success and check_AUX_ADV_INDs()
+
+            # No AUX_SCAN_RSP packet should have been sent from the IUT
+            success = success and not packets.findLast(packet_filter='AUX_SCAN_RSP')
+
+        else:
+            # Wait for complete reply
+            transport.wait(10)
+            prevPacket = None
+            lastPacket = packets.findLast(packet_filter='AUX_SCAN_RSP')
+            if not lastPacket:
+                success = False
+            elif 'AuxPtr' in lastPacket.payload:
+                # Wait for all chained PDUs
+                while ('AuxPtr' in lastPacket.payload and prevPacket != lastPacket):
+                    prevPacket = lastPacket
+                    # Wait for aux ptr offset + 10 ms (to be on the safe side) and check for the chained PDU
+                    offsetEnd = (lastPacket.payload['AuxPtr'].auxOffset + 1) * (30 if lastPacket.payload['AuxPtr'].offsetUnits == 0 else 300)
+                    transport.wait(math.ceil(offsetEnd/1000) + 10)
+                    lastPacket = packets.findLast(packet_filter='AUX_CHAIN_IND')
+
+            success = success and check_ADV_EXT_INDs()
+            success = success and check_AUX_ADV_INDs()
+
+            completeAdvDataFound = False
+
+            # Check AUX_SCAN_RSP
+            # T_IFS after the end of the AUX_SCAN_REQ PDU with AdvMode set to 00b, AdvA set to the IUT’s advertising address,
+            # TargetA and CTEInfo not present, and ADI field either not present or matches the AUX_ADV_IND. If the AUX_SCAN_RSP PDU does not contain all
+            # the data submitted, it shall include an AuxPtr field
+            packet = packets.findLast(packet_filter='AUX_SCAN_RSP')
+            # Check transmission time (note: 2 microseconds jitter is accepted)
+            success = success and packet.ts >= reqTransmitTime + reqAirTime + 150 - 2
+            success = success and packet.ts <= reqTransmitTime + reqAirTime + 150 + 2
+            success = success and packet.payload['AdvMode'] == 0b00
+            success = success and packet.payload['AdvA'] == AdvA_IUT
+            success = success and 'TargetA' not in packet.payload
+            success = success and 'CTEInfo' not in packet.payload
+            if 'ADI' in packet.payload:
+                success = success and packet.payload['ADI'].SID == auxAdvIndPacket.payload['ADI'].SID
+                success = success and packet.payload['ADI'].DID == auxAdvIndPacket.payload['ADI'].DID
+            if len(packet.payload['AD']) < round.AdvDataLen:
+                success = success and 'AuxPtr' in packet.payload
+            else:
+                completeAdvDataFound = True
+                # check advertising data against input
+                for i in range(round.AdvDataLen):
+                    success = success and packet.payload['AD'][i] == advData[i]
+
+            def collectChainedAdvData(packet):
+                advData = bytes([])
+                if packet.type.name != 'AUX_SCAN_RSP':
+                    advData = collectChainedAdvData(packet.payload['SuperiorPackets'][0])
+                advData += packet.payload['AD']
+                return advData
+    
+            # Check AUX_CHAIN_INDs
+            # Shall include the AdvData field containing additional data submitted. The AUX_CHAIN_IND 
+            # PDU shall not include the AdvA, TargetA, CTEInfo, TxPower, or SyncInfo fields
+            # The time between a PDU containing an AuxPtr field and the PDU to which it refers shall be greater than or equal to T_MAFS
+            for packet in packets.fetch(packet_filter=('AUX_CHAIN_IND')):
+                success = success and 'AdvA' not in packet.payload
+                success = success and 'TargetA' not in packet.payload
+                success = success and 'CTEInfo' not in packet.payload
+                success = success and 'TxPower' not in packet.payload
+                success = success and 'SyncInfo' not in packet.payload
+                for superiorPacket in packet.payload['SuperiorPackets']:
+                    success = success and packet.ts >= superiorPacket.ts + get_packet_air_time(superiorPacket) + 300
+                if 'AuxPtr' not in packet.payload:
+                    # Collect complete advertising data and check advertising data against input
+                    completeAdvDataFound = True
+                    collectedAdvData = collectChainedAdvData(packet)
+                    success = success and len(collectedAdvData) == round.AdvDataLen
+                    for i in range(round.AdvDataLen):
+                        success = success and collectedAdvData[i] == advData[i]
+
+            # Check that the full advertising data was sent
+            success = success and completeAdvDataFound
+
+            # If scan request notifications are enabled,  Upper Tester receives an HCI_LE_Scan_Request_Received event
+            # from the IUT with the advertising handle used and the Lower Tester’s address
+            if round.ScanRequestNotification == 0x01:
+                if has_event(transport, upperTester, 200)[0]:
+                    event = get_event(transport, upperTester, 100)
+                    eventHandle, eventAddress = event.decode()
+                    success = success and eventHandle == Handle
+                    success = success and eventAddress == Address(ExtendedAddressType.PUBLIC, 0x456789ABCDEF)
+                else:
+                    success = False
+
+        flush_events(transport, upperTester, 100)
+        success = success and preamble_ext_advertise_enable(transport, upperTester, Advertise.DISABLE, [Handle], [0], [0], trace)
+        if not success:
+            return success
+
+        # Flush events and packets for next round
+        flush_events(transport, upperTester, 100)
+        packets.flush()
+
+    return success
+
+"""
+    LL/DDI/ADV/BV-45-C [Extended Advertising, Scannable - ADI allowed in scan response]
+"""
+def ll_ddi_adv_bv_45_c(transport, upperTester, lowerTester, trace, packets):
+    return do_ll_ddi_adv_bv_45_52_c(transport, upperTester, lowerTester, trace, packets, PhysicalChannel.LE_1M)
+
 # Implements LL/DDI/ADV/BV-47-C and LL/DDI/ADV/BV-49-C (only difference is the PHY)
 def do_ll_ddi_adv_bv_47_49_c(transport, upperTester, lowerTester, trace, packets, phy):
 
@@ -1349,6 +1585,13 @@ def ll_ddi_adv_bv_47_c(transport, upperTester, lowerTester, trace, packets):
 """
 def ll_ddi_adv_bv_49_c(transport, upperTester, lowerTester, trace, packets):
     return do_ll_ddi_adv_bv_47_49_c(transport, upperTester, lowerTester, trace, packets, PhysicalChannel.LE_2M)
+
+"""
+    LL/DDI/ADV/BV-52-C [Extended Advertising, Scannable - ADI allowed in scan response - LE 2M PHY]
+"""
+def ll_ddi_adv_bv_52_c(transport, upperTester, lowerTester, trace, packets):
+    return do_ll_ddi_adv_bv_45_52_c(transport, upperTester, lowerTester, trace, packets, PhysicalChannel.LE_2M)
+
 
 # Implements LL/DDI/ADV/BI-05-C and LL/DDI/ADV/BI-06-C test cases (only difference is the event properties)
 def do_ll_ddi_adv_bi_05_06_c(transport, upperTester, lowerTester, trace, eventProperties):
@@ -2381,49 +2624,7 @@ def do_ll_con_adv_bv_05_12_c(transport, upperTester, lowerTester, trace, packets
 
         else:
             # Round is using AUX_CONNECT_REQ with a non-matching AdvA - cannot use standard HCI commands for this, use low_level_device instead
-
-            def wait_for_AUX_ADV_IND_end():
-                # Get an ADV_EXT_IND with an aux ptr pointing to an AUX_ADV_IND packet that hasn't been sent yet
-                auxAdvIndPacket = None
-                auxAdvIndEndTs = 0
-                while True:
-                    lastPacket = None
-
-                    for packet in packets.fetch(packet_filter=('ADV_EXT_IND', 'AUX_ADV_IND')):
-                        lastPacket = packet
-                        if packet.type == PacketType.AUX_ADV_IND:
-                            auxAdvIndPacket = packet
-
-                    if lastPacket.type == PacketType.ADV_EXT_IND and auxAdvIndPacket:
-                        # Calculate end of offset window
-                        offsetEnd = (lastPacket.payload['AuxPtr'].auxOffset + 1) * (30 if lastPacket.payload['AuxPtr'].offsetUnits == 0 else 300)
-                        # Expected air time of the AUX_ADV_IND packet (assuming no changes from the last one)
-                        # Note: Packet air length is: pre-amble + AA + header + payload + CRC
-                        airTime = ((2 if auxAdvIndPacket.phy == '2M' else 1) + 4 + 2 + len(auxAdvIndPacket) + 3)*8/(2 if auxAdvIndPacket.phy == '2M' else 1)
-                        # Calculate expected (last possible) end time of the coming AUX_ADV_IND packet
-                        auxAdvIndEndTs = int(lastPacket.ts + offsetEnd + airTime)
-                        break
-                    # Don't have the needed packets yet or the last packet was not an ADV_EXT_IND; Wait a little and try again
-                    transport.wait(1)
-
-                # Wait until the calculated end time
-                transport.wait_until_t(auxAdvIndEndTs+1)
-
-            auxAdvIndPacket = None
-            while not auxAdvIndPacket:
-                wait_for_AUX_ADV_IND_end()
-
-                # Check that simulation time is just after a AUX_ADV_IND has ended (so we can transmit a response)
-                simulation_time = transport.get_last_t()
-                lastPacket = None
-                for packet in packets.fetch(packet_filter=('AUX_ADV_IND')):
-                    lastPacket = packet
-                if lastPacket.type == PacketType.AUX_ADV_IND:
-                    airTime = ((2 if lastPacket.phy == '2M' else 1) + 4 + 2 + len(lastPacket) + 3)*8/(2 if lastPacket.phy == '2M' else 1)
-                    if simulation_time < lastPacket.ts + airTime + 150:
-                        # Success, we can continue
-                        auxAdvIndPacket = lastPacket
-                        break
+            auxAdvIndPacket = wait_for_AUX_ADV_IND_end(transport, packets)
 
             # Transmit a AUX_CONNECT_REQ
             packetData = (0b0101 + (34 << 8)).to_bytes(2, 'little', signed=False) # header - PDU Type 0b0101, ChSel, TxAdd and RxAdd all 0, length 34
@@ -2442,8 +2643,7 @@ def do_ll_con_adv_bv_05_12_c(transport, upperTester, lowerTester, trace, packets
             packetData = b''.join([packetData, CRC.to_bytes(3, 'little', signed=False)])
 
             # Calculate transmit timestamp (T_IFS from end of AUX_ADV_IND)
-            airTime = math.ceil(((2 if lastPacket.phy == '2M' else 1) + 4 + 2 + len(lastPacket) + 3)*8/(2 if lastPacket.phy == '2M' else 1))
-            transmitTime = auxAdvIndPacket.ts + airTime + 150
+            transmitTime = auxAdvIndPacket.ts + get_packet_air_time(auxAdvIndPacket) + 150
 
             transport.low_level_device.tx(channel_num_to_index(auxAdvIndPacket.channel_num), auxAdvIndPacket.phy, auxAdvIndPacket.aa, transmitTime, packetData)
 
@@ -8858,40 +9058,7 @@ def do_ll_tim_adv_bv_03_04_05_07_c(transport, upperTester, lowerTester, trace, p
     responses = 0
 
     for i in range(100):
-        def wait_for_AUX_ADV_IND_end():
-            # Get an ADV_EXT_IND with an aux ptr pointing to an AUX_ADV_IND packet that hasn't been sent yet
-            auxAdvIndPacket = None
-            auxAdvIndEndTs = 0
-            while True:
-                lastPacket = packets.findLast(packet_filter=('ADV_EXT_IND', 'AUX_ADV_IND'))
-                if not auxAdvIndPacket:
-                    auxAdvIndPacket = packets.findLast(packet_filter='AUX_ADV_IND')
-                if lastPacket.type == PacketType.ADV_EXT_IND and auxAdvIndPacket:
-                    # Calculate end of offset window
-                    offsetEnd = (lastPacket.payload['AuxPtr'].auxOffset + 1) * (30 if lastPacket.payload['AuxPtr'].offsetUnits == 0 else 300)
-                    # Expected air time of the AUX_ADV_IND packet (assuming no changes from the last one)
-                    # Note: Packet air length is: pre-amble + AA + header + payload + CRC
-                    airTime = ((2 if auxAdvIndPacket.phy == '2M' else 1) + 4 + 2 + len(auxAdvIndPacket) + 3)*8/(2 if auxAdvIndPacket.phy == '2M' else 1)
-                    # Calculate expected (last possible) end time of the coming AUX_ADV_IND packet
-                    auxAdvIndEndTs = int(lastPacket.ts + offsetEnd + airTime)
-                    break
-                # Don't have the needed packets yet or the last packet was not an ADV_EXT_IND; Wait a little and try again
-                transport.wait(1)
-            # Wait until the calculated end time (but make sure to always wait at least 1 us to avoid deadlocks)
-            transport.wait_until_t(max(auxAdvIndEndTs + 1, transport.get_last_t() + 1))
-
-        auxAdvIndPacket = None
-        while not auxAdvIndPacket:
-            wait_for_AUX_ADV_IND_end()
-            # Check that simulation time is just after a AUX_ADV_IND has ended (so we can transmit a response)
-            simulation_time = transport.get_last_t()
-            lastPacket = packets.findLast()
-            if lastPacket.type == PacketType.AUX_ADV_IND:
-                airTime = ((2 if lastPacket.phy == '2M' else 1) + 4 + 2 + len(lastPacket) + 3)*8/(2 if lastPacket.phy == '2M' else 1)
-                if simulation_time < lastPacket.ts + airTime + 150 + timing_offset:
-                    # Success, we can continue
-                    auxAdvIndPacket = lastPacket
-                    break
+        auxAdvIndPacket = wait_for_AUX_ADV_IND_end(transport, packets)
 
         # Transmit a AUX_SCAN_REQ
         packetData = (0b0011 + (12 << 8)).to_bytes(2, 'little', signed=False) # header - PDU Type 0b0101, ChSel, TxAdd and RxAdd all 0, length 12
@@ -8901,8 +9068,7 @@ def do_ll_tim_adv_bv_03_04_05_07_c(transport, upperTester, lowerTester, trace, p
         packetData = b''.join([packetData, CRC.to_bytes(3, 'little', signed=False)])
 
         # Calculate transmit timestamp (T_IFS + timing_offset from end of AUX_ADV_IND)
-        airTime = math.ceil(((2 if lastPacket.phy == '2M' else 1) + 4 + 2 + len(lastPacket) + 3)*8/(2 if lastPacket.phy == '2M' else 1))
-        transmitTime = auxAdvIndPacket.ts + airTime + 150 + timing_offset
+        transmitTime = auxAdvIndPacket.ts + get_packet_air_time(auxAdvIndPacket) + 150 + timing_offset
 
         transport.low_level_device.tx(channel_num_to_index(auxAdvIndPacket.channel_num), auxAdvIndPacket.phy, auxAdvIndPacket.aa, transmitTime, packetData)
 
@@ -9062,8 +9228,10 @@ __tests__ = {
     "LL/DDI/ADV/BV-22-C": [ ll_ddi_adv_bv_22_c, "Extended Advertising, Legacy PDUs, Undirected, CSA #2" ],
     "LL/DDI/ADV/BV-27-C": [ ll_ddi_adv_bv_27_c, "Extended Advertising, Host Modifying Data and ADI" ],
     "LL/DDI/ADV/BV-28-C": [ ll_ddi_adv_bv_28_c, "Extended Advertising, Overlapping Extended Advertising Events" ],
+    "LL/DDI/ADV/BV-45-C": [ ll_ddi_adv_bv_45_c, "Extended Advertising, Scannable - ADI allowed in scan response", LowLevelDeviceRequired ],
     "LL/DDI/ADV/BV-47-C": [ ll_ddi_adv_bv_47_c, "Extended Advertising, Non-Connectable - LE 1M PHY" ],
     "LL/DDI/ADV/BV-49-C": [ ll_ddi_adv_bv_49_c, "Extended Advertising, Non-Connectable - LE 2M PHY" ],
+    "LL/DDI/ADV/BV-52-C": [ ll_ddi_adv_bv_52_c, "Extended Advertising, Scannable - ADI allowed in scan response - LE 2M PHY", LowLevelDeviceRequired ],
     "LL/DDI/SCN/BV-01-C": [ ll_ddi_scn_bv_01_c, "Passive Scanning of Non-Connectable Advertising Packets" ],
     "LL/DDI/SCN/BV-02-C": [ ll_ddi_scn_bv_02_c, "Filtered Passive Scanning of Non-Connectable Advertising Packets" ],
     "LL/DDI/SCN/BV-03-C": [ ll_ddi_scn_bv_03_c, "Active Scanning of Connectable Undirected Advertising Packets" ],

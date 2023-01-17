@@ -2,6 +2,7 @@
 # Copyright 2019 Oticon A/S
 # SPDX-License-Identifier: Apache-2.0
 
+import math
 from components.utils import *;
 from components.basic_commands import *;
 from components.address import *;
@@ -12,6 +13,7 @@ from components.scanner import *;
 from components.initiator import *;
 from components.addata import *;
 from components.preambles import *;
+from components.dump import PacketType;
 from enum import IntEnum
 
 global lowerRandomAddress, upperRandomAddress;
@@ -796,11 +798,8 @@ def state_connected_isochronous_stream(transport, peripheral, central, trace, pa
 
     return s and success, initiator, peripheral_cis_handles, central_cis_handles
 
-"""
-   Sets extended advertising data handling fragmentation as needed. The number of fragments used is kept as low as possible.
-   Returns true if succeeded, false otherwise
-"""
-def set_complete_ext_adv_data(transport, idx, handle, fragmentPref, advData):
+# Helper function for set_complete_ext_adv_data()/set_complete_ext_scan_response_data()
+def _set_complete_ad_sr_data(transport, idx, handle, fragmentPref, advData, set_data_function):
     maxFragmentSize = 251
     remainingAdvData = advData[:]
     firstFragment = True
@@ -816,12 +815,71 @@ def set_complete_ext_adv_data(transport, idx, handle, fragmentPref, advData):
             else:
                 op = FragmentOperation.INTERMEDIATE_FRAGMENT
         endIndex = maxFragmentSize if len(remainingAdvData) >= maxFragmentSize else len(remainingAdvData)
-        status = le_set_extended_advertising_data(transport, idx, handle, op, fragmentPref, remainingAdvData[:endIndex], 100)
+        status = set_data_function(transport, idx, handle, op, fragmentPref, remainingAdvData[:endIndex], 100)
         if status != 0:
             return False
         remainingAdvData = remainingAdvData[endIndex:]
         firstFragment = False
     return True
+
+"""
+   Sets extended advertising data handling fragmentation as needed. The number of fragments used is kept as low as possible.
+   Returns true if succeeded, false otherwise
+"""
+def set_complete_ext_adv_data(transport, idx, handle, fragmentPref, advData):
+    return _set_complete_ad_sr_data(transport, idx, handle, fragmentPref, advData, le_set_extended_advertising_data)
+
+"""
+   Sets extended advertising scan response data handling fragmentation as needed. The number of fragments used is kept as low as possible.
+   Returns true if succeeded, false otherwise
+"""
+def set_complete_ext_scan_response_data(transport, idx, handle, fragmentPref, advData):
+    return _set_complete_ad_sr_data(transport, idx, handle, fragmentPref, advData, le_set_extended_scan_response_data)
+
+"""
+    Wait for the backend of an AUX_ADV_IND packet - will advance the time to be just after the next AUX_ADV_IND packet
+    (just after in this case meaning within T_IFS so a response can be sent)
+
+    Returns the AUX_ADV_IND packet
+"""
+def wait_for_AUX_ADV_IND_end(transport, packets):
+    # Get an ADV_EXT_IND with an aux ptr pointing to an AUX_ADV_IND packet that hasn't been sent yet
+    auxAdvIndPacket = None
+    auxAdvIndEndTs = 0
+    while auxAdvIndPacket == None:
+        while True:
+            lastPacket = packets.findLast(packet_filter=('ADV_EXT_IND', 'AUX_ADV_IND'))
+            if not auxAdvIndPacket:
+                auxAdvIndPacket = packets.findLast(packet_filter='AUX_ADV_IND')
+            if lastPacket.type == PacketType.ADV_EXT_IND and auxAdvIndPacket:
+                # Calculate end of offset window
+                offsetEnd = (lastPacket.payload['AuxPtr'].auxOffset + 1) * (30 if lastPacket.payload['AuxPtr'].offsetUnits == 0 else 300)
+                # Expected air time of the AUX_ADV_IND packet (assuming no changes from the last one)
+                airTime = get_packet_air_time(auxAdvIndPacket)
+                # Calculate expected (last possible) end time of the coming AUX_ADV_IND packet
+                auxAdvIndEndTs = int(lastPacket.ts + offsetEnd + airTime)
+                break
+            # Don't have the needed packets yet or the last packet was not an ADV_EXT_IND; Wait a little and try again
+            transport.wait(1)
+        # Wait until the calculated end time (but make sure to always wait at least 1 us to avoid deadlocks)
+        transport.wait_until_t(max(auxAdvIndEndTs + 1, transport.get_last_t() + 1))
+    
+        # Verify that the simulation time is within T_IFS of the end of the AUX_ADV_IND packet
+        auxAdvIndPacket = None
+        simulationTime = transport.get_last_t()
+        lastPacket = packets.findLast()
+        if lastPacket.type == PacketType.AUX_ADV_IND and simulationTime < lastPacket.ts + get_packet_air_time(lastPacket) + 150:
+            # Success, we can continue
+            auxAdvIndPacket = lastPacket
+    
+    return auxAdvIndPacket
+
+"""
+    Get air time of given packet in microseconds
+"""
+def get_packet_air_time(packet):
+    # Note: Packet air length is: pre-amble + AA + header + payload + CRC
+    return math.ceil(((2 if packet.phy == '2M' else 1) + 4 + 2 + len(packet) + 3)*8/(2 if packet.phy == '2M' else 1))
 
 """
 LL.TS.p17
