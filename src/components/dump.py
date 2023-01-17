@@ -225,37 +225,38 @@ def parse_common_ext_adv_payload(data):
     data = data[1:]
     payload['AdvMode'] = AdvMode
     dataPtr = 0
-    extHeaderFlags = bytes(data[dataPtr:dataPtr+1])[0]
-    dataPtr += 1
-    if extHeaderFlags & 0x01: # AdvA present
-        payload['AdvA'] = int.from_bytes(data[dataPtr:dataPtr+6], 'little', signed=False)
-        dataPtr += 6
-    if extHeaderFlags & 0x02: # TargetA present
-        payload['TargetA'] = int.from_bytes(data[dataPtr:dataPtr+6], 'little', signed=False)
-        dataPtr += 6
-    if extHeaderFlags & 0x04: # CTEInfo present
-        # TODO - decode further
-        payload['CTEInfo'] = bytes(data[dataPtr:dataPtr+1])[0]
+    if extHeaderLength > 0:
+        extHeaderFlags = bytes(data[dataPtr:dataPtr+1])[0]
         dataPtr += 1
-    if extHeaderFlags & 0x08: # AdvDataInfo present
-        ADI = namedtuple('ADI', 'DID, SID')
-        did, sid = unpack_bitfield('12,4', int.from_bytes(data[dataPtr:dataPtr+2], 'little', signed=False))
-        dataPtr += 2
-        payload['ADI'] = ADI(did, sid)
-    if extHeaderFlags & 0x10: # AuxPtr present
-        chIdx, clockAcc, offsetUnits, auxOffset, auxPHY = unpack_bitfield('6,1,1,13,3', int.from_bytes(data[dataPtr:dataPtr+3], 'little', signed=False))
-        dataPtr += 3
-        AuxPtr = namedtuple('AuxPtr', 'chIdx, CA, offsetUnits, auxOffset, auxPHY')
-        payload['AuxPtr'] = AuxPtr(chIdx, clockAcc, offsetUnits, auxOffset, auxPHY)
-    if extHeaderFlags & 0x20: # SyncInfo present
-        # TODO - decode further
-        payload['SyncInfo'] = bytes(data[dataPtr:dataPtr+18])
-        dataPtr += 18
-    if extHeaderFlags & 0x40:
-        payload['TxPower'] = bytes(data[dataPtr:dataPtr+1])[0]
-        dataPtr += 1
-    if dataPtr < extHeaderLength:
-        payload['ACAD'] = bytes(data[dataPtr:])
+        if extHeaderFlags & 0x01: # AdvA present
+            payload['AdvA'] = int.from_bytes(data[dataPtr:dataPtr+6], 'little', signed=False)
+            dataPtr += 6
+        if extHeaderFlags & 0x02: # TargetA present
+            payload['TargetA'] = int.from_bytes(data[dataPtr:dataPtr+6], 'little', signed=False)
+            dataPtr += 6
+        if extHeaderFlags & 0x04: # CTEInfo present
+            # TODO - decode further
+            payload['CTEInfo'] = bytes(data[dataPtr:dataPtr+1])[0]
+            dataPtr += 1
+        if extHeaderFlags & 0x08: # AdvDataInfo present
+            ADI = namedtuple('ADI', 'DID, SID')
+            did, sid = unpack_bitfield('12,4', int.from_bytes(data[dataPtr:dataPtr+2], 'little', signed=False))
+            dataPtr += 2
+            payload['ADI'] = ADI(did, sid)
+        if extHeaderFlags & 0x10: # AuxPtr present
+            chIdx, clockAcc, offsetUnits, auxOffset, auxPHY = unpack_bitfield('6,1,1,13,3', int.from_bytes(data[dataPtr:dataPtr+3], 'little', signed=False))
+            dataPtr += 3
+            AuxPtr = namedtuple('AuxPtr', 'chIdx, CA, offsetUnits, auxOffset, auxPHY')
+            payload['AuxPtr'] = AuxPtr(chIdx, clockAcc, offsetUnits, auxOffset, auxPHY)
+        if extHeaderFlags & 0x20: # SyncInfo present
+            # TODO - decode further
+            payload['SyncInfo'] = bytes(data[dataPtr:dataPtr+18])
+            dataPtr += 18
+        if extHeaderFlags & 0x40:
+            payload['TxPower'] = bytes(data[dataPtr:dataPtr+1])[0]
+            dataPtr += 1
+        if dataPtr < extHeaderLength:
+            payload['ACAD'] = bytes(data[dataPtr:])
 
     data = data[extHeaderLength:]
     if len(data):
@@ -518,6 +519,7 @@ class PacketParser:
         PacketType.AUX_ADV_IND: __on_ext_adv_packet,
         PacketType.AUX_SYNC_IND: __on_ext_adv_packet,
         PacketType.AUX_CHAIN_IND: __on_ext_adv_packet,
+        PacketType.AUX_SCAN_RSP: __on_ext_adv_packet,
         PacketType.CONNECT_IND: __on_connect_ind,
         PacketType.AUX_CONNECT_REQ: __on_connect_ind,
         PacketType.LL_TERMINATE_IND: __on_terminate_ind,
