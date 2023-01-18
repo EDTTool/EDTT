@@ -724,6 +724,80 @@ def ll_ddi_adv_bv_21_c(transport, upperTester, lowerTester, trace):
     return success;
 
 """
+    LL/DDI/ADV/BV-22-C [Extended Advertising, Legacy PDUs, Undirected, CSA #2]
+"""
+def ll_ddi_adv_bv_22_c(transport, upperTester, lowerTester, trace, packets):
+
+    RoundData = namedtuple('RoundData', ['AdvData', 'ChIdxToScan'])
+    rounds = [
+        RoundData([0x01], 37),
+        RoundData([], 38),
+        RoundData([0xF8] + [0x00]*30, 39),
+    ]
+
+    advInterval = 0x20 # 32 x 0.625 ms = 20.00 ms
+    Handle          = 0
+    Properties      = 0b00010011 # ADV_IND legacy PDU
+    PrimMinInterval = toArray(advInterval, 3)
+    PrimMaxInterval = toArray(advInterval, 3)
+    PrimChannelMap  = 0x07  # Advertise on all three channels (#37, #38 and #39)
+    OwnAddrType     = SimpleAddressType.PUBLIC
+    PeerAddrType    = SimpleAddressType.PUBLIC
+    PeerAddress     = toArray(0x456789ABCDEF, 6)
+    FilterPolicy    = AdvertisingFilterPolicy.FILTER_NONE
+    TxPower         = 0
+    PrimAdvPhy      = PhysicalChannel.LE_1M
+    SecAdvMaxSkip   = 0
+    SecAdvPhy       = 0
+    Sid             = 0
+    ScanReqNotifyEnable = 0
+
+    success = preamble_ext_advertising_parameters_set(transport, upperTester, Handle, Properties, PrimMinInterval, PrimMaxInterval,
+                                                      PrimChannelMap, OwnAddrType, PeerAddrType, PeerAddress, FilterPolicy, TxPower,
+                                                      PrimAdvPhy, SecAdvMaxSkip, SecAdvPhy, Sid, ScanReqNotifyEnable, trace)
+    if not success:
+        return success
+
+    for round in rounds:
+
+        success = success and le_set_extended_advertising_data(transport, upperTester, Handle, FragmentOperation.COMPLETE_FRAGMENT, 0x00, round.AdvData, 100) == 0
+        if not success:
+            return False
+
+        success = success and preamble_ext_advertise_enable(transport, upperTester, Advertise.ENABLE, [Handle], [0x00], [0x00], trace)
+        if not success:
+            return success
+
+        # Wait until at least 50 advertising events should have been sent
+        transport.wait(math.ceil((advInterval*0.625 + 10) * 50))
+
+        # "Scan" on a single primary advertising channel as indicated in RoundData and expect
+        # the IUT to send ADV_IND packets, with ChSel set as specified, including the data submitted
+        packetCount = 0
+        chNumToScan = 0 if round.ChIdxToScan == 37 else 12 if round.ChIdxToScan == 38 else 39
+        for packet in packets.fetch(packet_filter=('ADV_IND')):
+            if packet.channel_num == chNumToScan:
+                packetCount += 1
+                success = success and packet.header.ChSel == 1
+                success = success and len(packet.payload.AdvData) == len(round.AdvData)
+                for i in range(len(round.AdvData)):
+                    success = success and packet.payload.AdvData[i] == round.AdvData[i]
+
+        # Check that the packets have been sent
+        success = success and packetCount >= 50
+
+        success = success and preamble_ext_advertise_enable(transport, upperTester, Advertise.DISABLE, [Handle], [0x00], [0x00], trace)
+        if not success:
+            return success
+
+        # Flush events and packets for next round
+        flush_events(transport, upperTester, 100)
+        packets.flush()
+
+    return success
+
+
+"""
     LL/DDI/ADV/BV-27-C [Extended Advertising, Host Modifying Data and ADI]
 """
 def ll_ddi_adv_bv_27_c(transport, upperTester, lowerTester, trace, packets):
@@ -8985,6 +9059,7 @@ __tests__ = {
     "LL/DDI/ADV/BV-19-C": [ ll_ddi_adv_bv_19_c, "Low Duty Cycle Directed Advertising on all channels" ],
     "LL/DDI/ADV/BV-20-C": [ ll_ddi_adv_bv_20_c, "Advertising on the LE 1M PHY on all channels" ],
     "LL/DDI/ADV/BV-21-C": [ ll_ddi_adv_bv_21_c, "Non-Connectable Extended Legacy Advertising with Data on all channels" ],
+    "LL/DDI/ADV/BV-22-C": [ ll_ddi_adv_bv_22_c, "Extended Advertising, Legacy PDUs, Undirected, CSA #2" ],
     "LL/DDI/ADV/BV-27-C": [ ll_ddi_adv_bv_27_c, "Extended Advertising, Host Modifying Data and ADI" ],
     "LL/DDI/ADV/BV-28-C": [ ll_ddi_adv_bv_28_c, "Extended Advertising, Overlapping Extended Advertising Events" ],
     "LL/DDI/ADV/BV-47-C": [ ll_ddi_adv_bv_47_c, "Extended Advertising, Non-Connectable - LE 1M PHY" ],
