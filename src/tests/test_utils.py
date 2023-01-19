@@ -837,6 +837,30 @@ def set_complete_ext_scan_response_data(transport, idx, handle, fragmentPref, ad
     return _set_complete_ad_sr_data(transport, idx, handle, fragmentPref, advData, le_set_extended_scan_response_data)
 
 """
+    Wait for the backend of an ADV_IND packet - will advance the time to be just after the next ADV_IND packet
+    (just after in this case meaning within T_IFS so a response can be sent)
+
+    Returns the ADV_IND packet or None if it fails to find one before the timeout
+"""
+def wait_for_ADV_IND_end(transport, packets, timeout):
+    checkInterval = 100 # Note: Has to be less than T_IFS
+    advIndPacket = None
+    timeout = timeout*1000 # Convert to microseconds
+    while timeout > 0:
+        lastPacket = packets.findLast(packet_filter=('ADV_IND'))
+        if lastPacket:
+            # Check that simulation time is just after the ADV_IND has ended (so we can transmit a response)
+            simulation_time = transport.get_last_t()
+            if simulation_time < lastPacket.ts + get_packet_air_time(lastPacket) + 150:
+                # Success, we can continue
+                advIndPacket = lastPacket
+                break
+        # No packet yet - wait a little and try again
+        transport.wait_until_t(transport.get_last_t() + checkInterval)
+        timeout -= checkInterval
+    return advIndPacket
+
+"""
     Wait for the backend of an AUX_ADV_IND packet - will advance the time to be just after the next AUX_ADV_IND packet
     (just after in this case meaning within T_IFS so a response can be sent)
 
