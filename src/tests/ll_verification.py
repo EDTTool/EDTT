@@ -2676,6 +2676,184 @@ def ll_con_adv_bv_05_c(transport, upperTester, lowerTester, trace, packets):
     return do_ll_con_adv_bv_05_12_c(transport, upperTester, lowerTester, trace, packets, PhysicalChannel.LE_1M)
 
 """
+    LL/CON/ADV/BV-06-C [Extended Advertising, Legacy PDUs, Accepting Connections]
+"""
+def ll_con_adv_bv_06_c(transport, upperTester, lowerTester, trace, packets):
+
+    advInterval = 0x20 # 32 x 0.625 ms = 20.00 ms
+    Handle          = 0
+    Properties      = 0b00010011 # ADV_IND legacy PDU
+    PrimMinInterval = toArray(advInterval, 3)
+    PrimMaxInterval = toArray(advInterval, 3)
+    PrimChannelMap  = 0x07  # Advertise on all three channels (#37, #38 and #39)
+    OwnAddrType     = SimpleAddressType.PUBLIC
+    PeerAddrType    = SimpleAddressType.PUBLIC
+    PeerAddress     = toArray(0x456789ABCDEF, 6)
+    FilterPolicy    = AdvertisingFilterPolicy.FILTER_NONE
+    TxPower         = 0
+    PrimAdvPhy      = PhysicalChannel.LE_1M
+    SecAdvMaxSkip   = 0
+    SecAdvPhy       = 0
+    Sid             = 0
+    ScanReqNotifyEnable = 0
+
+    success = preamble_ext_advertising_parameters_set(transport, upperTester, Handle, Properties, PrimMinInterval, PrimMaxInterval,
+                                                      PrimChannelMap, OwnAddrType, PeerAddrType, PeerAddress, FilterPolicy, TxPower,
+                                                      PrimAdvPhy, SecAdvMaxSkip, SecAdvPhy, Sid, ScanReqNotifyEnable, trace)
+
+    if not success:
+        return False
+
+    success = success and preamble_ext_advertise_enable(transport, upperTester, Advertise.ENABLE, [Handle], [0], [0], trace)
+    if not success:
+        return False
+
+    # Enable LE Channel Selection Algorithm in event mask (it is disabled by default for some reason)
+    events = [0xFF, 0xFF, 0xFF, 0xFF, 0x03, 0x00, 0x00, 0x00]
+    status = le_set_event_mask(transport, upperTester, events, 100)
+    if status != 0:
+        return False
+    get_event(transport, upperTester, 200) # Read out command complete event for le_set_event_mask
+
+    initiator = Initiator(transport, lowerTester, None, trace, Address(ExtendedAddressType.PUBLIC), publicIdentityAddress(upperTester),
+                          InitiatorFilterPolicy.FILTER_NONE, True, 0x01)
+    initiator.checkPrematureDisconnect = False
+    success = initiator.connect()
+
+    if not success:
+        return False
+
+    # Check ADV_INDs
+    # ChSel set to 1 (Channel Selection Algorithm #2). The AdvA field shall contain the IUT’s Advertising Address
+    # On the primary advertising channel(s) using the LE 1M PHY
+    for packet in packets.fetch(packet_filter=('ADV_IND')):
+        success = success and packet.header.ChSel == 1
+        success = success and int.from_bytes(packet.payload.AdvA, 'little', signed=False) == 0x123456789ABC
+        success = success and (packet.channel_num == 0 or packet.channel_num == 12 or packet.channel_num == 39)
+        success = success and packet.phy == '1M'
+
+    if not success:
+        return False
+
+    # Only 20 tries with CONNECT_IND allowed, check that we didn't exceed that
+    connectIndCount = 0
+    for packet in packets.fetch(packet_filter=('ADV_IND')):
+        connectIndCount += 1
+    success = success and connectIndCount <= 20
+
+    # Expect to receive an HCI_LE_Enhanced_Connection_Complete event followed by a HCI_LE_Channel_Selection_Algorithm and a HCI_LE_Advertising_Set_Terminated event
+    connectionHandle = None
+    eventsWaiting = has_event(transport, upperTester, 200)[1]
+    success = success and eventsWaiting >= 2
+
+    if not success:
+        return False
+
+    # Consume all outstanding HCI events
+    for i in range(eventsWaiting):
+        event = get_event(transport, upperTester, 200)
+        if i == 0 and event.subEvent == MetaEvents.BT_HCI_EVT_LE_ENH_CONN_COMPLETE:
+            status, handle, role, peerAddress, localResolvableAddress, peerResolvableAddress, interval, latency, timeout, accuracy = event.decode()
+            success = success and status == 0x00
+            success = success and role == 0x01 # Peripheral
+            connectionHandle = handle
+        elif i == 1 and event.subEvent == MetaEvents.BT_HCI_EVT_LE_CHAN_SEL_ALGO:
+            handle, algorithm = event.decode()
+            success = success and algorithm == 0x01 # LE Channel Selection Algorithm #2
+        elif i == 2 and event.subEvent == MetaEvents.BT_HCI_EVT_LE_ADV_SET_TERMINATED:
+            # Status set to 0x00, the Advertising_Handle used, and the Connection_Handle received in HCI_LE_Enhanced_Connection_Complete
+            status, advertiseHandle, advConnectionHandle, completedEvents = event.decode()
+            success = success and status == 0x00
+            success = success and advertiseHandle == Handle
+            success = success and advConnectionHandle == connectionHandle
+        elif i < 3:
+            # Unexpected/wrong event received
+            success = False
+
+    # Keep connection open until we have (at least) 100 LL data PDUs from Lower Tester
+    while True:
+        LLDataCount = 0
+        for packet in packets.fetch('LL_DATA_PDU'):
+            if packet.idx == lowerTester:
+                LLDataCount += 1
+        if LLDataCount >= 100:
+            break
+
+        # Wait for the expected time to get the remaining packets based on the connection interval
+        transport.wait(math.ceil((100 - LLDataCount)*(initiator.intervalMax*1.25)))
+
+    # Check LL_DATA_PDUs
+    # The IUT sends and receives data using the LE 1M PHY
+    for packet in packets.fetch(packet_filter=('LL_DATA_PDU')):
+        success = success and packet.phy == '1M'
+
+    # The Lower Tester receives no further advertising packets while maintaining the connection
+    firstLLDataPDUTs = packets.find('LL_DATA_PDU').ts
+    lastAdvIndTs = packets.findLast('ADV_IND').ts
+    success = success and lastAdvIndTs <= firstLLDataPDUTs
+
+    # Disconnect with "Remote User Terminated Connection"
+    status = disconnect(transport, upperTester, connectionHandle, 0x13, 200)
+    success = success and (status == 0)
+
+    # Wait for disconnect to fully complete
+    transport.wait(500)
+
+    # Flush system before the next test steps
+    packets.flush()
+    flush_events(transport, lowerTester, 100)
+    flush_events(transport, upperTester, 100)
+
+    # Set advertising parameters and start advertising again
+    success = preamble_ext_advertising_parameters_set(transport, upperTester, Handle, Properties, PrimMinInterval, PrimMaxInterval,
+                                                      PrimChannelMap, OwnAddrType, PeerAddrType, PeerAddress, FilterPolicy, TxPower,
+                                                      PrimAdvPhy, SecAdvMaxSkip, SecAdvPhy, Sid, ScanReqNotifyEnable, trace)
+
+    if not success:
+        return False
+
+    success = success and preamble_ext_advertise_enable(transport, upperTester, Advertise.ENABLE, [Handle], [0], [0], trace)
+    if not success:
+        return False
+
+    # Send CONNECT_INDs with the AdvA field set to an address other than the IUT's address 5 times; Advertising should continue
+    for i in range(5):
+        advIndPacket = wait_for_ADV_IND_end(transport, packets, math.ceil(advInterval*0.625+10))
+        if not advIndPacket:
+            return False
+
+        # Transmit a CONNECT_IND
+        packetData = (0b00100101 + (34 << 8)).to_bytes(2, 'little', signed=False) # header - PDU Type 0b0101, ChSel 1, TxAdd and RxAdd 0, length 34
+        packetData = b''.join([packetData, 0x456789ABCDEF.to_bytes(6, 'little', signed=False)]) # InitA
+        packetData = b''.join([packetData, 0xCBA987654321.to_bytes(6, 'little', signed=False)]) # AdvA (not matching IUT)
+        packetData = b''.join([packetData, 0xEF11D7A8.to_bytes(4, 'little', signed=False)]) # LLData: AA
+        packetData = b''.join([packetData, 0xE4C5A3.to_bytes(3, 'little', signed=False)]) # LLData: CRCInit
+        packetData = b''.join([packetData, 0x01.to_bytes(1, 'little', signed=False)]) # LLData: WinSize
+        packetData = b''.join([packetData, 0x0000.to_bytes(2, 'little', signed=False)]) # LLData: WinOffset
+        packetData = b''.join([packetData, 0x0018.to_bytes(2, 'little', signed=False)]) # LLData: Interval
+        packetData = b''.join([packetData, 0x0000.to_bytes(2, 'little', signed=False)]) # LLData: Latency
+        packetData = b''.join([packetData, 0x0019.to_bytes(2, 'little', signed=False)]) # LLData: Timeout
+        packetData = b''.join([packetData, 0x1FFFFFFFFF.to_bytes(5, 'little', signed=False)]) # LLData: ChM
+        packetData = b''.join([packetData, (0x07 + (0x05 << 5)).to_bytes(1, 'little', signed=False)]) # LLData: Hop and SCA (Hop: 7 and SCA: 5)
+        CRC = calcBLECRC(0x555555, packetData)
+        packetData = b''.join([packetData, CRC.to_bytes(3, 'little', signed=False)])
+
+        # Calculate transmit timestamp (T_IFS from end of ADV_IND)
+        transmitTime = advIndPacket.ts + get_packet_air_time(advIndPacket) + 150
+
+        transport.low_level_device.tx(channel_num_to_index(advIndPacket.channel_num), advIndPacket.phy, advIndPacket.aa, transmitTime, packetData)
+
+        # Wait for transmit to happen
+        transport.wait(10)
+
+    # Wait an advertising interval and ensure that advertising is still active
+    transport.wait(math.ceil(advInterval*0.625+10))
+
+    success = success and packets.findLast(packet_filter=('ADV_IND')).ts > transmitTime
+
+    return success
+
+"""
     LL/CON/ADV/BV-09-C [Accepting Connection Request using Channel Selection Algorithm #2]
 
     Last modified: 02-08-2019
@@ -9134,6 +9312,7 @@ __tests__ = {
     "LL/CON/ADV/BV-01-C": [ ll_con_adv_bv_01_c, "Accepting Connection Request" ],
     "LL/CON/ADV/BV-04-C": [ ll_con_adv_bv_04_c, "Accepting Connection Request after Directed Advertising" ],
     "LL/CON/ADV/BV-05-C": [ ll_con_adv_bv_05_c, "Extended Advertising, Accepting Connections; LE 1M PHY", LowLevelDeviceRequired ],
+    "LL/CON/ADV/BV-06-C": [ ll_con_adv_bv_06_c, "Extended Advertising, Legacy PDUs, Accepting Connections", LowLevelDeviceRequired ],
     "LL/CON/ADV/BV-09-C": [ ll_con_adv_bv_09_c, "Accepting Connection Request using Channel Selection Algorithm #2" ],
     "LL/CON/ADV/BV-10-C": [ ll_con_adv_bv_10_c, "Accepting Connection Request after Directed Advertising using Channel Selection Algorithm #2" ],
     "LL/CON/ADV/BV-12-C": [ ll_con_adv_bv_12_c, "Extended Advertising, Accepting Connections; LE 2M PHY", LowLevelDeviceRequired ],
@@ -9373,6 +9552,8 @@ def run_a_test(args, transport, trace, test_spec, device_dumps):
         success = False;
 
     trace.trace(2, "%-*s %s test started..." % (_maxNameLength, test_spec.name, test_spec.description[1:]));
+    if not success:
+        trace.trace(3, "Preamble failed, actual test function will not run" );
     test_f = test_spec.test_private;
     try:
         if test_spec.require_low_level_device and not transport.low_level_device:
