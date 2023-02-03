@@ -54,7 +54,7 @@ In BabbleSim, the “EDTT bridge” is just another program being executed in pa
 The “EDTT brige” must know how many DUTs it needs to connect to and the identity of each DUT. This information is passed as run-time parameters to the “EDTT bridge”. A typical execution of BabbleSim with the “EDTT bridge” and two DUTs could look as shown here:
 
 ```
-./bs_2G4_phy_v1 –s=Test –D=3 –sim_length=5e6 &
+./bs_2G4_phy_v1 –s=Test –D=3 –sim_length=5e6 -dump_imm &
 
 ./bs_device_edtt_bridge –s=Test –d=0 –D=2 –dev0=1 –dev1=2 –v=3 –RxWait=2.5e3 –AutoTerminate &
 
@@ -64,7 +64,7 @@ The “EDTT brige” must know how many DUTs it needs to connect to and the iden
 ```
 
 
-The radio simulation is configured with the simulation name “Test” (-s=Test). It is told to host three devices (-D=3). And the simulation length is set to 5 seconds (-sim_length=5e6).
+The radio simulation is configured with the simulation name “Test” (-s=Test). It is told to host three devices (-D=3). The simulation length is set to 5 seconds (-sim_length=5e6). And it is told to disable cached writes for the dump files (-dump_imm).
 
 The three applications are started. Beginning with the EDTT bridge. The EDTT bridge is handed the name of the simulation “Test” (-s=Test), its own device identifier (-d=0), the number of DUTs to service (-D=2) and the device identifiers for the two DUTs (-dev0=1 and –dev1=2).
 
@@ -73,7 +73,7 @@ Last the EDTT Test APP is started twice to simulate the two DUTs. The EDTT Test 
 To run with the low level device enabled, EDTT itself also needs to be assigned a BabbleSim device number. This is done via the --low-level-device-nbr argument. For example, expanding on the above:
 
 ```
-./bs_2G4_phy_v1 –s=Test –D=4 –sim_length=5e6 &
+./bs_2G4_phy_v1 –s=Test –D=4 –sim_length=5e6 -dump_imm &
 
 ./bs_device_edtt_bridge –s=Test –d=0 –D=2 –dev0=1 –dev1=2 –v=3 –RxWait=2.5e3 –AutoTerminate &
 
@@ -109,6 +109,64 @@ All requests and replies share a common syntax of the form:
 
 <request_id>, <request_size>, <reply_id> and <reply_size> are little-endian 16 bit unsigned numbers. <request_parameter> and <reply_parameter> are 8 bit numbers.
 ```
+
+## Packet inspection
+
+It is possible to inspect the raw packets sent by the upper and lower tester via BabbleSims dump files. Note that you will usuallly want to use the `-dump_imm` command line argument when using packet inspection; Otherwise the dump files will use cached writes and the latest packets will likely not show up in EDTT.
+
+The raw packets will get decoded into a `Packet` before being handed over to the test cases via the `Packets` class. The content of a `Packet` is:
+
+* `direction`: Either `'Tx'` or `'Rx'`. Note that the current implementation only reads the Tx part of the dump files, so this will currently always be `'Tx'`
+* `idx`: The BSim device id of the device that received or transmitted the package (see `direction` for whether it was a transmit or receive). Will correspond to lower or upper tester
+* `ts`: The start timestamp of the packet (in microseconds)
+* `aa`: The access address used
+* `channel_num`: The channel number used (note: Not the channel *index*, but the channel *number* - ie. advertising channels are 0, 12 and 39)
+* `phy`: The BLE PHY used - one of `'1M'` or `'2M'`
+* `data`: The raw data of the packet (excluding header)
+* `type`: The type of packet, for example `'ADV_IND'` or `'CONNECT_IND'`
+* `header`: The header of the packet - a named tuple containing `pdu_type`, `ch_sel`, `tx_add`, `rx_add` and `payload_len`
+* `payload`: The decoded payload of the packet. Content depends on the type of packet; It will generally be a named tuple containing the fields specified in the BT Core Spec. One notable exception is for the extended advertisement packets - for these the payload is a `dict` since the fields may or may not be present
+
+### Packets class interface
+
+There are a few different ways to inquire about packets sent on the phy from within a test case. Generally, the way to use the API is to filter for the packets you are interested - see the API describtion below.
+
+#### Packets.fetch(packet_filter=())
+
+Returns an iterator to use in a `for` loop. Will iterate through all packets matching the provided filter in the order of oldest packet to newest.
+
+Arguments:
+
+* `packet_filter`: Type or list of types to match on - for instance `('AUX_CONNECT_RSP', 'AUX_CONNECT_REQ')`
+
+Simple example - to loop through all AUX_ADV_IND packets and print them:
+
+```
+    for packet in packets.fetch(packet_filter=('AUX_ADV_IND')):
+        # Do something with packet
+        print(packet)
+```
+
+#### Packets.find(packet_type=None)
+
+Returns the first (ie. oldest) `Packet` matching the provided type filter.
+
+Arguments:
+
+* `packet_type`: Type or list of types to match on - for instance `('AUX_CONNECT_RSP', 'AUX_CONNECT_REQ')`
+
+#### Packets.findLast(packet_filter=())
+
+Returns the last (ie. newest) `Packet` matching the provided filter.
+
+Arguments:
+
+* `packet_filter`: Type or list of types to match on - for instance `('AUX_CONNECT_RSP', 'AUX_CONNECT_REQ')`
+
+#### Packets.flush()
+
+Flushes the current packets to start fresh. All packets currently known will be removed and can no longer be retrieved.
+Note that this is implicitly done between test cases, so calling this function is only needed if a flush inside a test case is wanted.
 
 ## Tests
 
