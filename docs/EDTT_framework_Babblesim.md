@@ -17,16 +17,16 @@ The Framework consists of a test execution part and a set of simulated Zephyr Bl
 ![Figure 1 EDTT Framework](Figure1_edtt_framework.svg "Figure 1 EDTT Framework")
 
 The two execution environments are connected thru Named Pipes. Since Bluetooth is all about communicating entities, a test needs access to more than a single DUT.
-Rather than having the test execution environment communicate directly with each DUT, a multiplexer (a bridge) is introduced between the test execution environment and the DUTs. The multiplexer, here referred to as the “EDTT bridge”, distributes the commands and responses between the test and the different DUTs.
-The “EDTT bridge” also ensures that the simulation is halted when needed while the EDTT is processing. That is, the result of the simulation does not depend on the python execution speed.
+
+The EDTT transport ensures that the simulation is halted when needed while the EDTT is processing. That is, the result of the simulation does not depend on the python execution speed.
 In principle any number of DUTs can be supported, but in reality only two DUTs are used for testing. The setup is illustrated in the next figure .
 
-![Figure 2 EDTT bridge](Figure2_EDTT_bridge.svg "Figure 2 EDTT bridge")
+![Figure 2 EDTT](Figure2_EDTT.svg "Figure 2 EDTT")
 
 In addition to the DUTs, the EDTT BabbleSim transport also has a low level device that connects directly to BabbleSim. This device can be used to send raw BLE packets without going through a Zephyr device (with the limitations that brings).
 
 ---
-*** The transport ***
+### The transport
 
 The transport is conceptually a two-way FIFO for each DUT.
 
@@ -49,46 +49,44 @@ Transport DUT side API:
 
 ---
 
-In BabbleSim, the “EDTT bridge” is just another program being executed in parallel with the programs running the individual DUTs. Each DUT is configured to run one of the EDTT Test APPs, implementing the Command executor.
+In BabbleSim, EDTT is just another program being executed in parallel with the programs running the individual DUTs. Each DUT is configured to run one of the EDTT Test APPs, implementing the Command executor.
 
-The “EDTT brige” must know how many DUTs it needs to connect to and the identity of each DUT. This information is passed as run-time parameters to the “EDTT bridge”. A typical execution of BabbleSim with the “EDTT bridge” and two DUTs could look as shown here:
+The EDTT transport must know how many DUTs it needs to connect to and the identity of each DUT. This information is passed as run-time parameters to the EDTT. A typical execution of BabbleSim and two DUTs could look as shown here:
 
 ```
 ./bs_2G4_phy_v1 –s=Test –D=3 –sim_length=5e6 -dump_imm &
 
-./bs_device_edtt_bridge –s=Test –d=0 –D=2 –dev0=1 –dev1=2 –v=3 –RxWait=2.5e3 –AutoTerminate &
-
 ./bs_nrf52_bsim_hci_test_app_bsim –s=Test –d=1 –v=3 &
 
 ./bs_nrf52_bsim_hci_test_app_bsim –s=Test –d=2 –v=3
+
+./bs_edttool –s=Test –d=0 –t bsim -T hci_verification –C HCI/CIN/BV-04-C -l -D=2 -devs 1 2 –RxWait=2.5e3 &
 ```
 
 
 The radio simulation is configured with the simulation name “Test” (-s=Test). It is told to host three devices (-D=3). The simulation length is set to 5 seconds (-sim_length=5e6). And it is told to disable cached writes for the dump files (-dump_imm).
 
-The three applications are started. Beginning with the EDTT bridge. The EDTT bridge is handed the name of the simulation “Test” (-s=Test), its own device identifier (-d=0), the number of DUTs to service (-D=2) and the device identifiers for the two DUTs (-dev0=1 and –dev1=2).
+The EDTT Test APP is started twice to simulate the two DUTs. The EDTT Test APP is handed the name of the simulation “Test” (-s=Test) and its own device identifier (-d=1 or –d=2).
 
-Last the EDTT Test APP is started twice to simulate the two DUTs. The EDTT Test APP is handed the name of the simulation “Test” (-s=Test) and its own device identifier (-d=1 or –d=2).
+Last, the EDTT itself is started. It is handed the name of the simulation “Test” (-s=Test), its own device identifier (-d=0), the number of DUTs to service (-D=2) and the device identifiers for the two DUTs (-dev 1 2).
 
 To run with the low level device enabled, EDTT itself also needs to be assigned a BabbleSim device number. This is done via the --low-level-device-nbr argument. For example, expanding on the above:
 
 ```
 ./bs_2G4_phy_v1 –s=Test –D=4 –sim_length=5e6 -dump_imm &
 
-./bs_device_edtt_bridge –s=Test –d=0 –D=2 –dev0=1 –dev1=2 –v=3 –RxWait=2.5e3 –AutoTerminate &
-
 ./bs_nrf52_bsim_hci_test_app_bsim –s=Test –d=1 –v=3 &
 
-./bs_nrf52_bsim_hci_test_app_bsim –s=Test –d=2 –v=3
+./bs_nrf52_bsim_hci_test_app_bsim –s=Test –d=2 –v=3 &
 
-./bs_edttool –s=Test –d=0 –t bsim -T hci_verification –C HCI/CIN/BV-04-C -l --low-level-device-nbr=3
+./bs_edttool –s=Test –d=0 –t bsim -T hci_verification –C HCI/CIN/BV-04-C -l --low-level-device-nbr=3 -D=2 -devs 1 2 –RxWait=2.5e3
 ```
 
 Now the simulation environment is started and ready to receive HCI Command requests from a test. See Tests to see how the test execution is started.
 
 Details on the transport layer API overall can be found in docs/EDTT_trasnport.md
 
-More information about the bsim transport, both the embedded driver, bridge and python side can be found in docs/EDTT_transport_bsim.md
+More information about the bsim transport, both the embedded driver and python side can be found in docs/EDTT_transport_bsim.md
 
 
 ## HCI Command API
@@ -230,10 +228,10 @@ A Python wrapper has been made to make test execution easy. The wrapper is edtto
 
 The `<test>` argument is the name of the Python file (without .py) holding the code for the test to execute. The `<trace-level>` argument is a number that can be used to limit the trace output from the test.
 
-When the bsim transport is selected: The `<sim_id>` is a string that must match the `<sim_id>` used for the execution of the EDTT APP in the simulator. The `<bridge_dev_nbr>` is the device identifier assigned to the EDTT bridge.
+When the bsim transport is selected: The `<sim_id>` is a string that must match the `<sim_id>` used for the execution of the EDTT APP in the simulator. The `<eddtool_dev_nbr>` is the device identifier assigned to the EDTT itself.
 
 ```
-edttool.py [-h] [-v trace-level] -t TRANSPORT -T TEST [-C CASE] [--shuffle] [-S] [--seed SEED] [-s sim_id] [-d bridge_dev_nbr] [-l] [--low-level-device-nbr low_level_dev_nbr]
+edttool.py [-h] [-v trace-level] -t TRANSPORT -T TEST [-C CASE] [--shuffle] [-S] [--seed SEED] [-s sim_id] [-d eddtool_dev_nbr] [-l] [--low-level-device-nbr low_level_dev_nbr]
 
 
 Example:
