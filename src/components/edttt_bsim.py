@@ -196,6 +196,7 @@ class EDTTT:
 
     def __disconnect(self):
         if self.Connected:
+            self.Connected = False
             if self.autoterminate:
                 msg = struct.pack('=I', PB_MSG_TERMINATE)
                 self.Trace.trace(4,"Terminating simulation")
@@ -203,7 +204,6 @@ class EDTTT:
                 msg = struct.pack('=I', PB_MSG_DISCONNECT)
                 self.Trace.trace(4,"Disconnecting from Phy")
             self.__write_to_phy(msg);
-            self.Connected = False;
         if self.low_level_device:
             self.low_level_device.disconnect()
 
@@ -249,6 +249,7 @@ class EDTTT:
         except:
             self.Trace.trace(4,"The Phy disappeared when trying to "
                              "write to it");
+            self.Connected = False
             self.close();
             raise Exception("Abruptly disconnected from Phy");
 
@@ -263,6 +264,7 @@ class EDTTT:
         except:
             self.Trace.trace(4,"The Phy disappeared when trying to "
                              "read from it");
+            self.Connected = False
             self.close();
             raise Exception("Abruptly disconnected from Phy");
 
@@ -343,7 +345,9 @@ class EDTTT:
             header, = struct.unpack("=I", raw_header)
             if header == PB_MSG_DISCONNECT:
                 self.Trace.trace(2, "Phy told us to disconnect")
+                self.Connected = False
                 self.__disconnect()
+                raise Exception("Simulated terminated by the Phy")
             elif header != PB_MSG_WAIT_END:
                 raise Exception("Low level communication with PHY failed; Received invalid response %s" % header)
 
