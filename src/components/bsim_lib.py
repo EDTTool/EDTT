@@ -67,17 +67,14 @@ P2G4_MOD_PROP4M = 0x41 # Proprietary 4Mbps
 def create_folder(path):
     if os.access(path, os.F_OK):
         return
-    os.mkdir(path, stat.S_IRWXG | stat.S_IRWXU)
+    os.makedirs(path, stat.S_IRWXG | stat.S_IRWXU, exist_ok=True)
     if not os.access(path, os.F_OK):
         raise Exception("Failed to create folder %s" % path)
 
 # Create
 def create_com_folder(sim_id):
     pw_name = pwd.getpwuid(os.geteuid())[0]
-    com_path = "/tmp/bs_%s" % pw_name
-    create_folder(com_path)
-
-    com_path = com_path + "/%s" % sim_id
+    com_path = "/tmp/bs_%s/%s" % (pw_name, sim_id)
     create_folder(com_path)
     return com_path
 
