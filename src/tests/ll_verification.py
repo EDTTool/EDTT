@@ -8426,7 +8426,7 @@ def ll_ist_per_bv_03_c(transport, upper_tester, lower_tester, trace):
 
 
 def cis_setup_procedure_central_initiated(transport, upper_tester, lower_tester, trace, params):
-    success, initiator, (cis_handle,), _ = \
+    success, initiator, _, (cis_handle,) = \
         state_connected_isochronous_stream(transport, lower_tester, upper_tester, trace, params)
 
     def lt_send_data_packet(pkt_seq_num):
