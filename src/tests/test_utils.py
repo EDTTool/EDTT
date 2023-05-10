@@ -218,9 +218,9 @@ def hasDataLengthChangedEvent(transport, idx, trace):
             handle, maxTxOctets, maxTxTime, maxRxOctets, maxRxTime = event.decode();
     return success, handle, maxTxOctets, maxTxTime, maxRxOctets, maxRxTime;
 
-def hasReadRemoteFeaturesCompleteEvent(transport, idx, trace):
+def hasReadRemoteFeaturesCompleteEvent(transport, idx, trace, to=100):
 
-    success, handle, features = has_event(transport, idx, 100)[0], -1, [];
+    success, handle, features = has_event(transport, idx, to)[0], -1, 0x0;
     if success:
         success, event = verifyAndFetchMetaEvent(transport, idx, MetaEvents.BT_HCI_EVT_LE_REMOTE_FEAT_COMPLETE, trace);
         if success:
@@ -788,6 +788,11 @@ def state_connected_isochronous_stream(transport, peripheral, central, trace, pa
     success = s and success
     if not initiator:
         return success, None, [0xFFFF] * params.CIS_Count
+
+    # Trigger feature exchange procedures
+    success = readRemoteFeatures(transport, central, initiator.handles[0], trace) and success
+    hasFeatures, _, _ = hasReadRemoteFeaturesCompleteEvent(transport, central, trace, 200);
+    success = hasFeatures and success;
 
     if enc_keys:
         success = enable_encryption(transport, central, peripheral, trace, initiator.handles[0], enc_keys) and success
