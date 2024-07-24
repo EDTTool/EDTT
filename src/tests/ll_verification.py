@@ -7311,7 +7311,7 @@ def ll_cis_per_bv_05_c(transport, upperTester, lowerTester, trace):
     params = SetCIGParameters(
         SDU_Interval_C_To_P     = 50000,  # 50 ms
         SDU_Interval_P_To_C     = 50000,  # 50 ms
-        ISO_Interval            = int(50 // 1.25), # 50 ms
+        ISO_Interval            = int(100 // 1.25), # 100 ms
         NSE                     = min(max_cis_nse, 4),  # Note 1: TSPX_max_cis_nse or 0x04, whichever is less
         # Max_PDU_P_To_C          = 0,  # TODO: Supposed to be 0
         PHY_C_To_P              = 1,
