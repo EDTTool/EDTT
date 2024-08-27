@@ -339,14 +339,12 @@ class ATTData:
         return result;
 
     def __errorText(self, error):
-        result = str(ATTError( error ));
-        result = result.split('.')[1];
+        result = ATTError(error).name;
         result = '_'.join([_.lower().capitalize() if _ != 'ATT' else _ for _ in result.split('_')]);
         return result;
 
     def __opcodeName(self, opcode):
-        result = str(ATTOpcode( opcode ));
-        result = result.split('.')[1];
+        result = ATTOpcode(opcode).name;
         result = '_'.join([_.lower().capitalize() if _ != 'ATT' else _ for _ in result.split('_')]);
         return result;
     
