@@ -19,7 +19,7 @@ And about the transport used with BabbleSim in
 
 A document giving an introduction on how to use the EDTT
 with BabbleSim and how to write tests can be found in
-[EDTT_framework_BabbleSim.md](docs/EDTT_framework_BabbleSim.md)
+[EDTT_framework_Babblesim.md](EDTT_framework_Babblesim.md)
 
 ## License
 
